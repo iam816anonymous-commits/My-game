@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
-import { GameLoop } from './GameLoop';
+import { GameLoop } from '../game/GameLoop';
 
 const GameView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -16,7 +16,7 @@ const GameView: React.FC = () => {
         resizeTo: window,
         backgroundColor: 0x050505,
         antialias: true,
-        resolution: Math.min(window.devicePixelRatio || 1, 2), // Cap resolution for mobile performance
+        resolution: Math.min(window.devicePixelRatio || 1, 2),
         autoDensity: true,
       });
 
@@ -55,7 +55,7 @@ const GameView: React.FC = () => {
         width: '100vw',
         height: '100vh',
         overflow: 'hidden',
-        touchAction: 'none' // Prevent scrolling/zooming on mobile
+        touchAction: 'none'
       }}
     />
   );

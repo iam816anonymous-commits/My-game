@@ -1,7 +1,8 @@
 import * as PIXI from 'pixi.js';
-import { useStore } from '../state/useStore';
-import { EntityManager } from '../world/EntityManager';
-import { Environment } from '../world/Environment';
+import { useStore } from '../store/useStore';
+import { EntityManager } from '../companion/EntityManager';
+import { Environment } from '../world/WorldProgressionManager';
+import { EventSystem } from '../events/EventSystem';
 
 export class GameLoop {
   private app: PIXI.Application;
@@ -22,18 +23,22 @@ export class GameLoop {
 
   private update(ticker: PIXI.Ticker) {
     const delta = ticker.deltaTime;
+    const now = Date.now();
     const { isStarted, isPaused, isGameOver, tick } = useStore.getState();
 
     if (!isStarted || isPaused || isGameOver) return;
 
-    // Update global game state (energy decay)
-    tick(delta);
+    // Update global game state
+    tick(delta, now);
 
     // Update game entities
     this.entityManager.update(delta);
 
     // Update environment visuals
     this.environment.update(delta);
+
+    // Update random events
+    EventSystem.update(delta);
   }
 
   public destroy() {

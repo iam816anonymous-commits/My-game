@@ -1,5 +1,5 @@
 import { get, set, del } from 'idb-keyval';
-import type { GameState } from '../../types/game';
+import type { GameState } from '../types/game';
 
 const SAVE_KEY = 'last_light_save_v1';
 

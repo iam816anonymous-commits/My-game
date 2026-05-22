@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useStore } from '../state/useStore';
+import { useStore } from '../store/useStore';
 
 const Menu: React.FC = () => {
-  const { isStarted, isGameOver, totalMemories, score, startGame, resetGame } = useStore();
+  const { isStarted, isGameOver, totalMemories, startGame, resetGame } = useStore();
 
   return (
     <motion.div
@@ -40,13 +40,12 @@ const Menu: React.FC = () => {
         >
           <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>The light has faded.</p>
           <p style={{ fontSize: '1.2rem' }}>{totalMemories} memories collected</p>
-          <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.4)' }}>Final Score: {score}</p>
         </motion.div>
       )}
 
       {!isStarted && !isGameOver && (
         <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '300px', marginBottom: '2rem', lineHeight: '1.6' }}>
-          Follow the light. Collect memories to keep the glow alive.
+          Welcome back. Your companion has missed you.
         </p>
       )}
 

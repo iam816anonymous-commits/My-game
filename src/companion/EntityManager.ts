@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
-import { useStore } from '../state/useStore';
+import { useStore } from '../store/useStore';
+import { CompanionBrain } from './CompanionBrain';
 
 interface MemoryGraphic extends PIXI.Graphics {
   isRare?: boolean;
@@ -12,9 +13,8 @@ export class EntityManager {
   private world: PIXI.Container;
   private pointer: { x: number; y: number };
   private memorySpawnTimer: number = 0;
-
-  // Basic object pool
   private memoryPool: MemoryGraphic[] = [];
+  private brain: CompanionBrain;
 
   constructor(app: PIXI.Application, world?: PIXI.Container) {
     this.app = app;
@@ -27,10 +27,12 @@ export class EntityManager {
         this.app.stage.addChild(this.world);
     }
 
-    // Player (Glowing Orb)
+    // Player/Companion (Glowing Spirit Fox)
     this.player = new PIXI.Graphics();
     this.drawPlayer();
     this.app.stage.addChild(this.player);
+
+    this.brain = new CompanionBrain(this.player);
 
     // Memories Container
     this.memories = new PIXI.Container();
@@ -40,6 +42,7 @@ export class EntityManager {
     this.app.stage.eventMode = 'static';
     this.app.stage.hitArea = this.app.screen;
     this.app.stage.on('pointermove', this.onPointerMove);
+    this.app.stage.on('pointerdown', this.onPointerDown);
   }
 
   private onPointerMove = (e: PIXI.FederatedPointerEvent) => {
@@ -47,33 +50,32 @@ export class EntityManager {
     this.pointer.y = e.global.y;
   };
 
+  private onPointerDown = () => {
+    const { interact } = useStore.getState();
+    interact();
+  }
+
   private drawPlayer() {
     this.player.clear();
-    this.player.circle(0, 0, 10).fill({ color: 0xffffff, alpha: 0.8 });
-    this.player.circle(0, 0, 20).fill({ color: 0xffffff, alpha: 0.2 });
+    // Fox-like shape simplified
+    this.player.circle(0, 0, 15).fill({ color: 0xffffff, alpha: 0.9 });
+    this.player.circle(0, 0, 30).fill({ color: 0xffffff, alpha: 0.1 });
+    // Ears
+    this.player.poly([-10, -10, -5, -25, 0, -10]).fill({ color: 0xffffff, alpha: 0.9 });
+    this.player.poly([10, -10, 5, -25, 0, -10]).fill({ color: 0xffffff, alpha: 0.9 });
   }
 
   public update(delta: number) {
-    // Lerp player to pointer
-    const lerp = 0.1 * delta;
-    const oldX = this.player.x;
-    const oldY = this.player.y;
-    this.player.x += (this.pointer.x - this.player.x) * lerp;
-    this.player.y += (this.pointer.y - this.player.y) * lerp;
+    // Companion AI updates
+    this.brain.update(delta);
 
-    // Camera follow
-    const dx = this.player.x - oldX;
-    const dy = this.player.y - oldY;
-    this.world.x -= dx;
-    this.world.y -= dy;
-
-    // Pulse effect
-    const scale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
-    this.player.scale.set(scale);
+    // World drift based on companion position
+    this.world.x -= (this.player.x - this.app.screen.width / 2) * 0.01;
+    this.world.y -= (this.player.y - this.app.screen.height / 2) * 0.01;
 
     // Spawn memories
     this.memorySpawnTimer += delta;
-    if (this.memorySpawnTimer > 60) {
+    if (this.memorySpawnTimer > 120) {
       this.spawnMemory();
       this.memorySpawnTimer = 0;
     }
@@ -81,13 +83,13 @@ export class EntityManager {
     // Update memories and check collisions
     const children = [...this.memories.children] as MemoryGraphic[];
     children.forEach((memory) => {
-      memory.y += Math.sin(Date.now() * 0.001 + memory.x) * 0.5;
+      memory.y += Math.sin(Date.now() * 0.001 + memory.x) * 0.2;
 
       const dxColl = this.player.x - (memory.x + this.world.x);
       const dyColl = this.player.y - (memory.y + this.world.y);
       const distance = Math.sqrt(dxColl * dxColl + dyColl * dyColl);
 
-      if (distance < 30) {
+      if (distance < 50) {
         this.collectMemory(memory);
       } else if (memory.alpha < 0.1) {
         this.releaseMemory(memory);
@@ -96,7 +98,7 @@ export class EntityManager {
   }
 
   private spawnMemory() {
-    const isRare = Math.random() > 0.95;
+    const isRare = Math.random() > 0.98;
     let memory = this.memoryPool.pop();
 
     if (!memory) {
@@ -105,19 +107,16 @@ export class EntityManager {
 
     memory.clear();
     memory.isRare = isRare;
-    memory.circle(0, 0, isRare ? 6 : 4).fill({ color: isRare ? 0xffcc00 : 0x00ccff, alpha: 0.8 });
+    memory.circle(0, 0, isRare ? 8 : 5).fill({ color: isRare ? 0xffcc00 : 0x00ccff, alpha: 0.7 });
 
     const angle = Math.random() * Math.PI * 2;
-    const distance = 200 + Math.random() * 300;
+    const distance = 300 + Math.random() * 400;
 
     memory.x = (this.player.x - this.world.x) + Math.cos(angle) * distance;
     memory.y = (this.player.y - this.world.y) + Math.sin(angle) * distance;
-    memory.alpha = 0;
+    memory.alpha = 1;
 
     this.memories.addChild(memory);
-
-    // Fade in without requestAnimationFrame leak potential
-    memory.alpha = 1; // Simplified for stability, or could use a ticker
   }
 
   private releaseMemory(memory: MemoryGraphic) {
@@ -130,13 +129,17 @@ export class EntityManager {
   }
 
   private collectMemory(memory: MemoryGraphic) {
-    const { addMemory } = useStore.getState();
-    addMemory(memory.isRare ? 5 : 1);
+    const { addMemory, addJournalEntry } = useStore.getState();
+    addMemory(memory.isRare ? 10 : 1);
+    if (memory.isRare) {
+        addJournalEntry("The companion found a rare golden memory.");
+    }
     this.releaseMemory(memory);
   }
 
   public destroy() {
     this.app.stage.off('pointermove', this.onPointerMove);
+    this.app.stage.off('pointerdown', this.onPointerDown);
     this.player.destroy({ children: true });
     this.memories.destroy({ children: true });
     this.memoryPool.forEach(m => m.destroy());
