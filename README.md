@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# Last Light
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An emotional, relaxing, and addictive browser-based game about light, memories, and evolution.
 
-Currently, two official plugins are available:
+## Overview
+"Last Light" is a Zen-like experience where you control a glowing light orb in an endless floating world. Collect memory particles to maintain your light energy and watch as the world evolved through seven distinct stages of life and beauty.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
+- **Endless Procedural World:** Explore a floating void that expands infinitely as you move.
+- **7 Levels of Evolution:** Transform the world from a silent void to a vibrant ecosystem with grass, fireflies, trees, rain, animals, and constellations.
+- **Responsive Controls:** Optimized for both mouse and touch input.
+- **Production-Ready Performance:** Powered by PixiJS 8, maintaining a stable 60 FPS even on mobile through object pooling and optimized rendering.
+- **PWA Support:** Installable as a standalone app on iOS and Android for offline play.
+- **Save System:** Automatic progress persistence using IndexedDB.
+- **Daily Rewards:** Return daily to receive an energy boost.
+- **Minimalist HUD:** atmospheric design with a clean, unobtrusive energy bar.
 
-## React Compiler
+## Tech Stack
+- **Framework:** React 18 + Vite 5 + TypeScript
+- **Rendering:** PixiJS 8
+- **State Management:** Zustand
+- **Animations:** Framer Motion
+- **Persistence:** idb-keyval
+- **Audio:** Howler.js
+- **Testing:** Vitest + React Testing Library
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting Started
 
-## Expanding the ESLint configuration
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Development
+Start the development server:
+```bash
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Building for Production
+Create an optimized production build:
+```bash
+npm run build
 ```
+
+### Testing & Linting
+Run the test suite:
+```bash
+npm run test
+```
+Run the linter:
+```bash
+npm run lint
+```
+
+## Architecture
+The project follows a **Feature-First** structure for maximum isolation and maintainability:
+- `src/features/core`: Main engine, game loop, and PixiJS initialization.
+- `src/features/world`: Game entities, procedural spawning, and environment evolution.
+- `src/features/state`: Centralized game state management.
+- `src/features/ui`: React-based HUD and Menu components.
+- `src/features/persistence`: IndexedDB storage layer.
+- `src/features/audio`: Sound and music controllers.
