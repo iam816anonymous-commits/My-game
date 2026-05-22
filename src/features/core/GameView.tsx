@@ -16,7 +16,8 @@ const GameView: React.FC = () => {
         resizeTo: window,
         backgroundColor: 0x050505,
         antialias: true,
-        resolution: window.devicePixelRatio || 1,
+        resolution: Math.min(window.devicePixelRatio || 1, 2), // Cap resolution for mobile performance
+        autoDensity: true,
       });
 
       containerRef.current.appendChild(app.canvas);
@@ -28,7 +29,16 @@ const GameView: React.FC = () => {
 
     initPixi();
 
+    const handleResize = () => {
+      if (appRef.current) {
+        appRef.current.resize();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
     return () => {
+      window.removeEventListener('resize', handleResize);
       if (gameLoopRef.current) {
         gameLoopRef.current.destroy();
       }
@@ -38,7 +48,17 @@ const GameView: React.FC = () => {
     };
   }, []);
 
-  return <div ref={containerRef} style={{ width: '100vw', height: '100vh', overflow: 'hidden' }} />;
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        touchAction: 'none' // Prevent scrolling/zooming on mobile
+      }}
+    />
+  );
 };
 
 export default GameView;

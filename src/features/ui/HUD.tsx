@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import { useStore } from '../state/useStore';
 
 const HUD: React.FC = () => {
-  const { energy, level, totalMemories } = useStore();
+  const energy = useStore(state => state.energy);
+  const level = useStore(state => state.level);
+  const totalMemories = useStore(state => state.totalMemories);
 
   return (
     <div style={{

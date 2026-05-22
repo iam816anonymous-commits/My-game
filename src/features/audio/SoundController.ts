@@ -19,7 +19,7 @@ class SoundController {
     this.ambient?.play();
   }
 
-  public updateLayers(_level: number) {
+  public updateLayers() {
     // Logic to fade in layers as level increases
   }
 }

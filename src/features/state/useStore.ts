@@ -18,7 +18,7 @@ const LEVEL_THRESHOLDS: Record<Level, number> = {
   7: 500,
 };
 
-const ENERGY_DECAY_RATE = 0.05; // energy lost per frame (approx)
+const ENERGY_DECAY_RATE = 0.05;
 
 export const useStore = create<GameState & GameActions>((set) => ({
   energy: 100,
@@ -42,7 +42,6 @@ export const useStore = create<GameState & GameActions>((set) => ({
     const newTotal = state.totalMemories + amount;
     let nextLevel = state.level;
 
-    // Check for level up
     for (let i = 7; i >= 1; i--) {
       if (newTotal >= LEVEL_THRESHOLDS[i as Level]) {
         nextLevel = i as Level;
@@ -50,7 +49,6 @@ export const useStore = create<GameState & GameActions>((set) => ({
       }
     }
 
-    // Check achievements
     const newAchievements = state.achievements.map(ach => {
       if (ach.id === 'first_light' && !ach.unlocked && newTotal > 0) {
         return { ...ach, unlocked: true, unlockedAt: Date.now() };
@@ -72,7 +70,7 @@ export const useStore = create<GameState & GameActions>((set) => ({
       score: state.score + (amount * state.level),
       level: nextLevel,
       achievements: newAchievements,
-      energy: Math.min(100, state.energy + (amount * 5))
+      energy: Math.min(100, state.energy + (amount * 2)) // Reduced bonus per memory
     };
   }),
 
@@ -102,22 +100,23 @@ export const useStore = create<GameState & GameActions>((set) => ({
   tick: (delta) => set((state) => {
     if (!state.isStarted || state.isPaused || state.isGameOver) return {};
 
-    // Check for daily reward (once per 24h)
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
     let currentEnergy = state.energy;
     let rewardUpdate = {};
 
-    if (now - state.lastRewardClaim > oneDay) {
+    // Use a safer reward check (throttle)
+    if (state.lastRewardClaim === 0 || now - state.lastRewardClaim > oneDay) {
       currentEnergy = Math.min(100, state.energy + 20);
       rewardUpdate = {
         lastRewardClaim: now
       };
     }
 
-    // Idle decay: if mouse hasn't moved? (Simplified: extra energy drain if no memories collected)
     const decayMultiplier = state.totalMemories === 0 ? 1.5 : 1;
-    const newEnergy = currentEnergy - (ENERGY_DECAY_RATE * delta * decayMultiplier);
+    // Cap delta to prevent massive jumps after long backgrounding
+    const cappedDelta = Math.min(delta, 100);
+    const newEnergy = currentEnergy - (ENERGY_DECAY_RATE * cappedDelta * decayMultiplier);
 
     if (newEnergy <= 0) {
       return { ...rewardUpdate, energy: 0, isGameOver: true };
