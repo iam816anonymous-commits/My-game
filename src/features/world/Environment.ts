@@ -37,8 +37,7 @@ export class Environment {
     // Initial void state
     this.layers['void'].alpha = 1;
     const bg = new PIXI.Graphics();
-    bg.fill(0x050505);
-    bg.rect(0, 0, this.app.screen.width, this.app.screen.height);
+    bg.rect(0, 0, this.app.screen.width, this.app.screen.height).fill(0x050505);
     this.layers['void'].addChild(bg);
   }
 
@@ -76,7 +75,7 @@ export class Environment {
 
       const ticker = () => {
         if (layer.alpha < 1 && !layer.destroyed) {
-          layer.alpha += 0.005;
+          layer.alpha += 0.02;
           requestAnimationFrame(ticker);
         }
       };
@@ -86,64 +85,62 @@ export class Environment {
 
   private populateLayer(name: string) {
     const { width, height } = this.app.screen;
+    const areaW = width * 3;
+    const areaH = height * 3;
+    const offsetX = -width;
+    const offsetY = -height;
 
     if (name === 'grass') {
-      for (let i = 0; i < 60; i++) {
+      for (let i = 0; i < 200; i++) {
         const blade = new PIXI.Graphics();
-        blade.fill({ color: 0x2d5a27, alpha: 0.3 });
-        blade.rect(0, 0, 3, 20 + Math.random() * 30);
-        blade.x = Math.random() * width;
-        blade.y = height - Math.random() * 40;
+        blade.rect(0, 0, 3, 20 + Math.random() * 30).fill({ color: 0x4ade80, alpha: 0.4 });
+        blade.x = offsetX + Math.random() * areaW;
+        blade.y = (height - 40) + (Math.random() - 0.5) * 100;
         this.layers['grass'].addChild(blade);
       }
     } else if (name === 'fireflies') {
-      for (let i = 0; i < 25; i++) {
+      for (let i = 0; i < 100; i++) {
         const firefly = new PIXI.Graphics() as AnimatableGraphic;
-        firefly.fill({ color: 0xffffaa, alpha: 0.7 });
-        firefly.circle(0, 0, 2);
-        firefly.x = Math.random() * width;
-        firefly.y = Math.random() * height;
-        firefly.vx = (Math.random() - 0.5) * 1.5;
-        firefly.vy = (Math.random() - 0.5) * 1.5;
+        firefly.circle(0, 0, 2).fill({ color: 0xfef08a, alpha: 0.9 });
+        firefly.x = offsetX + Math.random() * areaW;
+        firefly.y = offsetY + Math.random() * areaH;
+        firefly.vx = (Math.random() - 0.5) * 2;
+        firefly.vy = (Math.random() - 0.5) * 2;
         this.layers['fireflies'].addChild(firefly);
       }
     } else if (name === 'trees') {
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 30; i++) {
         const tree = new PIXI.Graphics();
-        tree.fill({ color: 0x1a1a1a, alpha: 0.8 });
-        tree.rect(-5, -60, 10, 60); // Trunk
-        tree.circle(0, -70, 30); // Foliage
-        tree.x = Math.random() * width;
-        tree.y = height - 20;
-        tree.scale.set(0.8 + Math.random() * 0.5);
+        tree.rect(-6, -80, 12, 80).fill({ color: 0x171717, alpha: 0.9 });
+        tree.circle(0, -90, 40).fill({ color: 0x171717, alpha: 0.9 });
+        tree.x = offsetX + Math.random() * areaW;
+        tree.y = height - 20 + (Math.random() - 0.5) * 50;
+        tree.scale.set(0.8 + Math.random() * 1.2);
         this.layers['trees'].addChild(tree);
       }
     } else if (name === 'rain') {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 300; i++) {
         const drop = new PIXI.Graphics();
-        drop.fill({ color: 0x4444ff, alpha: 0.2 });
-        drop.rect(0, 0, 1, 10);
-        drop.x = Math.random() * width;
-        drop.y = Math.random() * height;
+        drop.rect(0, 0, 1, 15).fill({ color: 0x60a5fa, alpha: 0.4 });
+        drop.x = offsetX + Math.random() * areaW;
+        drop.y = offsetY + Math.random() * areaH;
         this.layers['rain'].addChild(drop);
       }
     } else if (name === 'animals') {
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 10; i++) {
         const animal = new PIXI.Graphics() as AnimatableGraphic;
-        animal.fill({ color: 0xffffff, alpha: 0.1 });
-        animal.ellipse(0, 0, 15, 10); // Simple blob
-        animal.x = Math.random() * width;
-        animal.y = height - 40;
-        animal.vx = (Math.random() - 0.5) * 0.5;
+        animal.ellipse(0, 0, 20, 12).fill({ color: 0xf8fafc, alpha: 0.3 });
+        animal.x = offsetX + Math.random() * areaW;
+        animal.y = height - 60 + (Math.random() - 0.5) * 100;
+        animal.vx = (Math.random() - 0.5) * 1;
         this.layers['animals'].addChild(animal);
       }
     } else if (name === 'constellations') {
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 150; i++) {
         const star = new PIXI.Graphics();
-        star.fill({ color: 0xffffff, alpha: Math.random() });
-        star.circle(0, 0, 1.5);
-        star.x = Math.random() * width;
-        star.y = Math.random() * (height * 0.6);
+        star.circle(0, 0, 2).fill({ color: 0xffffff, alpha: 0.4 + Math.random() * 0.6 });
+        star.x = offsetX + Math.random() * areaW;
+        star.y = offsetY + Math.random() * (areaH * 0.5);
         this.layers['constellations'].addChild(star);
       }
     }

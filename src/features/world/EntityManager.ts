@@ -49,10 +49,8 @@ export class EntityManager {
 
   private drawPlayer() {
     this.player.clear();
-    this.player.fill({ color: 0xffffff, alpha: 0.8 });
-    this.player.circle(0, 0, 10);
-    this.player.fill({ color: 0xffffff, alpha: 0.2 });
-    this.player.circle(0, 0, 20);
+    this.player.circle(0, 0, 10).fill({ color: 0xffffff, alpha: 0.8 });
+    this.player.circle(0, 0, 20).fill({ color: 0xffffff, alpha: 0.2 });
   }
 
   public update(delta: number) {
@@ -107,8 +105,7 @@ export class EntityManager {
 
     memory.clear();
     memory.isRare = isRare;
-    memory.fill({ color: isRare ? 0xffcc00 : 0x00ccff, alpha: 0.8 });
-    memory.circle(0, 0, isRare ? 6 : 4);
+    memory.circle(0, 0, isRare ? 6 : 4).fill({ color: isRare ? 0xffcc00 : 0x00ccff, alpha: 0.8 });
 
     const angle = Math.random() * Math.PI * 2;
     const distance = 200 + Math.random() * 300;
