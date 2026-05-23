@@ -5,19 +5,25 @@ class SoundController {
   private weatherLayers: Record<string, Howl> = {};
 
   constructor() {
-    // Structure for production audio
   }
 
   public playBase() {
-    this.ambient?.play();
+    if (!this.ambient) {
+        this.ambient = new Howl({
+            src: ['https://actions.google.com/sounds/v1/ambiences/night_ambience.ogg'],
+            loop: true,
+            volume: 0.3
+        });
+    }
+    this.ambient.play();
   }
 
   public updateWeatherAudio(weather: string) {
     Object.entries(this.weatherLayers).forEach(([type, howl]) => {
       if (type === weather) {
-        howl.fade(howl.volume(), 0.5, 2000);
+        howl.fade(howl.volume(), 0.4, 3000);
       } else {
-        howl.fade(howl.volume(), 0, 2000);
+        howl.fade(howl.volume(), 0, 3000);
       }
     });
   }

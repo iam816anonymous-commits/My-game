@@ -14,7 +14,7 @@ const GameView: React.FC = () => {
       const app = new PIXI.Application();
       await app.init({
         resizeTo: window,
-        backgroundColor: 0x050505,
+        backgroundColor: 0x070B18,
         antialias: true,
         resolution: Math.min(window.devicePixelRatio || 1, 2),
         autoDensity: true,
@@ -22,6 +22,10 @@ const GameView: React.FC = () => {
 
       containerRef.current.appendChild(app.canvas);
       appRef.current = app;
+
+      // Global aesthetic filters
+      // Note: We use built-in AlphaFilter or similar if full filters are heavy
+      // But PIXI 8 handles basic filters well.
 
       const gameLoop = new GameLoop(app);
       gameLoopRef.current = gameLoop;
@@ -55,7 +59,8 @@ const GameView: React.FC = () => {
         width: '100vw',
         height: '100vh',
         overflow: 'hidden',
-        touchAction: 'none'
+        touchAction: 'none',
+        background: '#070B18'
       }}
     />
   );

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 
 const Menu: React.FC = () => {
-  const { isStarted, isGameOver, totalMemories, startGame, resetGame } = useStore();
+  const { isGameOver, totalMemories, startGame, resetGame } = useStore();
 
   return (
     <motion.div
@@ -11,62 +11,61 @@ const Menu: React.FC = () => {
       animate={{ opacity: 1 }}
       style={{
         position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
+        inset: 0,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(5, 5, 5, 0.8)',
-        zIndex: 100,
-        textAlign: 'center'
+        backgroundColor: 'var(--color-space)',
+        zIndex: 2000,
+        textAlign: 'center',
+        padding: '40px'
       }}
     >
-      <motion.h1
-        initial={{ y: -20 }}
-        animate={{ y: 0 }}
-        style={{ fontSize: '3rem', fontWeight: '200', letterSpacing: '8px', marginBottom: '1rem' }}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        style={{ marginBottom: '80px' }}
       >
-        LAST LIGHT
-      </motion.h1>
+        <h1 className="text-premium" style={{ fontSize: '32px', marginBottom: '16px', color: 'var(--color-cyan)' }}>Last Light</h1>
+        <div style={{ height: '1px', width: '60px', background: 'var(--color-violet)', margin: '0 auto 16px' }} />
+        <p style={{ fontSize: '13px', opacity: 0.4, maxWidth: '240px', lineHeight: '1.8', fontWeight: 300 }}>
+          A collective dream between you and a spirit.
+        </p>
+      </motion.div>
 
       {isGameOver && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          style={{ marginBottom: '2rem' }}
+          style={{ marginBottom: '40px' }}
         >
-          <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>The light has faded.</p>
-          <p style={{ fontSize: '1.2rem' }}>{totalMemories} memories collected</p>
+          <p style={{ opacity: 0.5, marginBottom: '8px', fontSize: '14px' }}>The dream has faded.</p>
+          <p className="text-premium" style={{ fontSize: '20px', color: 'var(--color-gold)' }}>{totalMemories} shards preserved</p>
         </motion.div>
       )}
 
-      {!isStarted && !isGameOver && (
-        <p style={{ color: 'rgba(255,255,255,0.6)', maxWidth: '300px', marginBottom: '2rem', lineHeight: '1.6' }}>
-          Welcome back. Your companion has missed you.
-        </p>
-      )}
-
       <motion.button
-        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,1)', color: '#000' }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         onClick={isGameOver ? resetGame : startGame}
+        className="premium-button"
         style={{
-          padding: '12px 40px',
-          backgroundColor: 'rgba(255,255,255,0.1)',
-          border: '1px solid rgba(255,255,255,0.3)',
-          color: '#fff',
-          borderRadius: '30px',
-          cursor: 'pointer',
-          fontSize: '1rem',
-          letterSpacing: '2px',
-          transition: 'all 0.3s ease'
+          padding: '16px 60px',
+          fontSize: '12px',
+          letterSpacing: '4px',
+          textTransform: 'uppercase',
+          fontWeight: 500,
+          background: 'linear-gradient(135deg, rgba(103, 232, 249, 0.1), rgba(139, 92, 246, 0.1))'
         }}
       >
-        {isGameOver ? 'RETURN' : 'BEGIN'}
+        {isGameOver ? 'Awaken' : 'Enter'}
       </motion.button>
+
+      <div style={{ position: 'absolute', bottom: '40px', opacity: 0.2, fontSize: '10px' }} className="text-premium">
+        v2.0.0 — visual rebuild
+      </div>
     </motion.div>
   );
 };

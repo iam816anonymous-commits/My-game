@@ -8,17 +8,15 @@ interface MemoryGraphic extends PIXI.Graphics {
 
 export class EntityManager {
   private app: PIXI.Application;
-  private player: PIXI.Graphics;
+  private spirit: PIXI.Container;
   private memories: PIXI.Container;
   private world: PIXI.Container;
-  private pointer: { x: number; y: number };
-  private memorySpawnTimer: number = 0;
   private memoryPool: MemoryGraphic[] = [];
   private brain: CompanionBrain;
+  private tailParts: PIXI.Graphics[] = [];
 
   constructor(app: PIXI.Application, world?: PIXI.Container) {
     this.app = app;
-    this.pointer = { x: app.screen.width / 2, y: app.screen.height / 2 };
 
     if (world) {
         this.world = world;
@@ -27,72 +25,100 @@ export class EntityManager {
         this.app.stage.addChild(this.world);
     }
 
-    // Player/Companion (Glowing Spirit Fox)
-    this.player = new PIXI.Graphics();
-    this.drawPlayer();
-    this.app.stage.addChild(this.player);
+    // New Stylized Spirit Companion
+    this.spirit = new PIXI.Container();
+    this.drawSpirit();
+    this.app.stage.addChild(this.spirit);
 
-    this.brain = new CompanionBrain(this.player);
+    this.brain = new CompanionBrain(this.spirit);
 
-    // Memories Container
     this.memories = new PIXI.Container();
     this.world.addChild(this.memories);
 
-    // Event listeners
     this.app.stage.eventMode = 'static';
     this.app.stage.hitArea = this.app.screen;
-    this.app.stage.on('pointermove', this.onPointerMove);
     this.app.stage.on('pointerdown', this.onPointerDown);
   }
 
-  private onPointerMove = (e: PIXI.FederatedPointerEvent) => {
-    this.pointer.x = e.global.x;
-    this.pointer.y = e.global.y;
-  };
-
-  private onPointerDown = () => {
+  private onPointerDown = (e: PIXI.FederatedPointerEvent) => {
     const { interact } = useStore.getState();
     interact();
+    this.createBurst(e.global.x, e.global.y);
   }
 
-  private drawPlayer() {
-    this.player.clear();
-    // Fox-like shape simplified
-    this.player.circle(0, 0, 15).fill({ color: 0xffffff, alpha: 0.9 });
-    this.player.circle(0, 0, 30).fill({ color: 0xffffff, alpha: 0.1 });
-    // Ears
-    this.player.poly([-10, -10, -5, -25, 0, -10]).fill({ color: 0xffffff, alpha: 0.9 });
-    this.player.poly([10, -10, 5, -25, 0, -10]).fill({ color: 0xffffff, alpha: 0.9 });
+  private drawSpirit() {
+    // Body - Rounded triangular silhouette
+    const body = new PIXI.Graphics();
+    body.poly([-20, 20, 20, 20, 0, -25])
+        .fill({ color: 0xffffff, alpha: 0.95 });
+
+    // Core glow
+    const glow = new PIXI.Graphics();
+    glow.circle(0, 0, 40).fill({ color: 0x67E8F9, alpha: 0.15 });
+
+    // Floating ears
+    const leftEar = new PIXI.Graphics();
+    leftEar.poly([-5, 0, 5, 0, 0, -15]).fill({ color: 0xffffff, alpha: 0.8 });
+    leftEar.position.set(-15, -20);
+    leftEar.rotation = -0.3;
+
+    const rightEar = new PIXI.Graphics();
+    rightEar.poly([-5, 0, 5, 0, 0, -15]).fill({ color: 0xffffff, alpha: 0.8 });
+    rightEar.position.set(15, -20);
+    rightEar.rotation = 0.3;
+
+    // Eyes (aesthetic slits)
+    const eyes = new PIXI.Graphics();
+    eyes.rect(-8, -5, 4, 1.5).fill(0x111827);
+    eyes.rect(4, -5, 4, 1.5).fill(0x111827);
+
+    // Flowing Tails (Multiple)
+    for (let i = 0; i < 3; i++) {
+        const tail = new PIXI.Graphics();
+        tail.poly([0, 0, 10, 5, 20, 0, 10, -5]).fill({ color: 0xffffff, alpha: 0.4 - (i * 0.1) });
+        tail.position.set(0, 15);
+        this.tailParts.push(tail);
+        this.spirit.addChild(tail);
+    }
+
+    this.spirit.addChild(glow, body, leftEar, rightEar, eyes);
   }
 
   public update(delta: number) {
-    // Companion AI updates
     this.brain.update(delta);
 
-    // World drift based on companion position
-    this.world.x -= (this.player.x - this.app.screen.width / 2) * 0.01;
-    this.world.y -= (this.player.y - this.app.screen.height / 2) * 0.01;
+    // Animate Tails
+    this.tailParts.forEach((tail, i) => {
+        const time = Date.now() * 0.002;
+        tail.rotation = Math.sin(time + i * 0.5) * 0.3;
+        tail.scale.set(1 + Math.cos(time + i) * 0.1);
+    });
 
-    // Spawn memories
-    this.memorySpawnTimer += delta;
-    if (this.memorySpawnTimer > 120) {
-      this.spawnMemory();
-      this.memorySpawnTimer = 0;
-    }
+    // Camera/World Parallax Easing
+    const targetWorldX = -(this.spirit.x - this.app.screen.width / 2) * 0.15;
+    const targetWorldY = -(this.spirit.y - this.app.screen.height / 2) * 0.15;
+    this.world.x += (targetWorldX - this.world.x) * 0.05 * delta;
+    this.world.y += (targetWorldY - this.world.y) * 0.05 * delta;
 
-    // Update memories and check collisions
+    this.updateMemories(delta);
+  }
+
+  private updateMemories(delta: number) {
+    // Spawning logic
+    if (Math.random() > 0.99) this.spawnMemory();
+
     const children = [...this.memories.children] as MemoryGraphic[];
     children.forEach((memory) => {
-      memory.y += Math.sin(Date.now() * 0.001 + memory.x) * 0.2;
+      // organic shard movement
+      memory.rotation += 0.02 * delta;
+      memory.y += Math.sin(Date.now() * 0.001 + memory.x) * 0.1;
 
-      const dxColl = this.player.x - (memory.x + this.world.x);
-      const dyColl = this.player.y - (memory.y + this.world.y);
-      const distance = Math.sqrt(dxColl * dxColl + dyColl * dyColl);
+      const dx = this.spirit.x - (memory.x + this.world.x);
+      const dy = this.spirit.y - (memory.y + this.world.y);
+      const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance < 50) {
+      if (dist < 60) {
         this.collectMemory(memory);
-      } else if (memory.alpha < 0.1) {
-        this.releaseMemory(memory);
       }
     });
   }
@@ -100,49 +126,61 @@ export class EntityManager {
   private spawnMemory() {
     const isRare = Math.random() > 0.98;
     let memory = this.memoryPool.pop();
-
-    if (!memory) {
-      memory = new PIXI.Graphics() as MemoryGraphic;
-    }
+    if (!memory) memory = new PIXI.Graphics() as MemoryGraphic;
 
     memory.clear();
     memory.isRare = isRare;
-    memory.circle(0, 0, isRare ? 8 : 5).fill({ color: isRare ? 0xffcc00 : 0x00ccff, alpha: 0.7 });
+
+    // Shard/ribbon shape
+    const color = isRare ? 0xFDE68A : 0x67E8F9;
+    memory.poly([0, -8, 5, 0, 0, 8, -5, 0]).fill({ color, alpha: 0.7 });
 
     const angle = Math.random() * Math.PI * 2;
-    const distance = 300 + Math.random() * 400;
-
-    memory.x = (this.player.x - this.world.x) + Math.cos(angle) * distance;
-    memory.y = (this.player.y - this.world.y) + Math.sin(angle) * distance;
-    memory.alpha = 1;
+    const dist = 400 + Math.random() * 400;
+    memory.x = (this.spirit.x - this.world.x) + Math.cos(angle) * dist;
+    memory.y = (this.spirit.y - this.world.y) + Math.sin(angle) * dist;
 
     this.memories.addChild(memory);
   }
 
-  private releaseMemory(memory: MemoryGraphic) {
+  private collectMemory(memory: MemoryGraphic) {
+    const { addMemory } = useStore.getState();
+    addMemory(memory.isRare ? 10 : 1);
+    this.createBurst(memory.x + this.world.x, memory.y + this.world.y, memory.isRare ? 0xFDE68A : 0x67E8F9);
     this.memories.removeChild(memory);
-    if (this.memoryPool.length < 50) {
-      this.memoryPool.push(memory);
-    } else {
-      memory.destroy();
-    }
+    this.memoryPool.push(memory);
   }
 
-  private collectMemory(memory: MemoryGraphic) {
-    const { addMemory, addJournalEntry } = useStore.getState();
-    addMemory(memory.isRare ? 10 : 1);
-    if (memory.isRare) {
-        addJournalEntry("The companion found a rare golden memory.");
+  private createBurst(x: number, y: number, color: number = 0xffffff) {
+    for (let i = 0; i < 8; i++) {
+        const p = new PIXI.Graphics();
+        p.circle(0, 0, 2).fill({ color, alpha: 0.8 });
+        p.position.set(x, y);
+        this.app.stage.addChild(p);
+
+        const angle = Math.random() * Math.PI * 2;
+        const spd = 2 + Math.random() * 4;
+        const vx = Math.cos(angle) * spd;
+        const vy = Math.sin(angle) * spd;
+
+        const tick = () => {
+            p.x += vx;
+            p.y += vy;
+            p.alpha -= 0.02;
+            if (p.alpha <= 0) {
+                this.app.stage.removeChild(p);
+                p.destroy();
+                this.app.ticker.remove(tick);
+            }
+        };
+        this.app.ticker.add(tick);
     }
-    this.releaseMemory(memory);
   }
 
   public destroy() {
-    this.app.stage.off('pointermove', this.onPointerMove);
     this.app.stage.off('pointerdown', this.onPointerDown);
-    this.player.destroy({ children: true });
+    this.spirit.destroy({ children: true });
     this.memories.destroy({ children: true });
     this.memoryPool.forEach(m => m.destroy());
-    this.memoryPool = [];
   }
 }

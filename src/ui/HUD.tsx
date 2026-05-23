@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
-import { Book, Camera, X } from 'lucide-react';
+import { BookText, Camera, X } from 'lucide-react';
 import { ScreenshotExporter } from '../systems/ScreenshotExporter';
 
 const HUD: React.FC = () => {
@@ -20,68 +20,68 @@ const HUD: React.FC = () => {
 
   return (
     <>
+      {/* Top Glass Card */}
       <div style={{
         position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        padding: '20px',
+        top: '24px',
+        left: '20px',
+        right: '20px',
         display: 'flex',
         justifyContent: 'space-between',
-        pointerEvents: 'none',
-        zIndex: 10
-      }}>
-        <div style={{ pointerEvents: 'auto', display: 'flex', gap: '15px' }}>
-          <button
-            onClick={() => setShowJournal(true)}
-            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', opacity: 0.6 }}
-          >
-            <Book size={24} />
+        alignItems: 'center',
+        padding: '16px 24px',
+        zIndex: 100,
+        pointerEvents: 'none'
+      }} className="glass-panel">
+        <div style={{ pointerEvents: 'auto', display: 'flex', gap: '20px' }}>
+          <button onClick={() => setShowJournal(true)} className="premium-button" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <BookText size={20} />
           </button>
-          <button
-            onClick={handleScreenshot}
-            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', opacity: 0.6 }}
-          >
-            <Camera size={24} />
+          <button onClick={handleScreenshot} className="premium-button" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Camera size={20} />
           </button>
         </div>
-        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-          {emotion}
+
+        <div style={{ textAlign: 'right' }}>
+          <div className="text-premium" style={{ fontSize: '10px', opacity: 0.5, marginBottom: '2px' }}>Spirit State</div>
+          <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-cyan)', textTransform: 'capitalize' }}>{emotion}</div>
         </div>
       </div>
 
+      {/* Floating Energy Capsule */}
       <div style={{
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: '100%',
-        padding: '20px',
-        pointerEvents: 'none',
+        bottom: '40px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 100,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '10px',
-        zIndex: 10
+        gap: '16px',
+        pointerEvents: 'none'
       }}>
-        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-          Day {age} — {totalMemories} Memories
+        <div className="text-premium" style={{ fontSize: '11px', opacity: 0.7 }}>
+          Day {age} &nbsp;•&nbsp; {totalMemories} Shards
         </div>
 
         <div style={{
-          width: '300px',
-          height: '4px',
-          backgroundColor: 'rgba(255,255,255,0.1)',
-          borderRadius: '2px',
-          overflow: 'hidden'
+          width: '240px',
+          height: '12px',
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '20px',
+          padding: '3px',
+          border: '1px solid rgba(255,255,255,0.1)'
         }}>
           <motion.div
             initial={{ width: '100%' }}
             animate={{ width: `${energy}%` }}
-            transition={{ type: 'spring', stiffness: 50, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 40, damping: 15 }}
             style={{
               height: '100%',
-              backgroundColor: energy < 20 ? '#ff4444' : '#ffffff',
-              boxShadow: '0 0 10px rgba(255,255,255,0.5)'
+              borderRadius: '20px',
+              background: 'linear-gradient(90deg, var(--color-cyan), var(--color-violet))',
+              boxShadow: '0 0 15px var(--color-cyan)'
             }}
           />
         </div>
@@ -90,38 +90,35 @@ const HUD: React.FC = () => {
       <AnimatePresence>
         {showJournal && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             style={{
               position: 'absolute',
-              top: '10%',
-              left: '10%',
-              width: '80%',
-              height: '80%',
-              backgroundColor: 'rgba(10, 10, 10, 0.95)',
+              inset: '40px',
               zIndex: 1000,
-              borderRadius: '20px',
               padding: '40px',
               color: 'white',
               display: 'flex',
               flexDirection: 'column'
             }}
+            className="glass-panel"
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-              <h2 style={{ fontWeight: 200, letterSpacing: '4px' }}>JOURNAL</h2>
-              <button onClick={() => setShowJournal(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
-                <X size={32} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', alignItems: 'center' }}>
+              <h2 className="text-premium" style={{ fontSize: '18px' }}>Chronicle</h2>
+              <button onClick={() => setShowJournal(false)} className="premium-button" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={20} />
               </button>
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {journal.map((entry) => (
-                <div key={entry.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '15px' }}>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: '5px' }}>
-                    DAY {entry.day} — {new Date(entry.timestamp).toLocaleDateString()}
+                <div key={entry.id} style={{ padding: '0 0 24px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div className="text-premium" style={{ fontSize: '9px', opacity: 0.4, marginBottom: '8px' }}>
+                    Sol {entry.day} — {new Date(entry.timestamp).toLocaleDateString()}
                   </div>
-                  <div style={{ fontSize: '16px', lineHeight: '1.6', fontWeight: 300 }}>
+                  <div style={{ fontSize: '15px', lineHeight: '1.7', fontWeight: 300, opacity: 0.9 }}>
                     {entry.text}
                   </div>
                 </div>

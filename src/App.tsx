@@ -6,6 +6,7 @@ import { useStore } from './store/useStore';
 import { loadGame, saveGame } from './systems/PersistenceManager';
 import { OfflineSimulationManager } from './systems/OfflineSimulationManager';
 import type { GameState } from './types/game';
+import { soundController } from './audio/SoundController';
 
 function App() {
   const isStarted = useStore(state => state.isStarted);
@@ -26,6 +27,16 @@ function App() {
     init();
   }, []);
 
+  useEffect(() => {
+    if (isStarted) {
+      soundController.playBase();
+    }
+  }, [isStarted]);
+
+  useEffect(() => {
+    soundController.updateWeatherAudio(world.weather);
+  }, [world.weather]);
+
   const savePayload = useMemo(() => ({
     totalMemories,
     world,
@@ -41,7 +52,7 @@ function App() {
   }, [savePayload, isStarted]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#050505', color: '#fff', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#070B18', color: '#fff', overflow: 'hidden', position: 'relative' }}>
       <GameView />
       <HUD />
       {(!isStarted || isGameOver) && <Menu />}
