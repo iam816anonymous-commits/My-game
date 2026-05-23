@@ -7,6 +7,7 @@ import { loadGame, saveGame } from './systems/PersistenceManager';
 import { OfflineSimulationManager } from './systems/OfflineSimulationManager';
 import type { GameState } from './types/game';
 import { soundController } from './audio/SoundController';
+import { ThreeCanvas } from './rendering/ThreeCanvas';
 
 function App() {
   const isStarted = useStore(state => state.isStarted);
@@ -54,6 +55,7 @@ function App() {
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#070B18', color: '#fff', overflow: 'hidden', position: 'relative' }}>
       <GameView />
+      {isStarted && <ThreeCanvas />}
       <HUD />
       {(!isStarted || isGameOver) && <Menu />}
     </div>
