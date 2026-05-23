@@ -10,6 +10,7 @@ export class Environment {
   private weatherContainer: PIXI.Container;
   private starfield: PIXI.Container;
   private islands: PIXI.Container;
+  private weatherPool: PIXI.Graphics[] = [];
 
   constructor(app: PIXI.Application, world?: PIXI.Container) {
     this.app = app;
@@ -103,21 +104,29 @@ export class Environment {
   private updateWeatherEffects(weather: string, delta: number) {
     if (weather === 'rain') {
         if (Math.random() > 0.5 && this.weatherContainer.children.length < 150) {
-            const drop = new PIXI.Graphics();
-            drop.rect(0, 0, 1, 25).fill({ color: 0x67E8F9, alpha: 0.25 });
+            let drop = this.weatherPool.pop();
+            if (!drop) {
+              drop = new PIXI.Graphics();
+              drop.rect(0, 0, 1, 25).fill({ color: 0x67E8F9, alpha: 0.25 });
+            }
+            drop.alpha = 1;
             drop.x = Math.random() * this.app.screen.width;
             drop.y = -30;
             this.weatherContainer.addChild(drop);
         }
     }
 
-    this.weatherContainer.children.forEach((obj: any) => {
-        if (weather === 'rain') obj.y += 20 * delta;
-        else obj.alpha -= 0.05;
+    const children = [...this.weatherContainer.children] as PIXI.Graphics[];
+    children.forEach((obj) => {
+        if (weather === 'rain') {
+          obj.y += 20 * delta;
+        } else {
+          obj.alpha -= 0.05 * delta;
+        }
 
         if (obj.y > this.app.screen.height + 30 || obj.alpha <= 0) {
             this.weatherContainer.removeChild(obj);
-            obj.destroy();
+            this.weatherPool.push(obj);
         }
     });
   }
@@ -174,11 +183,29 @@ export class Environment {
         m.poly([-1000, 500, 0, -200, 1000, 500]).fill({ color: 0x111827, alpha: 0.5 });
         m.x = 0; m.y = 100;
         this.layers['mountains'].addChild(m);
+    } else if (name === 'constellations') {
+        for (let i = 0; i < 5; i++) {
+          const c = new PIXI.Graphics();
+          const points = [];
+          for (let p = 0; p < 5; p++) {
+            points.push((Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200);
+          }
+          c.poly(points).stroke({ color: 0x67E8F9, width: 1, alpha: 0.3 });
+          points.forEach((_, pi) => {
+            if (pi % 2 === 0) {
+              c.circle(points[pi], points[pi+1], 2).fill({ color: 0xffffff });
+            }
+          });
+          c.x = ox + Math.random() * w;
+          c.y = oy + Math.random() * h;
+          this.layers['constellations'].addChild(c);
+        }
     }
   }
 
   public destroy() {
     this.container.destroy({ children: true });
     this.weatherContainer.destroy({ children: true });
+    this.weatherPool.forEach(p => p.destroy());
   }
 }

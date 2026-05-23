@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { useStore } from '../store/useStore';
+import { useTransientStore } from '../store/useTransientStore';
 import { CompanionBrain } from './CompanionBrain';
 
 interface MemoryGraphic extends PIXI.Graphics {
@@ -57,13 +58,8 @@ export class EntityManager {
 
     this.updateMemories(delta);
 
-    // Sync PixiJS anchor position back to Zustand for the 3D layer to read
-    useStore.setState((state) => ({
-      companion: {
-        ...state.companion,
-        position: { x: this.spirit.x, y: this.spirit.y }
-      }
-    }));
+    // Sync PixiJS anchor position to transient store
+    useTransientStore.getState().setCompanionPosition(this.spirit.x, this.spirit.y);
   }
 
   private updateMemories(delta: number) {
@@ -110,11 +106,16 @@ export class EntityManager {
     this.memoryPool.push(memory);
   }
 
+  private particlePool: PIXI.Graphics[] = [];
+
   private createBurst(x: number, y: number, color: number = 0xffffff) {
     for (let i = 0; i < 8; i++) {
-        const p = new PIXI.Graphics();
-        p.circle(0, 0, 2).fill({ color, alpha: 0.8 });
+        let p = this.particlePool.pop();
+        if (!p) p = new PIXI.Graphics();
+
+        p.clear().circle(0, 0, 2).fill({ color, alpha: 0.8 });
         p.position.set(x, y);
+        p.alpha = 1;
         this.app.stage.addChild(p);
 
         const angle = Math.random() * Math.PI * 2;
@@ -122,13 +123,13 @@ export class EntityManager {
         const vx = Math.cos(angle) * spd;
         const vy = Math.sin(angle) * spd;
 
-        const tick = () => {
-            p.x += vx;
-            p.y += vy;
-            p.alpha -= 0.02;
+        const tick = (ticker: PIXI.Ticker) => {
+            p.x += vx * ticker.deltaTime;
+            p.y += vy * ticker.deltaTime;
+            p.alpha -= 0.02 * ticker.deltaTime;
             if (p.alpha <= 0) {
                 this.app.stage.removeChild(p);
-                p.destroy();
+                this.particlePool.push(p);
                 this.app.ticker.remove(tick);
             }
         };
@@ -141,5 +142,6 @@ export class EntityManager {
     this.spirit.destroy({ children: true });
     this.memories.destroy({ children: true });
     this.memoryPool.forEach(m => m.destroy());
+    this.particlePool.forEach(p => p.destroy());
   }
 }

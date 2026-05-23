@@ -14,8 +14,7 @@ const HUD: React.FC = () => {
   const [showJournal, setShowJournal] = useState(false);
 
   const handleScreenshot = () => {
-    const canvas = document.querySelector('canvas');
-    if (canvas) ScreenshotExporter.exportPNG(canvas);
+    ScreenshotExporter.exportPNG();
   };
 
   return (

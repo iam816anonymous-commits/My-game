@@ -12,10 +12,24 @@ class SoundController {
         this.ambient = new Howl({
             src: ['https://actions.google.com/sounds/v1/ambiences/night_ambience.ogg'],
             loop: true,
-            volume: 0.3
+            volume: 0.3,
+            html5: true
+        });
+
+        this.weatherLayers.rain = new Howl({
+          src: ['https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg'],
+          loop: true,
+          volume: 0
+        });
+
+        this.weatherLayers.snow = new Howl({
+          src: ['https://actions.google.com/sounds/v1/weather/wind_howling.ogg'],
+          loop: true,
+          volume: 0
         });
     }
     this.ambient.play();
+    Object.values(this.weatherLayers).forEach(h => h.play());
   }
 
   public updateWeatherAudio(weather: string) {

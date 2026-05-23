@@ -22,7 +22,6 @@ const INITIAL_STATE: GameState = {
       shy: 10,
     },
     lastAction: 'Waiting for you...',
-    position: { x: 400, y: 300 },
     skin: 'default',
     accessories: [],
   },

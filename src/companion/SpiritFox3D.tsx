@@ -1,30 +1,49 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Float, MeshDistortMaterial, Trail, Sphere, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '../store/useStore';
+import { useTransientStore } from '../store/useTransientStore';
 
 export const SpiritFox3D = () => {
   const meshRef = useRef<THREE.Group>(null);
-  const companion = useStore(state => state.companion);
+
+  // Use transient state for position to avoid React re-renders every frame
+  const posRef = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+  const emotionRef = useRef<string>('waiting');
+
+  useEffect(() => {
+    // Subscribe to specific store fields without triggering re-render
+    const unsubEmotion = useStore.subscribe((state) => {
+        emotionRef.current = state.companion.emotion;
+    });
+
+    const unsubPos = useTransientStore.subscribe((state) => {
+        posRef.current = state.companionPosition;
+    });
+
+    return () => {
+      unsubEmotion();
+      unsubPos();
+    };
+  }, []);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
 
     // Improved screen-to-3D mapping
-    // Assuming 12.42 vertical units at z=0 for distance 15, fov 45
     const vUnits = 12.42;
     const aspect = window.innerWidth / window.innerHeight;
     const hUnits = vUnits * aspect;
 
-    const targetX = ((companion.position.x / window.innerWidth) - 0.5) * hUnits;
-    const targetY = -((companion.position.y / window.innerHeight) - 0.5) * vUnits;
+    const targetX = ((posRef.current.x / window.innerWidth) - 0.5) * hUnits;
+    const targetY = -((posRef.current.y / window.innerHeight) - 0.5) * vUnits;
 
     meshRef.current.position.x += (targetX - meshRef.current.position.x) * 0.08;
     meshRef.current.position.y += (targetY - meshRef.current.position.y) * 0.08;
 
     // Organic micro-rotations
-    const tilt = companion.emotion === 'excited' ? 1.5 : 1;
+    const tilt = emotionRef.current === 'excited' ? 1.5 : 1;
     meshRef.current.rotation.y += delta * 0.6 * tilt;
     meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.5) * 0.1;
   });
@@ -35,7 +54,6 @@ export const SpiritFox3D = () => {
   return (
     <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
       <group ref={meshRef}>
-        {/* Core Spirit Body */}
         <mesh scale={[0.8, 1, 0.8]}>
           <icosahedronGeometry args={[1, 10]} />
           <MeshDistortMaterial
@@ -50,7 +68,6 @@ export const SpiritFox3D = () => {
           />
         </mesh>
 
-        {/* Spirit Ears */}
         <group position={[0, 0.6, 0]}>
           <mesh position={[-0.4, 0.3, 0]} rotation={[0, 0, 0.4]}>
             <coneGeometry args={[0.15, 0.8, 4]} />
@@ -62,7 +79,6 @@ export const SpiritFox3D = () => {
           </mesh>
         </group>
 
-        {/* Multi-trail tails */}
         <group position={[0, -0.5, 0]}>
             {[...Array(3)].map((_, i) => (
                 <Trail
@@ -77,7 +93,6 @@ export const SpiritFox3D = () => {
             ))}
         </group>
 
-        {/* Ambient Spirit Particles */}
         <Sparkles
             count={20}
             scale={3}

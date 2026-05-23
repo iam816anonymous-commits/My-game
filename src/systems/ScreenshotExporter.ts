@@ -1,8 +1,11 @@
 import { useStore } from '../store/useStore';
 
 export class ScreenshotExporter {
-  public static async exportPNG(canvas: HTMLCanvasElement) {
+  public static async exportPNG() {
     const { world, totalMemories } = useStore.getState();
+
+    const canvases = document.querySelectorAll('canvas');
+    if (canvases.length < 1) return;
 
     // Create a temporary canvas for the share card (1080x1920)
     const card = document.createElement('canvas');
@@ -15,8 +18,10 @@ export class ScreenshotExporter {
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, 1080, 1920);
 
-    // Draw game screenshot in the middle
-    ctx.drawImage(canvas, 40, 460, 1000, 1000);
+    // Draw game screenshots in the middle (composite all canvases)
+    canvases.forEach(canvas => {
+        ctx.drawImage(canvas, 40, 460, 1000, 1000);
+    });
 
     // Text Overlay
     ctx.fillStyle = '#ffffff';

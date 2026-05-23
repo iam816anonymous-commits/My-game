@@ -22,7 +22,6 @@ export interface CompanionState {
   emotion: Emotion;
   traits: Record<PersonalityTrait, number>;
   lastAction: string;
-  position: { x: number; y: number };
   skin: string;
   accessories: string[];
 }
