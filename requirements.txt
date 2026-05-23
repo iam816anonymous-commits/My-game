@@ -1,0 +1,22 @@
+# Last Light: Companion - System Requirements
+
+## Software Requirements
+- Node.js >= 18.0.0
+- npm >= 9.0.0
+- A modern web browser with WebGL support (Chrome, Firefox, Safari, Edge)
+
+## Project Dependencies (managed via package.json)
+- React 18.x
+- Vite 5.x
+- TypeScript 5.x
+- PixiJS 8.x
+- Zustand 5.x
+- Framer Motion 11.x
+- Howler.js 2.x
+- idb-keyval 6.x
+
+## Development/Testing Tools
+- Vitest (Unit Testing)
+- ESLint (Linting)
+- Playwright (E2E/Frontend Verification)
+- Python 3.x (for auxiliary verification scripts)

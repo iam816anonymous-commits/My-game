@@ -1,32 +1,28 @@
-# Architecture - Last Light
+# Architecture - Last Light: Companion
 
-## 1. Feature-First Structure
-The project is organized into features to ensure isolation and scalability.
+## 1. Domain-Driven Structure
+The project is organized into domains to ensure clear separation between the companion's AI, the world's evolution, and the supporting systems.
 
-- `src/features/core`: PixiJS Application initialization and main game loop.
-- `src/features/world`: Game entities (Player, Memories, Background) and procedural logic.
-- `src/features/state`: Global game state management using Zustand.
-- `src/features/ui`: Minimalist HUD and overlays.
-- `src/features/persistence`: IndexedDB integration for save data.
-- `src/features/audio`: Ambient sound layers and management.
-- `src/features/assets`: Asset loading and management.
+- `src/companion`: Companion AI brain, movement, and interaction logic.
+- `src/world`: Permanent evolution levels and environmental layer management.
+- `src/systems`: Logic engines for Offline Simulation, Weather, Persistence, and Screenshot Export.
+- `src/store`: Centralized game state using Zustand with atomic selectors.
+- `src/ui`: React/Framer-Motion components for the HUD, Journal, and Overlays.
+- `src/game`: Main GameLoop coordinating the engine ticker.
+- `src/rendering`: PixiJS 8 Application and canvas mounting.
 
-## 2. Rendering Pipeline
-- **PixiJS:** Used for the main game world. React is used for the UI layer (HUD) on top of the canvas.
-- **Layers:**
-  - Background (Stars/Clouds)
-  - Environment (Grass/Trees/Animals)
-  - Entity (Player/Memories)
-  - Overlay (Particles/Effects)
+## 2. Simulation Pipeline
+- **Offline Simulation:** Upon launch, the system calculates time elapsed since `lastSeen`. It simulates companion activities and environmental changes, populating the `Journal` with narrative results.
+- **Game Loop:** A fixed-timestep ticker (capped delta) ensures energy and evolution logic remains stable across devices.
 
-## 3. State Management
-- **Zustand:** Stores energy, score, level, unlocked achievements, and world state.
-- **Persistence:** State is synced to IndexedDB on key changes.
+## 3. Persistent State
+- **IndexedDB:** State is versioned and synced via `idb-keyval`.
+- **Validation:** The loader includes corruption detection and default state fallback.
 
-## 4. Procedural Generation
-- Items are spawned in a ring around the player to ensure the world feels endless as they move.
-- Object density and variety increase with the current level.
+## 4. Performance & Rendering
+- **Object Pooling:** Used for weather particles and memory entities to eliminate per-frame allocations.
+- **Capped DPR:** Resolution is capped at 2x to ensure consistent 60fps on high-density mobile screens.
+- **PixiJS 8:** Utilizes the latest rendering engine for high-performance sprite and poly management.
 
-## 5. UI Layer
-- React handles the energy bar, settings, and achievement notifications.
-- Framer Motion for smooth UI transitions.
+## 5. Shareability
+- **Screenshot Exporter:** Renders a 1080x1920 social card by compositing the game canvas with high-resolution text and statistics overlays.
