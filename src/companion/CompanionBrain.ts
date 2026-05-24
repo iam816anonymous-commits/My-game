@@ -6,9 +6,11 @@ export class CompanionBrain {
   private targetPosition: PIXI.Point;
   private moveTimer: number = 0;
   private wanderRadius: number = 300;
+  private app: PIXI.Application | null = null;
 
-  constructor(sprite: PIXI.Container) {
+  constructor(sprite: PIXI.Container, app?: PIXI.Application) {
     this.sprite = sprite;
+    this.app = app || null;
     this.targetPosition = new PIXI.Point(sprite.x, sprite.y);
   }
 
@@ -40,9 +42,12 @@ export class CompanionBrain {
   }
 
   private setNewTarget() {
+    const centerX = this.app ? this.app.screen.width / 2 : 400;
+    const centerY = this.app ? this.app.screen.height / 2 : 300;
+
     this.targetPosition.set(
-      400 + (Math.random() - 0.5) * this.wanderRadius * 2,
-      300 + (Math.random() - 0.5) * this.wanderRadius * 2
+      centerX + (Math.random() - 0.5) * this.wanderRadius * 2,
+      centerY + (Math.random() - 0.5) * this.wanderRadius * 2
     );
 
     if (Math.random() > 0.9) {

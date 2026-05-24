@@ -31,7 +31,7 @@ export class EntityManager {
     this.spirit.y = app.screen.height / 2;
     this.app.stage.addChild(this.spirit);
 
-    this.brain = new CompanionBrain(this.spirit);
+    this.brain = new CompanionBrain(this.spirit, this.app);
 
     this.memories = new PIXI.Container();
     this.world.addChild(this.memories);

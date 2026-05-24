@@ -114,12 +114,41 @@ export class Environment {
             drop.y = -30;
             this.weatherContainer.addChild(drop);
         }
+    } else if (weather === 'snow') {
+        if (Math.random() > 0.7 && this.weatherContainer.children.length < 100) {
+            let flake = this.weatherPool.pop();
+            if (!flake) {
+              flake = new PIXI.Graphics();
+              flake.circle(0, 0, 3).fill({ color: 0xffffff, alpha: 0.6 });
+            }
+            flake.alpha = 1;
+            flake.x = Math.random() * this.app.screen.width;
+            flake.y = -10;
+            this.weatherContainer.addChild(flake);
+        }
+    } else if (weather === 'clouds') {
+      if (Math.random() > 0.98 && this.weatherContainer.children.length < 10) {
+          let cloud = this.weatherPool.pop();
+          if (!cloud) {
+            cloud = new PIXI.Graphics();
+            cloud.ellipse(0, 0, 100, 40).fill({ color: 0x111827, alpha: 0.3 });
+          }
+          cloud.alpha = 1;
+          cloud.x = -150;
+          cloud.y = 50 + Math.random() * 200;
+          this.weatherContainer.addChild(cloud);
+      }
     }
 
     const children = [...this.weatherContainer.children] as PIXI.Graphics[];
     children.forEach((obj) => {
         if (weather === 'rain') {
           obj.y += 20 * delta;
+        } else if (weather === 'snow') {
+          obj.y += 2 * delta;
+          obj.x += Math.sin(Date.now() * 0.001 + obj.y) * 1;
+        } else if (weather === 'clouds') {
+          obj.x += 1 * delta;
         } else {
           obj.alpha -= 0.05 * delta;
         }
@@ -183,6 +212,17 @@ export class Environment {
         m.poly([-1000, 500, 0, -200, 1000, 500]).fill({ color: 0x111827, alpha: 0.5 });
         m.x = 0; m.y = 100;
         this.layers['mountains'].addChild(m);
+
+        // Add Animal Spirits
+        for (let i = 0; i < 8; i++) {
+          const animal = new PIXI.Graphics();
+          animal.circle(0, 0, 10).fill({ color: 0xF9A8D4, alpha: 0.4 });
+          animal.circle(5, -5, 4).fill({ color: 0xF9A8D4, alpha: 0.6 }); // ear
+          animal.circle(-5, -5, 4).fill({ color: 0xF9A8D4, alpha: 0.6 }); // ear
+          animal.x = ox + Math.random() * w;
+          animal.y = oy + Math.random() * h;
+          this.layers['mountains'].addChild(animal);
+        }
     } else if (name === 'constellations') {
         for (let i = 0; i < 5; i++) {
           const c = new PIXI.Graphics();

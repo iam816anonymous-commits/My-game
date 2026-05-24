@@ -20,6 +20,15 @@ export class OfflineSimulationManager {
     // Update world state
     returnToWorld(now);
 
+    // Apply Offline Energy Decay (10% per day)
+    const energyLoss = daysAway * 10 + (hoursAway % 24) * 0.4;
+    useStore.setState((state) => ({
+      world: {
+        ...state.world,
+        energy: Math.max(5, state.world.energy - energyLoss) // Keep a minimum of 5% energy
+      }
+    }));
+
     // Simulate memory collection while away
     const memoriesFound = Math.floor(hoursAway * 0.5); // 1 memory every 2 hours
     if (memoriesFound > 0) {

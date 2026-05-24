@@ -86,7 +86,8 @@ export const useStore = create<GameState & GameActions>((set, get) => ({
       lastSeen: now,
       world: {
         ...state.world,
-        age: state.world.age + daysAway
+        age: state.world.age + daysAway,
+        energy: Math.min(100, state.world.energy + (newStreak > 0 ? 20 : 0)) // Reward for returning
       }
     });
   },
