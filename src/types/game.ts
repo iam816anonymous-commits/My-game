@@ -1,7 +1,7 @@
 export type Emotion = 'waiting' | 'happy' | 'sleeping' | 'exploring' | 'lonely' | 'excited';
 export type PersonalityTrait = 'curious' | 'playful' | 'sleepy' | 'adventurous' | 'gentle' | 'shy';
 export type Weather = 'clear' | 'rain' | 'snow' | 'clouds';
-export type Scene = 'main' | 'stardust' | 'echoes' | 'flow' | 'orrery';
+export type Scene = 'main' | 'stardust' | 'echoes' | 'flow' | 'orrery' | 'logic' | 'words';
 
 export interface JournalEntry {
   id: string;

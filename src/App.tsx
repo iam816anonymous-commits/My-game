@@ -13,6 +13,8 @@ import { StardustView } from './minigames/StardustView';
 import { EchoesGame } from './minigames/EchoesGame';
 import { FlowView } from './minigames/FlowView';
 import { OrreryView } from './minigames/OrreryView';
+import { LogicGame } from './minigames/LogicGame';
+import { WordGame } from './minigames/WordGame';
 
 const ThreeCanvas = lazy(() => import('./rendering/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })));
 
@@ -100,6 +102,16 @@ function App() {
         {currentScene === 'orrery' && (
           <div key="orrery" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
             <OrreryView />
+          </div>
+        )}
+        {currentScene === 'logic' && (
+          <div key="logic" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+            <LogicGame />
+          </div>
+        )}
+        {currentScene === 'words' && (
+          <div key="words" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+            <WordGame />
           </div>
         )}
       </AnimatePresence>

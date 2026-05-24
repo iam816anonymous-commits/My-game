@@ -145,9 +145,13 @@ export class EntityManager {
 
   private spawnGate() {
     const gate = new PIXI.Graphics() as any;
-    const types: Scene[] = ['stardust', 'echoes', 'flow', 'orrery'];
+    const types: Scene[] = ['stardust', 'echoes', 'flow', 'orrery', 'logic', 'words'];
     const type = types[Math.floor(Math.random() * types.length)];
-    const color = type === 'stardust' ? 0x67E8F9 : type === 'echoes' ? 0x8B5CF6 : type === 'flow' ? 0xF9A8D4 : 0xFDE68A;
+    const color = type === 'stardust' ? 0x67E8F9 :
+                  type === 'echoes' ? 0x8B5CF6 :
+                  type === 'flow' ? 0xF9A8D4 :
+                  type === 'orrery' ? 0xFDE68A :
+                  type === 'logic' ? 0x67E8F9 : 0x8B5CF6;
 
     gate.poly([0, -30, 25, 15, -25, 15]).stroke({ color, width: 2, alpha: 0.8 });
     gate.sceneType = type;
