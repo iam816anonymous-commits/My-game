@@ -1,4 +1,5 @@
 import { useEffect, useMemo, lazy, Suspense } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import GameView from './rendering/GameView';
 import HUD from './ui/HUD';
 import Menu from './ui/Menu';
@@ -8,6 +9,10 @@ import { OfflineSimulationManager } from './systems/OfflineSimulationManager';
 import type { GameState } from './types/game';
 import { soundController } from './audio/SoundController';
 import throttle from 'lodash/throttle';
+import { StardustView } from './minigames/StardustView';
+import { EchoesGame } from './minigames/EchoesGame';
+import { FlowView } from './minigames/FlowView';
+import { OrreryView } from './minigames/OrreryView';
 
 const ThreeCanvas = lazy(() => import('./rendering/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })));
 
@@ -18,6 +23,7 @@ function App() {
   const world = useStore(state => state.world);
   const achievements = useStore(state => state.achievements);
   const companion = useStore(state => state.companion);
+  const currentScene = useStore(state => state.currentScene);
 
   useEffect(() => {
     const init = async () => {
@@ -63,12 +69,41 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#070B18', color: '#fff', overflow: 'hidden', position: 'relative' }}>
-      <GameView />
-      {isStarted && (
+      {/* Background World Layer (Stays active in back) */}
+      <div style={{ opacity: currentScene === 'main' ? 1 : 0.3, transition: 'opacity 1s ease' }}>
+        <GameView />
+      </div>
+
+      {isStarted && currentScene === 'main' && (
         <Suspense fallback={null}>
           <ThreeCanvas />
         </Suspense>
       )}
+
+      {/* Mini-game Layers */}
+      <AnimatePresence mode="wait">
+        {currentScene === 'stardust' && (
+          <div key="stardust" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+            <StardustView />
+          </div>
+        )}
+        {currentScene === 'echoes' && (
+          <div key="echoes" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+            <EchoesGame />
+          </div>
+        )}
+        {currentScene === 'flow' && (
+          <div key="flow" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+            <FlowView />
+          </div>
+        )}
+        {currentScene === 'orrery' && (
+          <div key="orrery" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+            <OrreryView />
+          </div>
+        )}
+      </AnimatePresence>
+
       <HUD />
       {(!isStarted || isGameOver) && <Menu />}
     </div>

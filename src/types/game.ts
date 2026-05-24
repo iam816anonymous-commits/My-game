@@ -1,6 +1,7 @@
 export type Emotion = 'waiting' | 'happy' | 'sleeping' | 'exploring' | 'lonely' | 'excited';
 export type PersonalityTrait = 'curious' | 'playful' | 'sleepy' | 'adventurous' | 'gentle' | 'shy';
 export type Weather = 'clear' | 'rain' | 'snow' | 'clouds';
+export type Scene = 'main' | 'stardust' | 'echoes' | 'flow' | 'orrery';
 
 export interface JournalEntry {
   id: string;
@@ -52,7 +53,8 @@ export interface GameState {
   // UI/Game State
   isStarted: boolean;
   isPaused: boolean;
-  isGameOver: boolean; // Note: "No death system", but maybe used for resets
+  isGameOver: boolean;
+  currentScene: Scene;
 }
 
 export interface GameActions {
@@ -71,6 +73,7 @@ export interface GameActions {
 
   // Journal
   addJournalEntry: (text: string, type?: JournalEntry['type']) => void;
+  setScene: (scene: Scene) => void;
 
   // Reset
   resetGame: () => void;

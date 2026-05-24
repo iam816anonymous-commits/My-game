@@ -10,6 +10,7 @@ const INITIAL_STATE: GameState = {
   isStarted: false,
   isPaused: false,
   isGameOver: false,
+  currentScene: 'main',
 
   companion: {
     emotion: 'waiting',
@@ -132,6 +133,8 @@ export const useStore = create<GameState & GameActions>((set, get) => ({
       ...state.journal
     ].slice(0, 50) // Keep last 50
   })),
+
+  setScene: (scene) => set({ currentScene: scene }),
 
   resetGame: () => set(INITIAL_STATE),
 }));

@@ -60,9 +60,15 @@ const HUD: React.FC = () => {
         gap: '16px',
         pointerEvents: 'none'
       }}>
-        <div className="text-premium" style={{ fontSize: '11px', opacity: 0.7 }}>
+        <motion.div
+          key={totalMemories}
+          initial={{ y: 5, opacity: 0 }}
+          animate={{ y: 0, opacity: 0.7 }}
+          className="text-premium"
+          style={{ fontSize: '11px' }}
+        >
           Day {age} &nbsp;•&nbsp; {totalMemories} Shards
-        </div>
+        </motion.div>
 
         <div style={{
           width: '240px',

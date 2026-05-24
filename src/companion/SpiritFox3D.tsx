@@ -11,11 +11,13 @@ export const SpiritFox3D = () => {
   // Use transient state for position to avoid React re-renders every frame
   const posRef = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const emotionRef = useRef<string>('waiting');
+  const memoriesRef = useRef<number>(0);
 
   useEffect(() => {
     // Subscribe to specific store fields without triggering re-render
     const unsubEmotion = useStore.subscribe((state) => {
         emotionRef.current = state.companion.emotion;
+        memoriesRef.current = state.totalMemories;
     });
 
     const unsubPos = useTransientStore.subscribe((state) => {
@@ -41,6 +43,10 @@ export const SpiritFox3D = () => {
 
     meshRef.current.position.x += (targetX - meshRef.current.position.x) * 0.08;
     meshRef.current.position.y += (targetY - meshRef.current.position.y) * 0.08;
+
+    // Evolve scale based on memories
+    const growth = 1 + Math.min(memoriesRef.current / 500, 1.5);
+    meshRef.current.scale.lerp(new THREE.Vector3(growth, growth, growth), 0.05);
 
     // Organic micro-rotations
     const tilt = emotionRef.current === 'excited' ? 1.5 : 1;

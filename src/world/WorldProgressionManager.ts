@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { useStore } from '../store/useStore';
+import { useTransientStore } from '../store/useTransientStore';
 import { WeatherManager } from '../systems/WeatherManager';
 
 export class Environment {
@@ -11,6 +12,7 @@ export class Environment {
   private starfield: PIXI.Container;
   private islands: PIXI.Container;
   private weatherPool: PIXI.Graphics[] = [];
+  private lightMask: PIXI.Graphics;
 
   constructor(app: PIXI.Application, world?: PIXI.Container) {
     this.app = app;
@@ -27,6 +29,10 @@ export class Environment {
 
     this.container.addChild(this.starfield, this.islands);
     this.app.stage.addChild(this.weatherContainer);
+
+    this.lightMask = new PIXI.Graphics();
+    this.app.stage.addChild(this.lightMask);
+    this.container.mask = this.lightMask;
 
     this.initWorld();
   }
@@ -75,6 +81,7 @@ export class Environment {
 
   public update(delta: number) {
     const { world } = useStore.getState();
+    const { companionPosition } = useTransientStore.getState();
     const level = this.calculateLevel(world.age);
 
     if (level !== this.currentLevel) {
@@ -84,6 +91,15 @@ export class Environment {
     WeatherManager.update();
     this.updateWeatherEffects(world.weather, delta);
     this.animateEnvironment(delta);
+    this.updateLightMask(companionPosition);
+  }
+
+  private updateLightMask(pos: { x: number, y: number }) {
+    this.lightMask.clear();
+    // Ambient light (base visibility)
+    this.lightMask.rect(0, 0, this.app.screen.width, this.app.screen.height).fill({ color: 0xffffff, alpha: 0.15 });
+    // Companion light
+    this.lightMask.circle(pos.x, pos.y, 400).fill({ color: 0xffffff, alpha: 0.85 });
   }
 
   private animateEnvironment(delta: number) {
