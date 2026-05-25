@@ -133,7 +133,9 @@ function App() {
       </AnimatePresence>
 
       <HUD />
-      {(!isStarted || isGameOver) && <Menu />}
+      <AnimatePresence>
+        {(!isStarted || isGameOver) && <Menu key="menu" />}
+      </AnimatePresence>
     </div>
   );
 }

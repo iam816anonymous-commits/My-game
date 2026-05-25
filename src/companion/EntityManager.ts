@@ -4,6 +4,7 @@ import { useTransientStore } from '../store/useTransientStore';
 import { CompanionBrain } from './CompanionBrain';
 import type { Scene } from '../types/game';
 import { MessageSystem } from '../systems/MessageSystem';
+import { RelicSystem } from '../systems/RelicSystem';
 
 interface MemoryGraphic extends PIXI.Graphics {
   isRare?: boolean;
@@ -110,6 +111,7 @@ export class EntityManager {
   private updateMemories(delta: number) {
     if (Math.random() > 0.99) this.spawnMemory();
     if (Math.random() > 0.998) MessageSystem.spawnMessage(this.memories, (this.spirit.x - this.world.x) + (Math.random() - 0.5) * 1000, (this.spirit.y - this.world.y) + (Math.random() - 0.5) * 1000);
+    if (Math.random() > 0.9995) RelicSystem.spawnRelic(this.memories, (this.spirit.x - this.world.x) + (Math.random() - 0.5) * 1200, (this.spirit.y - this.world.y) + (Math.random() - 0.5) * 1200);
 
     const children = [...this.memories.children] as MemoryGraphic[];
     children.forEach((memory) => {

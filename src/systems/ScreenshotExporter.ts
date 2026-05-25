@@ -15,24 +15,43 @@ export class ScreenshotExporter {
     if (!ctx) return;
 
     // Background
-    ctx.fillStyle = '#050505';
+    ctx.fillStyle = '#070B18';
     ctx.fillRect(0, 0, 1080, 1920);
 
-    // Draw game screenshots in the middle (composite all canvases)
+    // Vignette / Cinematic Gradient
+    const grad = ctx.createRadialGradient(540, 960, 200, 540, 960, 1000);
+    grad.addColorStop(0, 'rgba(103, 232, 249, 0.05)');
+    grad.addColorStop(1, 'rgba(7, 11, 24, 1)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    // Draw game screenshots (Full frame with organic crop)
     canvases.forEach(canvas => {
-        ctx.drawImage(canvas, 40, 460, 1000, 1000);
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(40, 300, 1000, 1300, 40);
+        ctx.clip();
+        ctx.drawImage(canvas, -200, 300, 1480, 1300);
+        ctx.restore();
     });
+
+    // Artistic border
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(40, 300, 1000, 1300);
 
     // Text Overlay
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
 
-    ctx.font = '200 80px sans-serif';
+    ctx.font = '200 100px sans-serif';
+    ctx.letterSpacing = '12px';
     ctx.fillText('LAST LIGHT', 540, 200);
 
-    ctx.font = '300 40px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillText(`World Age: Day ${world.age}`, 540, 1550);
+    ctx.font = '300 36px sans-serif';
+    ctx.letterSpacing = '2px';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillText(`A VISION FROM SOL ${world.age}`, 540, 1680);
     ctx.fillText(`Memories Protected: ${totalMemories}`, 540, 1620);
     ctx.fillText(`Companion Personality: ${this.getTopTrait()}`, 540, 1690);
 

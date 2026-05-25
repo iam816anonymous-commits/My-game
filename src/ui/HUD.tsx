@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
-import { BookText, Camera, X, Sparkles as SparklesIcon } from 'lucide-react';
+import { BookText, Camera, X, Sparkles as SparklesIcon, Archive, Share2 } from 'lucide-react';
 import { ScreenshotExporter } from '../systems/ScreenshotExporter';
 
 const HUD: React.FC = () => {
@@ -15,8 +15,10 @@ const HUD: React.FC = () => {
   const activeSkin = useStore(state => state.activeSkin);
   const setSkin = useStore(state => state.setSkin);
 
+  const relics = useStore(state => state.relics);
   const [showJournal, setShowJournal] = useState(false);
   const [showWardrobe, setShowWardrobe] = useState(false);
+  const [showRelics, setShowRelics] = useState(false);
   const [isZen, setIsZen] = useState(false);
 
   const handleScreenshot = () => {
@@ -69,6 +71,16 @@ const HUD: React.FC = () => {
           </button>
           <button onClick={() => setShowWardrobe(true)} className="premium-button" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <SparklesIcon size={20} />
+          </button>
+          <button onClick={() => setShowRelics(true)} className="premium-button" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Archive size={20} />
+          </button>
+          <button onClick={() => {
+              const code = ScreenshotExporter.generateVisitCode();
+              navigator.clipboard.writeText(code);
+              alert("Dream Seed copied to clipboard.");
+          }} className="premium-button" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Share2 size={20} />
           </button>
         </div>
 
@@ -209,6 +221,43 @@ const HUD: React.FC = () => {
                 >
                   {skin}
                 </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showRelics && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            style={{
+              position: 'absolute',
+              inset: '60px',
+              padding: '40px',
+              zIndex: 1001
+            }}
+            className="glass-panel"
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+              <h2 className="text-premium">Void Relics</h2>
+              <button onClick={() => setShowRelics(false)} className="premium-button" style={{ width: '40px', height: '40px' }}><X size={20} /></button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '20px' }}>
+              {relics.length === 0 && <p style={{ opacity: 0.3 }}>No relics discovered yet...</p>}
+              {relics.map(r => (
+                <div key={r} style={{
+                    padding: '20px',
+                    background: 'rgba(255,255,255,0.03)',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    textAlign: 'center'
+                }}>
+                  <div style={{ color: 'var(--color-gold)', marginBottom: '10px' }}><Archive size={32} style={{ margin: '0 auto' }} /></div>
+                  <div style={{ fontSize: '13px', fontWeight: 500 }}>{r}</div>
+                </div>
               ))}
             </div>
           </motion.div>

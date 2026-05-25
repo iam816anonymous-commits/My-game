@@ -7,6 +7,7 @@ const INITIAL_STATE: GameState = {
   createdAt: Date.now(),
   streak: 0,
   totalMemories: 0,
+  globalMemories: 5000, // Initial seed
   isStarted: false,
   isPaused: false,
   isGameOver: false,
@@ -49,6 +50,7 @@ const INITIAL_STATE: GameState = {
   achievements: [],
   unlockedSkins: ['default'],
   activeSkin: 'default',
+  relics: [],
   dailyChallenge: 'stardust',
 };
 
@@ -114,6 +116,7 @@ export const useStore = create<GameState & GameActions>((set, get) => ({
 
   addMemory: (amount) => set((state) => {
     const nextTotal = state.totalMemories + amount;
+    const nextGlobal = state.globalMemories + amount;
     const nextSkins = [...state.unlockedSkins];
 
     if (nextTotal >= 100 && !nextSkins.includes('void')) nextSkins.push('void');
@@ -122,6 +125,7 @@ export const useStore = create<GameState & GameActions>((set, get) => ({
 
     return {
       totalMemories: nextTotal,
+      globalMemories: nextGlobal,
       unlockedSkins: nextSkins,
       world: { ...state.world, energy: Math.min(100, state.world.energy + (amount * 2)) }
     };
@@ -154,6 +158,10 @@ export const useStore = create<GameState & GameActions>((set, get) => ({
   setScene: (scene) => set({ currentScene: scene }),
 
   setSkin: (skin: string) => set({ activeSkin: skin }),
+
+  addRelic: (relic: string) => set((state) => ({
+    relics: state.relics.includes(relic) ? state.relics : [...state.relics, relic]
+  })),
 
   resetGame: () => set(INITIAL_STATE),
 }));

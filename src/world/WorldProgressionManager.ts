@@ -12,6 +12,8 @@ export class Environment {
   private starfield: PIXI.Container;
   private islands: PIXI.Container;
   private blooms: PIXI.Container;
+  private echoSpirits: PIXI.Container;
+  private centralConstellation: PIXI.Container;
   private weatherPool: PIXI.Graphics[] = [];
   private lightMask: PIXI.Graphics;
 
@@ -22,6 +24,8 @@ export class Environment {
     this.starfield = new PIXI.Container();
     this.islands = new PIXI.Container();
     this.blooms = new PIXI.Container();
+    this.echoSpirits = new PIXI.Container();
+    this.centralConstellation = new PIXI.Container();
 
     if (world) {
       world.addChildAt(this.container, 0);
@@ -29,7 +33,7 @@ export class Environment {
       this.app.stage.addChildAt(this.container, 0);
     }
 
-    this.container.addChild(this.starfield, this.islands, this.blooms);
+    this.container.addChild(this.starfield, this.centralConstellation, this.islands, this.blooms, this.echoSpirits);
     this.app.stage.addChild(this.weatherContainer);
 
     this.lightMask = new PIXI.Graphics();
@@ -82,7 +86,7 @@ export class Environment {
   }
 
   public update(delta: number) {
-    const { world } = useStore.getState();
+    const { world, globalMemories } = useStore.getState();
     const { companionPosition } = useTransientStore.getState();
     const level = this.calculateLevel(world.age);
 
@@ -94,7 +98,48 @@ export class Environment {
     this.updateWeatherEffects(world.weather, delta);
     this.animateEnvironment(delta);
     this.updateBlooms(companionPosition, delta);
+    this.updateEchoSpirits(delta);
+    this.updateCentralConstellation(globalMemories);
     this.updateLightMask(companionPosition);
+  }
+
+  private updateEchoSpirits(delta: number) {
+    if (this.echoSpirits.children.length < 5 && Math.random() > 0.995) {
+        const echo = new PIXI.Graphics();
+        // Fox wisp shape
+        echo.circle(0, 0, 6).fill({ color: 0x67E8F9, alpha: 0.05 });
+        echo.poly([0, -8, 4, 0, -4, 0]).fill({ color: 0x67E8F9, alpha: 0.1 }); // head
+        echo.x = (Math.random() - 0.5) * 2000;
+        echo.y = (Math.random() - 0.5) * 2000;
+        (echo as any).vx = (Math.random() - 0.5) * 2;
+        (echo as any).vy = (Math.random() - 0.5) * 2;
+        this.echoSpirits.addChild(echo);
+    }
+
+    this.echoSpirits.children.forEach((echo: any) => {
+        echo.x += echo.vx * delta;
+        echo.y += echo.vy * delta;
+        echo.alpha = 0.1 + Math.sin(Date.now() * 0.001) * 0.05;
+        if (Math.abs(echo.x) > 2000 || Math.abs(echo.y) > 2000) {
+            this.echoSpirits.removeChild(echo);
+        }
+    });
+  }
+
+  private updateCentralConstellation(total: number) {
+    const numStars = Math.min(Math.floor(total / 100), 1000);
+    if (this.centralConstellation.children.length < numStars) {
+        for (let i = this.centralConstellation.children.length; i < numStars; i++) {
+            const s = new PIXI.Graphics();
+            s.circle(0, 0, 2).fill({ color: 0xFDE68A, alpha: 0.8 });
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 300 + Math.random() * 200;
+            s.x = Math.cos(angle) * dist;
+            s.y = Math.sin(angle) * dist;
+            this.centralConstellation.addChild(s);
+        }
+    }
+    this.centralConstellation.rotation += 0.001;
   }
 
   private updateBlooms(pos: { x: number, y: number }, delta: number) {

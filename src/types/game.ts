@@ -49,8 +49,10 @@ export interface GameState {
   journal: JournalEntry[];
   achievements: Achievement[];
   totalMemories: number;
+  globalMemories: number;
   unlockedSkins: string[];
   activeSkin: string;
+  relics: string[];
   dailyChallenge: Scene;
 
   // UI/Game State
@@ -78,6 +80,7 @@ export interface GameActions {
   addJournalEntry: (text: string, type?: JournalEntry['type']) => void;
   setScene: (scene: Scene) => void;
   setSkin: (skin: string) => void;
+  addRelic: (relic: string) => void;
 
   // Reset
   resetGame: () => void;

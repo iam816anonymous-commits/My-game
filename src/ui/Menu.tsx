@@ -9,6 +9,7 @@ const Menu: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 2 } }}
       style={{
         position: 'absolute',
         inset: 0,
