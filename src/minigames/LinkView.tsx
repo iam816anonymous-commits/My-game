@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
-import { StardustGame } from './StardustGame';
+import { LinkGame } from './LinkGame';
 import { useStore } from '../store/useStore';
 import { motion } from 'framer-motion';
 
-export const StardustView: React.FC = () => {
+export const LinkView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const gameRef = useRef<StardustGame | null>(null);
+  const gameRef = useRef<LinkGame | null>(null);
   const { setScene, addMemory, addJournalEntry } = useStore();
 
   useEffect(() => {
@@ -25,10 +25,9 @@ export const StardustView: React.FC = () => {
         containerRef.current.appendChild(app.canvas);
       }
 
-      const isDaily = useStore.getState().dailyChallenge === 'stardust';
-      gameRef.current = new StardustGame(app, (score) => {
-        addMemory(isDaily ? score * 2 : score);
-        addJournalEntry(`Gathered ${score} fragments of stardust.${isDaily ? " (Daily Bonus!)" : ""}`, 'interaction');
+      gameRef.current = new LinkGame(app, (score) => {
+        addMemory(score);
+        addJournalEntry(`Linked the fragmented memories.`, 'interaction');
         setScene('main');
       });
     };
@@ -49,18 +48,10 @@ export const StardustView: React.FC = () => {
       style={{ position: 'absolute', inset: 0, background: 'rgba(7, 11, 24, 0.8)', backdropFilter: 'blur(10px)' }}
     >
       <div style={{ position: 'absolute', top: '40px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none' }}>
-        <h2 className="text-premium" style={{ color: 'var(--color-cyan)', fontSize: '24px', marginBottom: '8px' }}>Stardust Collection</h2>
-        <p style={{ opacity: 0.6, fontSize: '14px' }}>Touch the drifting fragments to stabilize them.</p>
+        <h2 className="text-premium" style={{ color: 'var(--color-cyan)', fontSize: '24px', marginBottom: '8px' }}>Memory Link</h2>
+        <p style={{ opacity: 0.6, fontSize: '14px' }}>Reconnect the lost constellations.</p>
       </div>
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-
-      <button
-        onClick={() => setScene('main')}
-        className="premium-button"
-        style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', padding: '12px 30px' }}
-      >
-        Leave Dream
-      </button>
     </motion.div>
   );
 };

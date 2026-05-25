@@ -1,7 +1,7 @@
 export type Emotion = 'waiting' | 'happy' | 'sleeping' | 'exploring' | 'lonely' | 'excited';
 export type PersonalityTrait = 'curious' | 'playful' | 'sleepy' | 'adventurous' | 'gentle' | 'shy';
 export type Weather = 'clear' | 'rain' | 'snow' | 'clouds';
-export type Scene = 'main' | 'stardust' | 'echoes' | 'flow' | 'orrery' | 'logic' | 'words';
+export type Scene = 'main' | 'stardust' | 'echoes' | 'flow' | 'orrery' | 'logic' | 'words' | 'link' | 'pairs';
 
 export interface JournalEntry {
   id: string;
@@ -49,6 +49,9 @@ export interface GameState {
   journal: JournalEntry[];
   achievements: Achievement[];
   totalMemories: number;
+  unlockedSkins: string[];
+  activeSkin: string;
+  dailyChallenge: Scene;
 
   // UI/Game State
   isStarted: boolean;
@@ -74,6 +77,7 @@ export interface GameActions {
   // Journal
   addJournalEntry: (text: string, type?: JournalEntry['type']) => void;
   setScene: (scene: Scene) => void;
+  setSkin: (skin: string) => void;
 
   // Reset
   resetGame: () => void;

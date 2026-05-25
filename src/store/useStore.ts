@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { GameState, GameActions } from '../types/game';
+import type { GameState, GameActions, Scene } from '../types/game';
 
 const INITIAL_STATE: GameState = {
   version: '2.0.0',
@@ -47,6 +47,9 @@ const INITIAL_STATE: GameState = {
   ],
 
   achievements: [],
+  unlockedSkins: ['default'],
+  activeSkin: 'default',
+  dailyChallenge: 'stardust',
 };
 
 export const useStore = create<GameState & GameActions>((set, get) => ({
@@ -82,9 +85,13 @@ export const useStore = create<GameState & GameActions>((set, get) => ({
       newStreak = 0;
     }
 
+    const scenes: Scene[] = ['stardust', 'echoes', 'flow', 'orrery', 'logic', 'words'];
+    const nextChallenge = scenes[Math.floor(Math.random() * scenes.length)];
+
     set({
       streak: newStreak,
       lastSeen: now,
+      dailyChallenge: nextChallenge,
       world: {
         ...state.world,
         age: state.world.age + daysAway,
@@ -105,10 +112,20 @@ export const useStore = create<GameState & GameActions>((set, get) => ({
     };
   }),
 
-  addMemory: (amount) => set((state) => ({
-    totalMemories: state.totalMemories + amount,
-    world: { ...state.world, energy: Math.min(100, state.world.energy + (amount * 2)) }
-  })),
+  addMemory: (amount) => set((state) => {
+    const nextTotal = state.totalMemories + amount;
+    const nextSkins = [...state.unlockedSkins];
+
+    if (nextTotal >= 100 && !nextSkins.includes('void')) nextSkins.push('void');
+    if (nextTotal >= 500 && !nextSkins.includes('gold')) nextSkins.push('gold');
+    if (nextTotal >= 1000 && !nextSkins.includes('rose')) nextSkins.push('rose');
+
+    return {
+      totalMemories: nextTotal,
+      unlockedSkins: nextSkins,
+      world: { ...state.world, energy: Math.min(100, state.world.energy + (amount * 2)) }
+    };
+  }),
 
   unlockFeature: (id) => set((state) => ({
     world: {
@@ -135,6 +152,8 @@ export const useStore = create<GameState & GameActions>((set, get) => ({
   })),
 
   setScene: (scene) => set({ currentScene: scene }),
+
+  setSkin: (skin: string) => set({ activeSkin: skin }),
 
   resetGame: () => set(INITIAL_STATE),
 }));

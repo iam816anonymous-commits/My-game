@@ -11,6 +11,7 @@ export class Environment {
   private weatherContainer: PIXI.Container;
   private starfield: PIXI.Container;
   private islands: PIXI.Container;
+  private blooms: PIXI.Container;
   private weatherPool: PIXI.Graphics[] = [];
   private lightMask: PIXI.Graphics;
 
@@ -20,6 +21,7 @@ export class Environment {
     this.weatherContainer = new PIXI.Container();
     this.starfield = new PIXI.Container();
     this.islands = new PIXI.Container();
+    this.blooms = new PIXI.Container();
 
     if (world) {
       world.addChildAt(this.container, 0);
@@ -27,7 +29,7 @@ export class Environment {
       this.app.stage.addChildAt(this.container, 0);
     }
 
-    this.container.addChild(this.starfield, this.islands);
+    this.container.addChild(this.starfield, this.islands, this.blooms);
     this.app.stage.addChild(this.weatherContainer);
 
     this.lightMask = new PIXI.Graphics();
@@ -91,7 +93,31 @@ export class Environment {
     WeatherManager.update();
     this.updateWeatherEffects(world.weather, delta);
     this.animateEnvironment(delta);
+    this.updateBlooms(companionPosition, delta);
     this.updateLightMask(companionPosition);
+  }
+
+  private updateBlooms(pos: { x: number, y: number }, delta: number) {
+    if (this.blooms.children.length < 20 && Math.random() > 0.98) {
+      const b = new PIXI.Graphics();
+      b.circle(0, 0, 8).fill({ color: 0xF9A8D4, alpha: 0.1 });
+      b.x = (pos.x - this.container.x) + (Math.random() - 0.5) * 2000;
+      b.y = (pos.y - this.container.y) + (Math.random() - 0.5) * 2000;
+      this.blooms.addChild(b);
+    }
+
+    this.blooms.children.forEach((b: any) => {
+      const dx = pos.x - (b.x + this.container.x);
+      const dy = pos.y - (b.y + this.container.y);
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 200) {
+        b.alpha += (0.8 - b.alpha) * 0.1 * delta;
+        b.scale.set(1 + Math.sin(Date.now() * 0.005) * 0.2);
+      } else {
+        b.alpha += (0.1 - b.alpha) * 0.05 * delta;
+      }
+    });
   }
 
   private updateLightMask(pos: { x: number, y: number }) {

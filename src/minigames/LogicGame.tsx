@@ -8,7 +8,7 @@ type CellValue = 1 | 2 | 3 | 4 | null;
 export const LogicGame: React.FC = () => {
   const [grid, setGrid] = useState<CellValue[][]>([]);
   const [initial, setInitial] = useState<boolean[][]>([]);
-  const { setScene, addMemory, addJournalEntry } = useStore();
+  const { setScene, addMemory, addJournalEntry, companion } = useStore();
 
   const symbols = [
     { id: 1, icon: <Star size={20} />, color: 'var(--color-cyan)' },
@@ -125,9 +125,11 @@ export const LogicGame: React.FC = () => {
       <motion.div
         animate={{ scale: [1, 1.02, 1], opacity: [0.5, 0.8, 0.5] }}
         transition={{ duration: 4, repeat: Infinity }}
-        style={{ fontSize: '12px', color: 'var(--color-cyan)', fontStyle: 'italic' }}
+        style={{ fontSize: '12px', color: 'var(--color-cyan)', fontStyle: 'italic', maxWidth: '200px' }}
       >
-        "Observe the harmony of the stars..."
+        {companion.emotion === 'excited' ? "The patterns are shifting so fast... look at the rows." :
+         companion.emotion === 'happy' ? "The stars feel aligned today. Try balancing the Moon." :
+         "Observe the harmony of the stars..."}
       </motion.div>
 
       <div style={{ display: 'flex', gap: '20px' }}>

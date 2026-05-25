@@ -12,12 +12,14 @@ export const SpiritFox3D = () => {
   const posRef = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const emotionRef = useRef<string>('waiting');
   const memoriesRef = useRef<number>(0);
+  const skinRef = useRef<string>('default');
 
   useEffect(() => {
     // Subscribe to specific store fields without triggering re-render
     const unsubEmotion = useStore.subscribe((state) => {
         emotionRef.current = state.companion.emotion;
         memoriesRef.current = state.totalMemories;
+        skinRef.current = state.activeSkin;
     });
 
     const unsubPos = useTransientStore.subscribe((state) => {
@@ -54,8 +56,17 @@ export const SpiritFox3D = () => {
     meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.5) * 0.1;
   });
 
-  const bodyColor = useMemo(() => new THREE.Color(0x67E8F9), []);
-  const pulseColor = useMemo(() => new THREE.Color(0x8B5CF6), []);
+  const bodyColor = useMemo(() => {
+    if (skinRef.current === 'void') return new THREE.Color(0x8B5CF6);
+    if (skinRef.current === 'gold') return new THREE.Color(0xFDE68A);
+    if (skinRef.current === 'rose') return new THREE.Color(0xF9A8D4);
+    return new THREE.Color(0x67E8F9);
+  }, [skinRef.current]);
+
+  const pulseColor = useMemo(() => {
+    if (skinRef.current === 'void') return new THREE.Color(0x070B18);
+    return new THREE.Color(0x8B5CF6);
+  }, [skinRef.current]);
 
   return (
     <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>

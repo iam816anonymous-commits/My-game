@@ -42,6 +42,12 @@ class SoundController {
     });
   }
 
+  public setEmotionMusic(emotion: string) {
+    if (!this.ambient) return;
+    const rate = emotion === 'excited' ? 1.2 : emotion === 'sleeping' ? 0.8 : 1.0;
+    this.ambient.rate(rate);
+  }
+
   public setMute(muted: boolean) {
     Object.values(this.weatherLayers).forEach(h => h.mute(muted));
     this.ambient?.mute(muted);

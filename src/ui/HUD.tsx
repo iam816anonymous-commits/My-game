@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
-import { BookText, Camera, X } from 'lucide-react';
+import { BookText, Camera, X, Sparkles as SparklesIcon } from 'lucide-react';
 import { ScreenshotExporter } from '../systems/ScreenshotExporter';
 
 const HUD: React.FC = () => {
@@ -10,8 +10,14 @@ const HUD: React.FC = () => {
   const totalMemories = useStore(state => state.totalMemories);
   const emotion = useStore(state => state.companion.emotion);
   const journal = useStore(state => state.journal);
+  const dailyChallenge = useStore(state => state.dailyChallenge);
+  const unlockedSkins = useStore(state => state.unlockedSkins);
+  const activeSkin = useStore(state => state.activeSkin);
+  const setSkin = useStore(state => state.setSkin);
 
   const [showJournal, setShowJournal] = useState(false);
+  const [showWardrobe, setShowWardrobe] = useState(false);
+  const [isZen, setIsZen] = useState(false);
 
   const handleScreenshot = () => {
     ScreenshotExporter.exportPNG();
@@ -19,6 +25,26 @@ const HUD: React.FC = () => {
 
   return (
     <>
+      {/* Zen Toggle */}
+      <button
+        onClick={() => setIsZen(!isZen)}
+        style={{
+          position: 'absolute',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 2000,
+          background: 'none',
+          border: 'none',
+          color: 'white',
+          opacity: 0.3,
+          cursor: 'pointer',
+          fontSize: '10px',
+          letterSpacing: '2px'
+        }}
+      >
+        {isZen ? 'RESTORE' : 'ZEN'}
+      </button>
+
       {/* Top Glass Card */}
       <div style={{
         position: 'absolute',
@@ -30,7 +56,9 @@ const HUD: React.FC = () => {
         alignItems: 'center',
         padding: '16px 24px',
         zIndex: 100,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        opacity: isZen ? 0 : 1,
+        transition: 'opacity 1s ease'
       }} className="glass-panel">
         <div style={{ pointerEvents: 'auto', display: 'flex', gap: '20px' }}>
           <button onClick={() => setShowJournal(true)} className="premium-button" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -39,10 +67,16 @@ const HUD: React.FC = () => {
           <button onClick={handleScreenshot} className="premium-button" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Camera size={20} />
           </button>
+          <button onClick={() => setShowWardrobe(true)} className="premium-button" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <SparklesIcon size={20} />
+          </button>
         </div>
 
         <div style={{ textAlign: 'right' }}>
-          <div className="text-premium" style={{ fontSize: '10px', opacity: 0.5, marginBottom: '2px' }}>Spirit State</div>
+          <div className="text-premium" style={{ fontSize: '10px', opacity: 0.5, marginBottom: '2px' }}>
+            {Math.floor(totalMemories / 10) + 1} Dreamers Glowing
+          </div>
+          <div className="text-premium" style={{ fontSize: '10px', opacity: 0.5, marginBottom: '2px' }}>Daily Focus: <span style={{ color: 'var(--color-gold)' }}>{dailyChallenge}</span></div>
           <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-cyan)', textTransform: 'capitalize' }}>{emotion}</div>
         </div>
       </div>
@@ -58,7 +92,9 @@ const HUD: React.FC = () => {
         flexDirection: 'column',
         alignItems: 'center',
         gap: '16px',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        opacity: isZen ? 0 : 1,
+        transition: 'opacity 1s ease'
       }}>
         <motion.div
           key={totalMemories}
@@ -127,6 +163,52 @@ const HUD: React.FC = () => {
                     {entry.text}
                   </div>
                 </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showWardrobe && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            style={{
+              position: 'absolute',
+              top: '100px',
+              left: '20px',
+              width: '240px',
+              padding: '24px',
+              zIndex: 1000
+            }}
+            className="glass-panel"
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h3 className="text-premium" style={{ fontSize: '14px' }}>Aura Wardrobe</h3>
+              <button onClick={() => setShowWardrobe(false)} style={{ background: 'none', border: 'none', color: 'white', opacity: 0.5 }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              {unlockedSkins.map((skin) => (
+                <button
+                  key={skin}
+                  onClick={() => setSkin(skin)}
+                  style={{
+                    padding: '12px',
+                    borderRadius: '12px',
+                    background: activeSkin === skin ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                    border: activeSkin === skin ? '1px solid var(--color-cyan)' : '1px solid rgba(255,255,255,0.1)',
+                    color: 'white',
+                    fontSize: '11px',
+                    textTransform: 'capitalize'
+                  }}
+                >
+                  {skin}
+                </button>
               ))}
             </div>
           </motion.div>

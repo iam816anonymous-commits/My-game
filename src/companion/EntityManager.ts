@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { useTransientStore } from '../store/useTransientStore';
 import { CompanionBrain } from './CompanionBrain';
 import type { Scene } from '../types/game';
+import { MessageSystem } from '../systems/MessageSystem';
 
 interface MemoryGraphic extends PIXI.Graphics {
   isRare?: boolean;
@@ -108,6 +109,7 @@ export class EntityManager {
 
   private updateMemories(delta: number) {
     if (Math.random() > 0.99) this.spawnMemory();
+    if (Math.random() > 0.998) MessageSystem.spawnMessage(this.memories, (this.spirit.x - this.world.x) + (Math.random() - 0.5) * 1000, (this.spirit.y - this.world.y) + (Math.random() - 0.5) * 1000);
 
     const children = [...this.memories.children] as MemoryGraphic[];
     children.forEach((memory) => {
@@ -145,13 +147,15 @@ export class EntityManager {
 
   private spawnGate() {
     const gate = new PIXI.Graphics() as any;
-    const types: Scene[] = ['stardust', 'echoes', 'flow', 'orrery', 'logic', 'words'];
+    const types: Scene[] = ['stardust', 'echoes', 'flow', 'orrery', 'logic', 'words', 'link', 'pairs'];
     const type = types[Math.floor(Math.random() * types.length)];
     const color = type === 'stardust' ? 0x67E8F9 :
                   type === 'echoes' ? 0x8B5CF6 :
                   type === 'flow' ? 0xF9A8D4 :
                   type === 'orrery' ? 0xFDE68A :
-                  type === 'logic' ? 0x67E8F9 : 0x8B5CF6;
+                  type === 'logic' ? 0x67E8F9 :
+                  type === 'words' ? 0x8B5CF6 :
+                  type === 'pairs' ? 0xF9A8D4 : 0xffffff;
 
     gate.poly([0, -30, 25, 15, -25, 15]).stroke({ color, width: 2, alpha: 0.8 });
     gate.sceneType = type;
@@ -185,8 +189,25 @@ export class EntityManager {
     const { addMemory } = useStore.getState();
     addMemory(memory.isRare ? 10 : 1);
     this.createBurst(memory.x + this.world.x, memory.y + this.world.y, memory.isRare ? 0xFDE68A : 0x67E8F9);
+    this.applyScreenJuice();
     this.memories.removeChild(memory);
     this.memoryPool.push(memory);
+  }
+
+  private applyScreenJuice() {
+    // Screen shake
+    const ox = this.app.stage.x;
+    const oy = this.app.stage.y;
+    const shake = () => {
+        this.app.stage.x = ox + (Math.random() - 0.5) * 4;
+        this.app.stage.y = oy + (Math.random() - 0.5) * 4;
+    };
+    this.app.ticker.add(shake);
+    setTimeout(() => {
+        this.app.ticker.remove(shake);
+        this.app.stage.x = ox;
+        this.app.stage.y = oy;
+    }, 100);
   }
 
   private particlePool: PIXI.Graphics[] = [];

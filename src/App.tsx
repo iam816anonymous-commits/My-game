@@ -15,6 +15,8 @@ import { FlowView } from './minigames/FlowView';
 import { OrreryView } from './minigames/OrreryView';
 import { LogicGame } from './minigames/LogicGame';
 import { WordGame } from './minigames/WordGame';
+import { LinkView } from './minigames/LinkView';
+import { PairsGame } from './minigames/PairsGame';
 
 const ThreeCanvas = lazy(() => import('./rendering/ThreeCanvas').then(m => ({ default: m.ThreeCanvas })));
 
@@ -47,6 +49,10 @@ function App() {
   useEffect(() => {
     soundController.updateWeatherAudio(world.weather);
   }, [world.weather]);
+
+  useEffect(() => {
+    soundController.setEmotionMusic(companion.emotion);
+  }, [companion.emotion]);
 
   const throttledSave = useMemo(
     () => throttle((payload: Partial<GameState>) => {
@@ -112,6 +118,16 @@ function App() {
         {currentScene === 'words' && (
           <div key="words" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
             <WordGame />
+          </div>
+        )}
+        {currentScene === 'link' && (
+          <div key="link" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+            <LinkView />
+          </div>
+        )}
+        {currentScene === 'pairs' && (
+          <div key="pairs" style={{ position: 'absolute', inset: 0, zIndex: 500 }}>
+            <PairsGame />
           </div>
         )}
       </AnimatePresence>
