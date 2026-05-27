@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 export const FlowView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<FlowGame | null>(null);
-  const { setScene, addMemory, addJournalEntry } = useStore();
+  const { setScene, addScore } = useStore();
 
   useEffect(() => {
     let app: PIXI.Application;
@@ -26,9 +26,8 @@ export const FlowView: React.FC = () => {
       }
 
       gameRef.current = new FlowGame(app, (score) => {
-        addMemory(score);
-        addJournalEntry(`Traced the patterns of the wind.`, 'interaction');
-        setScene('main');
+        addScore('flow', score);
+        setScene('hub');
       });
     };
 

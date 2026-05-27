@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 export const OrreryView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<OrreryGame | null>(null);
-  const { setScene, addMemory, addJournalEntry } = useStore();
+  const { setScene, addScore } = useStore();
 
   useEffect(() => {
     let app: PIXI.Application;
@@ -26,9 +26,8 @@ export const OrreryView: React.FC = () => {
       }
 
       gameRef.current = new OrreryGame(app, (score) => {
-        addMemory(score);
-        addJournalEntry(`Aligned the celestial bodies.`, 'interaction');
-        setScene('main');
+        addScore('orrery', score);
+        setScene('hub');
       });
     };
 

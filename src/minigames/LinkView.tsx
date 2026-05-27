@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 export const LinkView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<LinkGame | null>(null);
-  const { setScene, addMemory, addJournalEntry } = useStore();
+  const { setScene, addScore } = useStore();
 
   useEffect(() => {
     let app: PIXI.Application;
@@ -26,9 +26,8 @@ export const LinkView: React.FC = () => {
       }
 
       gameRef.current = new LinkGame(app, (score) => {
-        addMemory(score);
-        addJournalEntry(`Linked the fragmented memories.`, 'interaction');
-        setScene('main');
+        addScore('link', score);
+        setScene('hub');
       });
     };
 

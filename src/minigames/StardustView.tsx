@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 export const StardustView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<StardustGame | null>(null);
-  const { setScene, addMemory, addJournalEntry } = useStore();
+  const { setScene, addScore } = useStore();
 
   useEffect(() => {
     let app: PIXI.Application;
@@ -25,11 +25,9 @@ export const StardustView: React.FC = () => {
         containerRef.current.appendChild(app.canvas);
       }
 
-      const isDaily = useStore.getState().dailyChallenge === 'stardust';
       gameRef.current = new StardustGame(app, (score) => {
-        addMemory(isDaily ? score * 2 : score);
-        addJournalEntry(`Gathered ${score} fragments of stardust.${isDaily ? " (Daily Bonus!)" : ""}`, 'interaction');
-        setScene('main');
+        addScore('stardust', score);
+        setScene('hub');
       });
     };
 
@@ -55,11 +53,11 @@ export const StardustView: React.FC = () => {
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
       <button
-        onClick={() => setScene('main')}
+        onClick={() => setScene('hub')}
         className="premium-button"
         style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', padding: '12px 30px' }}
       >
-        Leave Dream
+        Exit
       </button>
     </motion.div>
   );

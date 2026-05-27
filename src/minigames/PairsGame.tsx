@@ -8,7 +8,7 @@ type Card = { id: number, type: number, flipped: boolean, solved: boolean };
 export const PairsGame: React.FC = () => {
   const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
-  const { setScene, addMemory, addJournalEntry } = useStore();
+  const { setScene, addScore } = useStore();
 
   const icons = [
     <Star size={24} />, <Moon size={24} />, <Sun size={24} />,
@@ -41,9 +41,8 @@ export const PairsGame: React.FC = () => {
           setCards(solvedCards);
           setSelected([]);
           if (solvedCards.every(c => c.solved)) {
-            addMemory(40);
-            addJournalEntry("Reunited the celestial twins.", 'interaction');
-            setScene('main');
+            addScore('pairs', 40);
+            setScene('hub');
           }
         }, 500);
       } else {
@@ -124,7 +123,7 @@ export const PairsGame: React.FC = () => {
         ))}
       </div>
 
-      <button onClick={() => setScene('main')} className="premium-button" style={{ padding: '12px 30px', background: 'transparent' }}>
+      <button onClick={() => setScene('hub')} className="premium-button" style={{ padding: '12px 30px', background: 'transparent' }}>
         Leave
       </button>
     </motion.div>

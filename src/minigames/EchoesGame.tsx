@@ -10,7 +10,7 @@ export const EchoesGame: React.FC = () => {
   const [userSequence, setUserSequence] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [round, setRound] = useState(0);
-  const { setScene, addMemory, addJournalEntry } = useStore();
+  const { setScene, addScore } = useStore();
 
   const tones = [
     { id: 0, color: 'var(--color-cyan)', freq: 261.63 }, // C4
@@ -65,9 +65,8 @@ export const EchoesGame: React.FC = () => {
 
     if (nextUserSeq[nextUserSeq.length - 1] !== sequence[nextUserSeq.length - 1]) {
       // Game Over
-      addMemory(round * 5);
-      addJournalEntry(`Listened to ${round} echoes in the silence.`, 'interaction');
-      setScene('main');
+      addScore('echoes', round * 5);
+      setScene('hub');
       return;
     }
 
@@ -133,11 +132,11 @@ export const EchoesGame: React.FC = () => {
       </div>
 
       <button
-        onClick={() => setScene('main')}
+        onClick={() => setScene('hub')}
         className="premium-button"
         style={{ padding: '12px 30px' }}
       >
-        Return to Silence
+        Exit
       </button>
     </motion.div>
   );

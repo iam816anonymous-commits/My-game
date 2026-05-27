@@ -8,7 +8,7 @@ type CellValue = 1 | 2 | 3 | 4 | null;
 export const LogicGame: React.FC = () => {
   const [grid, setGrid] = useState<CellValue[][]>([]);
   const [initial, setInitial] = useState<boolean[][]>([]);
-  const { setScene, addMemory, addJournalEntry, companion } = useStore();
+  const { setScene, addScore } = useStore();
 
   const symbols = [
     { id: 1, icon: <Star size={20} />, color: 'var(--color-cyan)' },
@@ -49,9 +49,8 @@ export const LogicGame: React.FC = () => {
     });
 
     if (rowsValid && colsValid) {
-      addMemory(50);
-      addJournalEntry("Aligned the celestial symbols in the void.", 'interaction');
-      setScene('main');
+      addScore('logic', 50);
+      setScene('hub');
     } else {
       // Flash red if invalid
       setGrid(prev => prev.map(row => [...row])); // Trigger re-render
@@ -122,21 +121,11 @@ export const LogicGame: React.FC = () => {
         )))}
       </div>
 
-      <motion.div
-        animate={{ scale: [1, 1.02, 1], opacity: [0.5, 0.8, 0.5] }}
-        transition={{ duration: 4, repeat: Infinity }}
-        style={{ fontSize: '12px', color: 'var(--color-cyan)', fontStyle: 'italic', maxWidth: '200px' }}
-      >
-        {companion.emotion === 'excited' ? "The patterns are shifting so fast... look at the rows." :
-         companion.emotion === 'happy' ? "The stars feel aligned today. Try balancing the Moon." :
-         "Observe the harmony of the stars..."}
-      </motion.div>
-
       <div style={{ display: 'flex', gap: '20px' }}>
         <button onClick={checkSolution} className="premium-button" style={{ padding: '12px 30px' }}>
           Seal Pattern
         </button>
-        <button onClick={() => setScene('main')} className="premium-button" style={{ padding: '12px 30px', background: 'transparent' }}>
+        <button onClick={() => setScene('hub')} className="premium-button" style={{ padding: '12px 30px', background: 'transparent' }}>
           Leave
         </button>
       </div>

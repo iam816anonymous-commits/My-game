@@ -39,7 +39,8 @@ export class FlowGame {
   private onEnd = () => {
     this.isDrawing = false;
     if (this.points.length > 20) {
-        this.onComplete(Math.floor(this.points.length / 5));
+        const score = Math.floor(this.points.length / 5);
+        setTimeout(() => this.onComplete(score), 500);
     }
     this.points = [];
     this.line.clear();

@@ -6,7 +6,7 @@ export const WordGame: React.FC = () => {
   const [letters, setLetters] = useState<string[]>([]);
   const [currentWord, setCurrentWord] = useState("");
   const [foundWords, setFoundWords] = useState<string[]>([]);
-  const { setScene, addMemory, addJournalEntry } = useStore();
+  const { setScene, addScore } = useStore();
 
   const validWords = ["LIGHT", "STAR", "DREAM", "VOID", "GLOW", "NIGHT", "SPIRIT", "SOUL", "CALM", "PEACE"];
 
@@ -30,10 +30,9 @@ export const WordGame: React.FC = () => {
   const submitWord = () => {
     if (validWords.includes(currentWord) && !foundWords.includes(currentWord)) {
       setFoundWords(prev => [...prev, currentWord]);
-      addMemory(20);
+      addScore('words', 20);
       if (foundWords.length + 1 >= 3) {
-        addJournalEntry(`Deciphered the runes: ${currentWord}`, 'interaction');
-        setTimeout(() => setScene('main'), 1500);
+        setTimeout(() => setScene('hub'), 1500);
       }
     }
     // Return letters to pool
@@ -89,7 +88,7 @@ export const WordGame: React.FC = () => {
         <button onClick={submitWord} className="premium-button" style={{ padding: '12px 30px' }}>
           Anchor Word
         </button>
-        <button onClick={() => setScene('main')} className="premium-button" style={{ padding: '12px 30px', background: 'transparent' }}>
+        <button onClick={() => setScene('hub')} className="premium-button" style={{ padding: '12px 30px', background: 'transparent' }}>
           Leave
         </button>
       </div>

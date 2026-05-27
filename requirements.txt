@@ -1,4 +1,4 @@
-# Last Light: Companion - System Requirements
+# Game Collection Hub - System Requirements
 
 ## Software Requirements
 - Node.js >= 18.0.0
