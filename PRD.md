@@ -11,7 +11,7 @@ To build a high-fidelity, social microgaming platform that prioritizes "Game Fee
 
 ## User Persona
 - **The Zen Seeker:** Plays for relaxation and atmospheric beauty (Last Light, Snake Zen).
-- **The Competitor:** Plays for high scores and perfect combos (Reaction Arena, Stack Rush).
+- **The Competitor:** Plays for high scores and perfect combos (Color Rush, Orbit Dodge, Tap Dash).
 - **The Strategic:** Plays for logical mastery (2048 Fusion, Mine Rush).
 
 ## Functional Requirements

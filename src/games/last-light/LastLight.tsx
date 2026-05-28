@@ -57,7 +57,8 @@ const LastLight: React.FC = () => {
             engine.ticker.stop();
         }
 
-        player.update(delta, state.energy);
+        const isOverload = (state as any).currentCombo >= 10;
+        player.update(delta, state.energy, isOverload);
         entityManager.update(player.x, player.y, delta, state.totalMemoriesCollected);
         world.update(delta, state.evolutionLevel, player.x, player.y);
         audio.update(state.evolutionLevel);
@@ -75,7 +76,7 @@ const LastLight: React.FC = () => {
                 audio.resume();
                 audio.playCollect((newState as any).currentCombo);
                 player.shake(5);
-                updateXP(type === 'rare' ? 50 : 10);
+                updateXP(type === 'gold' ? 100 : type === 'rare' ? 50 : 10);
             }
         });
       });

@@ -10,7 +10,7 @@ export const EvolutionLevel = {
 
 export type EvolutionLevel = typeof EvolutionLevel[keyof typeof EvolutionLevel];
 
-export type MemoryType = 'standard' | 'rare';
+export type MemoryType = 'standard' | 'rare' | 'gold';
 
 export interface Memory {
   id: string;

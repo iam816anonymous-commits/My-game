@@ -10,23 +10,27 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
 }
 
+import { motion } from 'framer-motion';
+
 export const GlassCard: React.FC<GlassCardProps> = ({
   children,
   className,
   hoverable = false,
   ...props
 }) => {
+  const { onDrag, ...motionProps } = props as any;
   return (
-    <div
+    <motion.div
+      whileHover={hoverable ? { y: -4, backgroundColor: "rgba(255, 255, 255, 0.08)" } : {}}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       className={cn(
-        "bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 transition-all duration-300",
-        hoverable && "hover:bg-white/10 hover:-translate-y-1",
+        "bg-surface/40 backdrop-blur-md border border-accent-white/10 rounded-3xl p-6 transition-all duration-300",
         className
       )}
-      {...props}
+      {...motionProps}
     >
       {children}
-    </div>
+    </motion.div>
   );
 };
 
@@ -40,18 +44,22 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   ...props
 }) => {
+  const { onDrag, ...motionProps } = props as any;
   return (
-    <button
+    <motion.button
+      whileHover={{ y: -2, scale: 1.02, backgroundColor: "rgba(139, 92, 246, 0.1)" }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 500, damping: 30 }}
       className={cn(
-        "bg-white/5 backdrop-blur-xl border border-white/10 text-white rounded-full px-6 py-3 transition-all duration-300 hover:bg-white/15 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest",
-        variant === 'ghost' && "bg-transparent border-white/5",
+        "bg-surface/60 backdrop-blur-xl border border-accent-white/10 text-accent-white rounded-full px-6 py-3 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest",
+        variant === 'ghost' && "bg-transparent border-accent-white/5",
         variant === 'danger' && "border-red-500/20 text-red-400 hover:bg-red-500/10",
         className
       )}
-      {...props}
+      {...motionProps}
     >
       {children}
-    </button>
+    </motion.button>
   );
 };
 

@@ -10,8 +10,8 @@ export class Player {
   private currentX: number = window.innerWidth / 2;
   private currentY: number = window.innerHeight / 2;
 
-  private readonly TRAIL_LENGTH = 15;
-  private readonly LERP_FACTOR = 0.1;
+  private readonly TRAIL_LENGTH = 20;
+  private readonly LERP_FACTOR = 0.08;
 
   constructor() {
     this.container = new PIXI.Container();
@@ -26,7 +26,7 @@ export class Player {
     for (let i = 0; i < this.TRAIL_LENGTH; i++) {
       const t = new PIXI.Graphics();
       t.circle(0, 0, 4 - (i / this.TRAIL_LENGTH) * 3);
-      t.fill({ color: 0xffffff, alpha: 0.5 * (1 - i / this.TRAIL_LENGTH) });
+      t.fill({ color: 0x22d3ee, alpha: 0.4 * (1 - i / this.TRAIL_LENGTH) });
       this.trail.push(t);
       this.container.addChild(t);
     }
@@ -42,9 +42,9 @@ export class Player {
 
   private drawGlow() {
     this.glow.clear();
-    for (let i = 1; i <= 5; i++) {
-      this.glow.circle(0, 0, 6 + i * 8);
-      this.glow.fill({ color: 0xffffff, alpha: 0.1 / i });
+    for (let i = 1; i <= 6; i++) {
+      this.glow.circle(0, 0, 6 + i * 12);
+      this.glow.fill({ color: 0x22d3ee, alpha: 0.08 / i });
     }
   }
 
@@ -78,7 +78,7 @@ export class Player {
     this.shakeTime = intensity;
   }
 
-  public update(delta: number, energy: number) {
+  public update(delta: number, energy: number, isOverload: boolean = false) {
     // Screen Shake
     let offsetX = 0;
     let offsetY = 0;
@@ -89,10 +89,20 @@ export class Player {
     }
 
     // Update energy-based scaling
-    const scale = 0.5 + (energy / 100) * 0.5;
-    this.orb.scale.set(scale);
-    this.glow.scale.set(scale);
-    this.glow.alpha = 0.3 + (energy / 100) * 0.7;
+    const baseScale = 0.5 + (energy / 100) * 0.5;
+    const overloadScale = isOverload ? 1.5 : 1.0;
+    const finalScale = baseScale * overloadScale;
+
+    this.orb.scale.set(finalScale);
+    this.glow.scale.set(finalScale + (Math.sin(Date.now() * 0.005) * 0.05));
+    this.glow.alpha = (0.3 + (energy / 100) * 0.7) * (isOverload ? 1.5 : 1.0);
+
+    // Color shift on overload
+    if (isOverload) {
+        this.glow.tint = 0xfacc15;
+    } else {
+        this.glow.tint = 0xffffff;
+    }
 
     // Smooth movement
     this.currentX += (this.targetX - this.currentX) * this.LERP_FACTOR * delta;

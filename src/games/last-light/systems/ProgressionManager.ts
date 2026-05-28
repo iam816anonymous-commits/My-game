@@ -23,7 +23,7 @@ export class ProgressionManager {
   private comboCount = 0;
   private lastCollectTime = 0;
 
-  public collectMemory(type: 'standard' | 'rare'): GameState {
+  public collectMemory(type: 'standard' | 'rare' | 'gold'): GameState {
     const now = Date.now();
     if (now - this.lastCollectTime < 1500) {
       this.comboCount++;
@@ -32,7 +32,7 @@ export class ProgressionManager {
     }
     this.lastCollectTime = now;
 
-    const energyGain = type === 'rare' ? 25 : 10;
+    const energyGain = type === 'gold' ? 50 : type === 'rare' ? 25 : 10;
     const comboBonus = Math.min(2, 1 + this.comboCount * 0.1);
 
     this.state.energy = Math.min(100, this.state.energy + energyGain * comboBonus);
@@ -77,7 +77,7 @@ export class ProgressionManager {
     );
   }
 
-  private checkAchievements(type: 'standard' | 'rare') {
+  private checkAchievements(type: 'standard' | 'rare' | 'gold') {
     if (this.state.totalMemoriesCollected === 1) {
       const ach = this.state.achievements.find(a => a.id === 'first_memory');
       if (ach) { ach.unlocked = true; ach.unlockedAt = Date.now(); }

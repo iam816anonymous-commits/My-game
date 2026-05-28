@@ -12,10 +12,11 @@ const Dashboard: React.FC = () => {
   const GAMES = [
     { id: 'last-light', name: 'Last Light', cat: 'Arcade', color: '#67e8f9', desc: 'Atmospheric light collection.' },
     { id: 'snake', name: 'Snake Zen', cat: 'Arcade', color: '#4ade80', desc: 'Minimalist snake action.' },
+    { id: 'color-rush', name: 'Color Rush', cat: 'Skill', color: '#8B5CF6', desc: 'React to colors fast.' },
+    { id: 'orbit-dodge', name: 'Orbit Dodge', cat: 'Skill', color: '#22D3EE', desc: 'Evasive maneuvers.' },
+    { id: 'tap-dash', name: 'Tap Dash', cat: 'Skill', color: '#F472B6', desc: 'Clear the void fast.' },
     { id: '2048', name: '2048', cat: 'Logic', color: '#8b5cf6', desc: 'Merge the reality.' },
     { id: 'minesweeper', name: 'Mines', cat: 'Logic', color: '#f9a8d4', desc: 'Clear the void.' },
-    { id: 'reaction', name: 'Reaction', cat: 'Skill', color: '#67e8f9', desc: 'Test your focus.' },
-    { id: 'tower', name: 'Stack', cat: 'Arcade', color: '#8b5cf6', desc: 'Reach the stars.' },
   ];
 
   return (

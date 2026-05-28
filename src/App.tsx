@@ -15,6 +15,9 @@ const Sudoku = lazy(() => import('./games/sudoku/Sudoku'));
 const Wordle = lazy(() => import('./games/wordle/Wordle'));
 const Reaction = lazy(() => import('./games/reaction/Reaction'));
 const Tower = lazy(() => import('./games/tower/Tower'));
+const ColorRush = lazy(() => import('./games/color-rush/ColorRush'));
+const OrbitDodge = lazy(() => import('./games/orbit-dodge/OrbitDodge'));
+const TapDash = lazy(() => import('./games/tap-dash/TapDash'));
 const PostGameOverlay = lazy(() => import('./shared/ui/PostGameOverlay'));
 
 function App() {
@@ -59,6 +62,9 @@ function App() {
                 {activeGameId === 'wordle' && <Wordle />}
                 {activeGameId === 'reaction' && <Reaction />}
                 {activeGameId === 'tower' && <Tower />}
+                {activeGameId === 'color-rush' && <ColorRush />}
+                {activeGameId === 'orbit-dodge' && <OrbitDodge />}
+                {activeGameId === 'tap-dash' && <TapDash />}
             </Suspense>
           </motion.div>
         )}

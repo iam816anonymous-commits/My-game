@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0a0a0c;
-  --color-surface: #121217;
-  --color-accent-cyan: #67e8f9;
-  --color-accent-violet: #8b5cf6;
-  --color-accent-gold: #fde68a;
-  --color-accent-rose: #f9a8d4;
+  --color-background: #050816;
+  --color-surface: #0F172A;
+  --color-accent-cyan: #22D3EE;
+  --color-accent-violet: #8B5CF6;
+  --color-accent-gold: #FACC15;
+  --color-accent-rose: #F472B6;
+  --color-accent-white: #E2E8F0;
 }
 
 @layer base {
   body {
     background-color: var(--color-background);
-    color: white;
+    color: var(--color-accent-white);
     font-family: sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
@@ -20,9 +21,9 @@
 
 @layer components {
   .glass-panel {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(15, 23, 42, 0.4);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(226, 232, 240, 0.1);
     border-radius: 1.5rem;
   }
 
@@ -33,17 +34,18 @@
   }
 
   .premium-button {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    border: 1px solid rgba(226, 232, 240, 0.1);
+    color: var(--color-accent-white);
     border-radius: 9999px;
     padding: 0.75rem 1.5rem;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .premium-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
+    background-color: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+    transform: translateY(-2px) scale(1.02);
   }
 }
