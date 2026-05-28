@@ -65,7 +65,7 @@ const LastLight: React.FC = () => {
 
         const isOverload = (state as any).currentCombo >= 10;
         player.update(delta, state.energy, isOverload);
-        entityManager.update(player.x, player.y, delta, state.totalMemoriesCollected);
+        entityManager.update(player.x, player.y, delta, state.totalMemoriesCollected, state.evolutionLevel);
         world.update(delta, state.evolutionLevel, player.x, player.y);
         audio.update(state.evolutionLevel);
 

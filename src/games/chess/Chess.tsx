@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Chess } from 'chess.js';
 import type { Square } from 'chess.js';
 import { usePlayStore } from '../../shared/store/usePlayStore';
@@ -13,6 +13,12 @@ const ChessGame: React.FC = () => {
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [capturedPieces, setCapturedPieces] = useState<{ w: string[], b: string[] }>({ w: [], b: [] });
+  const [lastMove, setLastMove] = useState<{ from: string, to: string } | null>(null);
+
+  const validMoves = useMemo(() => {
+      if (!selectedSquare) return [];
+      return game.moves({ square: selectedSquare, verbose: true }).map(m => m.to);
+  }, [game, selectedSquare]);
 
   const makeMove = useCallback((move: any) => {
     try {
@@ -20,6 +26,7 @@ const ChessGame: React.FC = () => {
       if (result) {
         setGame(new Chess(game.fen()));
         setMoveHistory(h => [...h, result.san]);
+        setLastMove({ from: result.from, to: result.to });
 
         // Handle captured pieces
         if (result.captured) {
@@ -28,6 +35,7 @@ const ChessGame: React.FC = () => {
                 ...prev,
                 [color]: [...prev[color as keyof typeof prev], result.captured!]
             }));
+            updateXP(50);
         }
 
         if (game.isGameOver()) {
@@ -39,10 +47,10 @@ const ChessGame: React.FC = () => {
       return false;
     }
     return false;
-  }, [game, moveHistory.length, finishGame]);
+  }, [game, moveHistory.length, finishGame, updateXP]);
 
   const onSquareClick = (square: Square) => {
-    if (game.turn() !== 'w') return; // Only allow white to move manually
+    if (game.turn() !== 'w' || game.isGameOver()) return;
 
     if (selectedSquare === null) {
       const piece = game.get(square);
@@ -67,7 +75,7 @@ const ChessGame: React.FC = () => {
         if (bestMove) {
           makeMove(bestMove);
         }
-      }, 500);
+      }, 600); // V9: Consistent AI pacing
       return () => clearTimeout(timer);
     }
   }, [game, difficulty, makeMove]);
@@ -77,6 +85,7 @@ const ChessGame: React.FC = () => {
     setSelectedSquare(null);
     setMoveHistory([]);
     setCapturedPieces({ w: [], b: [] });
+    setLastMove(null);
   };
 
   const board = game.board();
@@ -87,8 +96,8 @@ const ChessGame: React.FC = () => {
       <div className="flex w-full max-w-4xl justify-between items-center z-10">
         <button onClick={exitToDashboard} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><Home size={20} /></button>
         <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter">Grandmaster <span className="text-accent-cyan">Chess</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V6 Logic Engine</div>
+            <h2 className="text-2xl font-black italic uppercase tracking-tighter">Grandmaster <span className="text-accent-cyan text-glow">Chess</span></h2>
+            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V9 Strategy Logic</div>
         </div>
         <button onClick={restart} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><RotateCcw size={20} /></button>
       </div>
@@ -112,34 +121,46 @@ const ChessGame: React.FC = () => {
 
           {/* Main Board */}
           <div className="relative group">
-              <div className="absolute inset-0 bg-accent-cyan/10 blur-3xl rounded-full pointer-events-none group-hover:bg-accent-cyan/20 transition-all" />
-              <div className="relative bg-white/5 p-2 rounded-[1.5rem] border border-white/10 shadow-2xl overflow-hidden aspect-square w-full max-w-[500px]">
-                  <div className="grid grid-cols-8 grid-rows-8 w-full h-full border border-white/5">
+              <div className="absolute inset-0 bg-accent-cyan/5 blur-[100px] rounded-full pointer-events-none group-hover:bg-accent-cyan/10 transition-all duration-1000" />
+              <div className="relative bg-[#0a0a0f] p-3 rounded-[1.5rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden aspect-square w-full max-w-[520px]">
+                  <div className="grid grid-cols-8 grid-rows-8 w-full h-full border-2 border-white/5 rounded-lg overflow-hidden">
                       {board.map((row, r) => row.map((cell, c) => {
                           const square = `${String.fromCharCode(97 + c)}${8 - r}` as Square;
                           const isDark = (r + c) % 2 === 1;
                           const isSelected = selectedSquare === square;
+                          const isLastMove = lastMove && (lastMove.from === square || lastMove.to === square);
+                          const isValidTarget = validMoves.includes(square);
                           const piece = cell;
 
                           return (
                               <div
                                 key={square}
                                 onClick={() => onSquareClick(square)}
-                                className={`relative flex items-center justify-center cursor-pointer transition-colors ${
-                                    isDark ? 'bg-white/5' : 'bg-transparent'
-                                } ${isSelected ? 'bg-accent-cyan/20' : 'hover:bg-white/10'}`}
+                                className={`relative flex items-center justify-center cursor-pointer transition-all duration-300 ${
+                                    isDark ? 'bg-white/[0.02]' : 'bg-transparent'
+                                } ${isSelected ? 'bg-accent-cyan/30 shadow-inner' : ''} ${isLastMove ? 'bg-accent-gold/10' : ''}`}
                               >
-                                  {piece && (
-                                      <motion.div
-                                        layoutId={`piece-${r}-${c}`}
-                                        className={`text-3xl md:text-4xl select-none ${piece.color === 'w' ? 'text-white' : 'text-accent-cyan'}`}
-                                      >
-                                          {getPieceIcon(piece.type, piece.color)}
-                                      </motion.div>
+                                  {isValidTarget && (
+                                      <div className={`absolute w-3 h-3 rounded-full ${piece ? 'border-2 border-accent-cyan/40 scale-150' : 'bg-accent-cyan/20 animate-pulse'}`} />
                                   )}
+
+                                  <AnimatePresence>
+                                      {piece && (
+                                          <motion.div
+                                            layoutId={`piece-${piece.type}-${piece.color}-${r}-${c}`}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.5 }}
+                                            className={`text-3xl md:text-4xl select-none z-10 transition-colors ${piece.color === 'w' ? 'text-white' : 'text-accent-cyan text-glow'}`}
+                                          >
+                                              {getPieceIcon(piece.type, piece.color)}
+                                          </motion.div>
+                                      )}
+                                  </AnimatePresence>
+
                                   {/* Coordinate Labels */}
-                                  {c === 0 && <span className="absolute top-0.5 left-0.5 text-[6px] text-white/10 font-bold">{8 - r}</span>}
-                                  {r === 7 && <span className="absolute bottom-0.5 right-0.5 text-[6px] text-white/10 font-bold">{String.fromCharCode(97 + c)}</span>}
+                                  {c === 0 && <span className="absolute top-0.5 left-0.5 text-[6px] text-white/10 font-black">{8 - r}</span>}
+                                  {r === 7 && <span className="absolute bottom-0.5 right-0.5 text-[6px] text-white/10 font-black">{String.fromCharCode(97 + c)}</span>}
                               </div>
                           );
                       }))}
@@ -170,7 +191,7 @@ const ChessGame: React.FC = () => {
 
               <div className="p-6 bg-white/5 rounded-3xl border border-white/5 h-80 flex flex-col">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="text-[8px] font-black uppercase tracking-widest text-white/20">Move History</div>
+                    <div className="text-[8px] font-black uppercase tracking-widest text-white/20">Log Stream</div>
                     <History size={14} className="text-white/20" />
                   </div>
                   <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -197,15 +218,15 @@ const ChessGame: React.FC = () => {
       <AnimatePresence>
           {game.isGameOver() && (
               <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center"
+                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
               >
                   <Trophy size={64} className="text-accent-cyan mb-6" />
-                  <h3 className="text-5xl font-black italic uppercase tracking-tighter mb-2">Checkmate</h3>
-                  <div className="text-white/40 font-bold uppercase tracking-widest text-sm mb-12">
-                      {game.turn() === 'w' ? 'Black Victory' : 'White Victory'}
+                  <h3 className="text-6xl font-black italic uppercase tracking-tighter mb-4 text-white">Logic Victory</h3>
+                  <div className="text-accent-cyan font-black uppercase tracking-[0.4em] text-sm mb-12">
+                      {game.turn() === 'w' ? 'Opponent Mastery' : 'Human Mastery'}
                   </div>
-                  <button onClick={restart} className="px-12 py-6 bg-accent-cyan text-black font-black uppercase tracking-widest rounded-2xl">End Session</button>
+                  <button onClick={restart} className="px-12 py-6 bg-white text-black font-black uppercase tracking-widest rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.3)]">Restart Loop</button>
               </motion.div>
           )}
       </AnimatePresence>

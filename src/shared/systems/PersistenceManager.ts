@@ -8,7 +8,8 @@ export async function saveState() {
   const persistable = {
     profile: state.profile,
     highScores: state.highScores,
-    favorites: state.favorites
+    favorites: state.favorites,
+    dailyChallenges: state.dailyChallenges
   };
   await set(STORAGE_KEY, persistable);
 }
@@ -19,7 +20,8 @@ export async function loadState() {
     usePlayStore.setState({
       profile: saved.profile,
       highScores: saved.highScores,
-      favorites: saved.favorites
+      favorites: saved.favorites,
+      dailyChallenges: saved.dailyChallenges || usePlayStore.getState().dailyChallenges
     });
     return true;
   }

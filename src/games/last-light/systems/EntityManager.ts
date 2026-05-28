@@ -5,6 +5,7 @@ export class EntityManager {
   private memories: PIXI.Container;
   private environment: PIXI.Container;
   private ambient: PIXI.Container;
+  private effects: PIXI.Container;
   private pool: PIXI.Graphics[] = [];
 
   constructor(stage: PIXI.Container) {
@@ -12,25 +13,40 @@ export class EntityManager {
     this.ambient = new PIXI.Container();
     this.environment = new PIXI.Container();
     this.memories = new PIXI.Container();
+    this.effects = new PIXI.Container();
     this.stage.addChild(this.ambient);
     this.stage.addChild(this.environment);
     this.stage.addChild(this.memories);
+    this.stage.addChild(this.effects);
 
     this.initAmbient();
   }
 
   private initAmbient() {
     // Permanent faint floating dust
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 150; i++) {
         const d = new PIXI.Graphics();
         d.circle(0, 0, 1);
         d.fill({ color: 0xffffff, alpha: 0.1 });
         d.x = Math.random() * window.innerWidth;
         d.y = Math.random() * window.innerHeight;
-        (d as any).vx = (Math.random() - 0.5) * 0.5;
-        (d as any).vy = (Math.random() - 0.5) * 0.5;
+        (d as any).vx = (Math.random() - 0.5) * 0.3;
+        (d as any).vy = (Math.random() - 0.5) * 0.3;
+        (d as any).depth = 0.5 + Math.random() * 0.5;
         this.ambient.addChild(d);
     }
+  }
+
+  public spawnAmbientEffect(x: number, y: number, color: number = 0xffffff) {
+    const p = new PIXI.Graphics();
+    p.circle(0, 0, 1 + Math.random() * 2);
+    p.fill({ color, alpha: 0.3 });
+    p.x = x;
+    p.y = y;
+    (p as any).vx = (Math.random() - 0.5) * 2;
+    (p as any).vy = -Math.random() * 2;
+    (p as any).life = 1.0;
+    this.effects.addChild(p);
   }
 
   public spawnMemory(x: number, y: number, type: 'standard' | 'rare' | 'gold' = 'standard') {
@@ -63,9 +79,17 @@ export class EntityManager {
     this.pool.push(memory);
   }
 
-  public update(playerX: number, playerY: number, delta: number, totalCollected: number) {
+  public update(playerX: number, playerY: number, delta: number, totalCollected: number, evolutionLevel: number) {
     const difficultyMultiplier = Math.min(3, 1 + totalCollected / 100);
-    const maxMemories = 40 + Math.floor(totalCollected / 5); // Dense world V5
+    const maxMemories = 40 + Math.floor(totalCollected / 4); // Denser V9
+
+    // Ambient Atmosphere Spawning (V9)
+    if (Math.random() < 0.05 * delta) {
+        const ax = playerX + (Math.random() - 0.5) * 2000;
+        const ay = playerY + (Math.random() - 0.5) * 2000;
+        const color = evolutionLevel >= 3 ? 0xfacc15 : 0xffffff; // Fireflies color
+        this.spawnAmbientEffect(ax, ay, color);
+    }
 
     // Cluster Spawning
     if (this.memories.children.length < maxMemories && Math.random() < 0.1 * difficultyMultiplier * delta) {
@@ -83,15 +107,27 @@ export class EntityManager {
       }
     }
 
-    // Update Ambient Particles
+    // Update Ambient Particles with Parallax-lite
     this.ambient.children.forEach(d => {
         d.x += (d as any).vx * delta;
         d.y += (d as any).vy * delta;
+
+        // Wrap
         if (d.x < 0) d.x = window.innerWidth;
         if (d.x > window.innerWidth) d.x = 0;
         if (d.y < 0) d.y = window.innerHeight;
         if (d.y > window.innerHeight) d.y = 0;
     });
+
+    // Update Temporary Effects
+    for (let i = this.effects.children.length - 1; i >= 0; i--) {
+        const p = this.effects.children[i] as any;
+        p.x += p.vx * delta;
+        p.y += p.vy * delta;
+        p.life -= 0.01 * delta;
+        p.alpha = p.life * 0.5;
+        if (p.life <= 0) this.effects.removeChild(p);
+    }
 
     // Cull distant memories
     for (let i = this.memories.children.length - 1; i >= 0; i--) {
