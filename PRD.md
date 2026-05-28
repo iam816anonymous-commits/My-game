@@ -1,31 +1,25 @@
-# Last Light: Companion - Product Requirements Document
+# Last Light - Product Requirements Document
 
-## 1. Overview
-"Last Light: Companion" is an emotional companion web game where players care for a glowing fox spirit in an evolving, infinite world. It focuses on attachment, identity, and narrative over traditional gameplay complexity.
+## 1. Vision
+"Last Light" is an atmospheric, addictive browser game where players maintain a fading light in an evolving procedural world.
 
 ## 2. Core Mechanics
-- **Companion AI:** A fox spirit that wanders, reacts to interactions, and experiences emotions (happy, lonely, excited, etc.).
-- **Offline Simulation:** The world and companion continue to exist when the player is away. Upon return, the game reconstructs the history of the absence.
-- **Permanent Evolution:** The world grows older in "Days". Progression is permanent and unlocks new environmental layers.
-- **Narrative Journal:** A scrollable log of events and interactions that builds a personal history.
+- **Light Orb:** Responsive mouse/touch-controlled entity.
+- **Energy:** Decays over time; restored by collecting memory particles.
+- **Evolution:** The world transforms through 7 stages as progress increases.
+- **Minimalism:** No menus or complex controls; experience-driven.
 
-## 3. World Evolution (7 Levels)
-1. **Day 1 (Void):** Empty darkness.
-2. **Day 10 (Grass):** Soft greenery appears.
-3. **Day 20 (Fireflies):** Glowing life emerges.
-4. **Day 30 (Trees):** Silhouetted forests rise.
-5. **Day 50 (Weather):** Rain and clouds begin to cycle.
-6. **Day 90 (Animals):** Other ghostly spirits wander by.
-7. **Day 145 (Constellations):** The sky fills with permanent star patterns.
+## 3. Evolution Levels
+1. **Void:** Pure darkness.
+2. **Grass:** Greenery emerges.
+3. **Fireflies:** Animated glowing particles.
+4. **Trees:** Forest silhouettes.
+5. **Rain:** Vertical particle weather.
+6. **Animals:** Ghostly companion spirits.
+7. **Constellations:** Permanent celestial patterns.
 
-## 4. Key Systems
-- **Emotion System:** Derives companion mood from interaction frequency and world state.
-- **Weather Manager:** Handles dynamic transitions between clear, rain, and snow.
-- **Screenshot Exporter:** Generates 1080x1920 PNG share cards with world statistics.
-- **Event System:** Triggers rare occurrences like meteor showers or companion gifts.
-
-## 5. Technical Requirements
-- **Rendering:** PixiJS 8 for stable 60fps on mobile.
-- **State:** Zustand with atomic selectors for performance.
-- **Persistence:** Versioned IndexedDB (idb-keyval) with corruption recovery.
-- **Platform:** Progressive Web App (PWA) with offline support.
+## 4. Technical Specifications
+- **Stack:** React 19 + PixiJS 8 + Vite + TypeScript.
+- **Persistence:** Progress saved automatically to IndexedDB.
+- **Audio:** Dynamic ambient layers that evolve with the world.
+- **Mobile:** Fully responsive and PWA-ready.

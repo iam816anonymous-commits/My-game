@@ -1,59 +1,57 @@
-import { useEffect, useMemo } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { useStore } from './store/useStore';
-import { loadGame, saveGame } from './systems/PersistenceManager';
-import { soundController } from './audio/SoundController';
-import type { GameState } from './types/game';
+import { useEffect, lazy, Suspense, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { usePlayStore } from './shared/store/usePlayStore';
+import { loadState, saveState } from './shared/systems/PersistenceManager';
 import throttle from 'lodash/throttle';
 
-import Hub from './ui/Hub';
-import { StardustView } from './minigames/StardustView';
-import { EchoesGame } from './minigames/EchoesGame';
-import { FlowView } from './minigames/FlowView';
-import { OrreryView } from './minigames/OrreryView';
-import { LogicGame } from './minigames/LogicGame';
-import { WordGame } from './minigames/WordGame';
-import { LinkView } from './minigames/LinkView';
-import { PairsGame } from './minigames/PairsGame';
+const Dashboard = lazy(() => import('./apps/Dashboard'));
+const LastLight = lazy(() => import('./games/last-light/LastLight'));
+const Chess = lazy(() => import('./games/chess/Chess'));
+const Snake = lazy(() => import('./games/snake/Snake'));
+const Game2048 = lazy(() => import('./games/2048/Game2048'));
+const Minesweeper = lazy(() => import('./games/minesweeper/Minesweeper'));
+const Sudoku = lazy(() => import('./games/sudoku/Sudoku'));
+const Wordle = lazy(() => import('./games/wordle/Wordle'));
 
 function App() {
-  const currentScene = useStore(state => state.currentScene);
-  const scores = useStore(state => state.scores);
+  const { currentScene, activeGameId, profile, highScores, favorites } = usePlayStore();
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      const savedState = await loadGame();
-      if (savedState) {
-        useStore.setState(savedState as GameState);
-      }
-      soundController.playBase();
-    };
-    init();
+    loadState().then(() => setLoaded(true));
   }, []);
 
-  const throttledSave = useMemo(
-    () => throttle((payload: Partial<GameState>) => {
-      saveGame(payload);
-    }, 5000),
-    []
-  );
-
   useEffect(() => {
-      throttledSave({ scores } as Partial<GameState>);
-  }, [scores, throttledSave]);
+    if (loaded) {
+        const throttledSave = throttle(() => saveState(), 5000);
+        throttledSave();
+    }
+  }, [profile, highScores, favorites, loaded]);
+
+  if (!loaded) return <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center font-black italic uppercase tracking-tighter text-accent-cyan animate-pulse">Initializing Reality...</div>;
 
   return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#070B18', color: '#fff', overflow: 'hidden', position: 'relative' }}>
+    <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-accent-cyan/30">
       <AnimatePresence mode="wait">
-        {currentScene === 'hub' && <Hub key="hub" />}
-        {currentScene === 'stardust' && <div key="stardust" style={{ position: 'absolute', inset: 0 }}><StardustView /></div>}
-        {currentScene === 'echoes' && <div key="echoes" style={{ position: 'absolute', inset: 0 }}><EchoesGame /></div>}
-        {currentScene === 'flow' && <div key="flow" style={{ position: 'absolute', inset: 0 }}><FlowView /></div>}
-        {currentScene === 'orrery' && <div key="orrery" style={{ position: 'absolute', inset: 0 }}><OrreryView /></div>}
-        {currentScene === 'logic' && <div key="logic" style={{ position: 'absolute', inset: 0 }}><LogicGame /></div>}
-        {currentScene === 'words' && <div key="words" style={{ position: 'absolute', inset: 0 }}><WordGame /></div>}
-        {currentScene === 'link' && <div key="link" style={{ position: 'absolute', inset: 0 }}><LinkView /></div>}
-        {currentScene === 'pairs' && <div key="pairs" style={{ position: 'absolute', inset: 0 }}><PairsGame /></div>}
+        {currentScene === 'dashboard' && (
+          <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <Suspense fallback={null}><Dashboard /></Suspense>
+          </motion.div>
+        )}
+
+        {currentScene === 'game' && (
+          <motion.div key="game" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="fixed inset-0 z-50 bg-[#0a0a0c]">
+            <Suspense fallback={null}>
+                {activeGameId === 'last-light' && <LastLight />}
+                {activeGameId === 'chess' && <Chess />}
+                {activeGameId === 'snake' && <Snake />}
+                {activeGameId === '2048' && <Game2048 />}
+                {activeGameId === 'minesweeper' && <Minesweeper />}
+                {activeGameId === 'sudoku' && <Sudoku />}
+                {activeGameId === 'wordle' && <Wordle />}
+            </Suspense>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );

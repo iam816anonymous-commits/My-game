@@ -1,74 +1,49 @@
-:root {
-  --color-space: #070B18;
-  --color-midnight: #111827;
-  --color-violet: #8B5CF6;
-  --color-cyan: #67E8F9;
-  --color-gold: #FDE68A;
-  --color-rose: #F9A8D4;
+@import "tailwindcss";
 
-  --glass-bg: rgba(17, 24, 39, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: 16px;
+@theme {
+  --color-background: #0a0a0c;
+  --color-surface: #121217;
+  --color-accent-cyan: #67e8f9;
+  --color-accent-violet: #8b5cf6;
+  --color-accent-gold: #fde68a;
+  --color-accent-rose: #f9a8d4;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: white;
+    font-family: sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
-body {
-  background-color: var(--color-space);
-  color: #ffffff;
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-  overflow: hidden;
-  user-select: none;
-}
+@layer components {
+  .glass-panel {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+  }
 
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: 32px;
-}
+  .text-premium {
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 200;
+  }
 
-.text-premium {
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  font-weight: 200;
-}
+  .premium-button {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s;
+  }
 
-.premium-button {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  border-radius: 40px;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.premium-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.premium-button:active {
-  transform: translateY(0);
-}
-
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  .premium-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
 }
