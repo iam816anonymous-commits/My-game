@@ -72,7 +72,22 @@ export class Player {
     window.removeEventListener('touchmove', this.handleTouch);
   }
 
+  private shakeTime = 0;
+
+  public shake(intensity: number) {
+    this.shakeTime = intensity;
+  }
+
   public update(delta: number, energy: number) {
+    // Screen Shake
+    let offsetX = 0;
+    let offsetY = 0;
+    if (this.shakeTime > 0) {
+        offsetX = (Math.random() - 0.5) * this.shakeTime;
+        offsetY = (Math.random() - 0.5) * this.shakeTime;
+        this.shakeTime -= delta;
+    }
+
     // Update energy-based scaling
     const scale = 0.5 + (energy / 100) * 0.5;
     this.orb.scale.set(scale);
@@ -83,8 +98,8 @@ export class Player {
     this.currentX += (this.targetX - this.currentX) * this.LERP_FACTOR * delta;
     this.currentY += (this.targetY - this.currentY) * this.LERP_FACTOR * delta;
 
-    this.orb.position.set(this.currentX, this.currentY);
-    this.glow.position.set(this.currentX, this.currentY);
+    this.orb.position.set(this.currentX + offsetX, this.currentY + offsetY);
+    this.glow.position.set(this.currentX + offsetX, this.currentY + offsetY);
 
     // Update trail
     for (let i = this.TRAIL_LENGTH - 1; i > 0; i--) {

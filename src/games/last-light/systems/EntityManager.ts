@@ -44,9 +44,13 @@ export class EntityManager {
     this.pool.push(memory);
   }
 
-  public update(playerX: number, playerY: number, delta: number) {
+  public update(playerX: number, playerY: number, delta: number, totalCollected: number) {
+    // Mastery Curve: Spawning gets tighter and more frequent as score increases
+    const difficultyMultiplier = Math.min(2, 1 + totalCollected / 100);
+    const maxMemories = 15 + Math.floor(totalCollected / 20);
+
     // Basic procedural spawning around player
-    if (this.memories.children.length < 15 && Math.random() < 0.05 * delta) {
+    if (this.memories.children.length < maxMemories && Math.random() < 0.05 * difficultyMultiplier * delta) {
       const angle = Math.random() * Math.PI * 2;
       const dist = 300 + Math.random() * 500;
       const x = playerX + Math.cos(angle) * dist;

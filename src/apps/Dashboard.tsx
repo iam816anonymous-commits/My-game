@@ -18,7 +18,7 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col selection:bg-accent-cyan/30">
       {/* Mobile-First Header */}
       <header className="p-6 md:p-12 flex justify-between items-center border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-3">
@@ -55,6 +55,29 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="w-12 h-12 rounded-2xl bg-accent-cyan/20 flex items-center justify-center text-accent-cyan group-hover:scale-110 transition-transform">
                     <Award size={24} />
+                </div>
+            </div>
+        </section>
+
+        {/* Featured break-out game */}
+        <section className="relative group cursor-pointer" onClick={() => launchGame('last-light')}>
+            <div className="absolute inset-0 bg-gradient-to-r from-accent-cyan/20 to-accent-violet/20 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity" />
+            <div className="relative p-12 bg-white/5 border border-white/10 rounded-[3rem] flex flex-col md:flex-row justify-between items-center gap-12 overflow-hidden">
+                <div className="space-y-6 flex-1">
+                    <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-accent-cyan rounded-full animate-ping" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent-cyan">Featured Reality</span>
+                    </div>
+                    <h2 className="text-5xl font-black italic uppercase tracking-tighter leading-none">Last Light</h2>
+                    <p className="text-white/40 max-w-md font-medium">The most played reality in the universe. Can you maintain the light?</p>
+                    <div className="flex gap-4">
+                        <div className="px-6 py-3 bg-accent-cyan text-black font-black uppercase tracking-widest text-[10px] rounded-xl">Play Now</div>
+                        <div className="px-6 py-3 bg-white/5 text-white/40 font-black uppercase tracking-widest text-[10px] rounded-xl border border-white/10">1.2M Players</div>
+                    </div>
+                </div>
+                <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-accent-cyan/20 rounded-full blur-3xl animate-pulse" />
+                    <div className="w-8 h-8 bg-white rounded-full shadow-[0_0_50px_white]" />
                 </div>
             </div>
         </section>

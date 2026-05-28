@@ -20,11 +20,25 @@ export class ProgressionManager {
     return this.state;
   }
 
+  private comboCount = 0;
+  private lastCollectTime = 0;
+
   public collectMemory(type: 'standard' | 'rare'): GameState {
+    const now = Date.now();
+    if (now - this.lastCollectTime < 1500) {
+      this.comboCount++;
+    } else {
+      this.comboCount = 1;
+    }
+    this.lastCollectTime = now;
+
     const energyGain = type === 'rare' ? 25 : 10;
-    this.state.energy = Math.min(100, this.state.energy + energyGain);
+    const comboBonus = Math.min(2, 1 + this.comboCount * 0.1);
+
+    this.state.energy = Math.min(100, this.state.energy + energyGain * comboBonus);
     this.state.memoriesCollected += 1;
     this.state.totalMemoriesCollected += 1;
+    (this.state as any).currentCombo = this.comboCount;
 
     // Check achievements and evolution
     this.checkAchievements(type);

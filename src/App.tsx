@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense, useState } from 'react';
+import { useEffect, lazy, Suspense, useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePlayStore } from './shared/store/usePlayStore';
 import { loadState, saveState } from './shared/systems/PersistenceManager';
@@ -26,12 +26,13 @@ function App() {
     });
   }, []);
 
+  const throttledSave = useMemo(() => throttle(() => saveState(), 5000), []);
+
   useEffect(() => {
     if (loaded) {
-        const throttledSave = throttle(() => saveState(), 5000);
         throttledSave();
     }
-  }, [profile, highScores, favorites, loaded]);
+  }, [profile, highScores, favorites, loaded, throttledSave]);
 
   if (!loaded) return <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center font-black italic uppercase tracking-tighter text-accent-cyan animate-pulse">Initializing Reality...</div>;
 

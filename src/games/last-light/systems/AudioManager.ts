@@ -26,6 +26,15 @@ export class AudioManager {
     });
   }
 
+  public playCollect(combo: number) {
+    if (!this.initialized) return;
+    const sound = this.ambientLayers.get(1); // Reusing a layer for sfx for now
+    if (sound) {
+        sound.rate(1 + (combo * 0.1));
+        sound.play();
+    }
+  }
+
   public update(level: EvolutionLevel) {
     if (!this.initialized) return;
 

@@ -16,6 +16,10 @@ export class Engine {
     return Engine.instance;
   }
 
+  private handleResize = () => {
+    this.app.renderer.resize(window.innerWidth, window.innerHeight);
+  };
+
   private async init() {
     await this.app.init({
       background: '#0a0a0c',
@@ -27,9 +31,7 @@ export class Engine {
     });
 
     // Handle window resize
-    window.addEventListener('resize', () => {
-      this.app.renderer.resize(window.innerWidth, window.innerHeight);
-    });
+    window.addEventListener('resize', this.handleResize);
   }
 
   public get stage() {
@@ -49,6 +51,7 @@ export class Engine {
   }
 
   public destroy() {
+    window.removeEventListener('resize', this.handleResize);
     this.app.destroy(true, { children: true, texture: true, context: true });
   }
 }

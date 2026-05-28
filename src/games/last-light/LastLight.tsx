@@ -13,7 +13,7 @@ import { Home } from 'lucide-react';
 const LastLight: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Engine | null>(null);
-  const { exitToDashboard, updateXP, setLastLightState } = usePlayStore();
+  const { exitToDashboard, updateXP, setLastLightState, finishGame } = usePlayStore();
 
   useEffect(() => {
     let progression: ProgressionManager;
@@ -43,7 +43,8 @@ const LastLight: React.FC = () => {
           energy: s.energy,
           evolutionLevel: s.evolutionLevel,
           evolutionProgress: s.evolutionProgress,
-          totalMemoriesCollected: s.totalMemoriesCollected
+          totalMemoriesCollected: s.totalMemoriesCollected,
+          currentCombo: s.currentCombo || 0
         });
       }, 100);
 
@@ -51,8 +52,13 @@ const LastLight: React.FC = () => {
         const delta = ticker.deltaTime;
         const state = progression.update(delta);
 
+        if (state.energy <= 0) {
+            finishGame(state.totalMemoriesCollected);
+            engine.ticker.stop();
+        }
+
         player.update(delta, state.energy);
-        entityManager.update(player.x, player.y, delta);
+        entityManager.update(player.x, player.y, delta, state.totalMemoriesCollected);
         world.update(delta, state.evolutionLevel, player.x, player.y);
         audio.update(state.evolutionLevel);
 
@@ -64,9 +70,11 @@ const LastLight: React.FC = () => {
             const dy = m.y - player.y;
             if (dx*dx + dy*dy < 400) {
                 const type = (m as any).memoryType;
-                progression.collectMemory(type);
+                const newState = progression.collectMemory(type);
                 entityManager.collect(m);
                 audio.resume();
+                audio.playCollect((newState as any).currentCombo);
+                player.shake(5);
                 updateXP(type === 'rare' ? 50 : 10);
             }
         });
