@@ -3,7 +3,7 @@ import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RotateCcw } from 'lucide-react';
 
 const Snake: React.FC = () => {
-  const { exitToDashboard, updateXP } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
   const [snake, setSnake] = useState([[10, 10], [10, 11], [10, 12]]);
   const [food, setFood] = useState([5, 5]);
   const [dir, setDir] = useState([0, -1]);
@@ -16,6 +16,7 @@ const Snake: React.FC = () => {
         const head = [prev[0][0] + dir[0], prev[0][1] + dir[1]];
         if (head[0] < 0 || head[0] >= 20 || head[1] < 0 || head[1] >= 20 || prev.some(s => s[0] === head[0] && s[1] === head[1])) {
           setGameOver(true);
+          setTimeout(() => finishGame(snake.length * 10), 1000);
           return prev;
         }
         const newSnake = [head, ...prev];

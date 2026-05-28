@@ -2,6 +2,7 @@ import { useEffect, lazy, Suspense, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePlayStore } from './shared/store/usePlayStore';
 import { loadState, saveState } from './shared/systems/PersistenceManager';
+import { AnalyticsManager } from './shared/systems/AnalyticsManager';
 import throttle from 'lodash/throttle';
 
 const Dashboard = lazy(() => import('./apps/Dashboard'));
@@ -12,13 +13,17 @@ const Game2048 = lazy(() => import('./games/2048/Game2048'));
 const Minesweeper = lazy(() => import('./games/minesweeper/Minesweeper'));
 const Sudoku = lazy(() => import('./games/sudoku/Sudoku'));
 const Wordle = lazy(() => import('./games/wordle/Wordle'));
+const PostGameOverlay = lazy(() => import('./shared/ui/PostGameOverlay'));
 
 function App() {
   const { currentScene, activeGameId, profile, highScores, favorites } = usePlayStore();
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    loadState().then(() => setLoaded(true));
+    loadState().then(() => {
+        setLoaded(true);
+        AnalyticsManager.trackSessionStart();
+    });
   }, []);
 
   useEffect(() => {
@@ -50,6 +55,12 @@ function App() {
                 {activeGameId === 'sudoku' && <Sudoku />}
                 {activeGameId === 'wordle' && <Wordle />}
             </Suspense>
+          </motion.div>
+        )}
+
+        {currentScene === 'postgame' && (
+          <motion.div key="postgame" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+             <Suspense fallback={null}><PostGameOverlay /></Suspense>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePlayStore } from '../shared/store/usePlayStore';
-import { User, Share2, Zap, TrendingUp, Clock, Play, Heart, Search } from 'lucide-react';
+import { User, Share2, Zap, TrendingUp, Clock, Play, Heart, Search, LayoutGrid, Award, Settings, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChallengeManager } from '../shared/systems/ChallengeManager';
 
 const Dashboard: React.FC = () => {
-  const { profile, launchGame, toggleFavorite, favorites } = usePlayStore();
+  const { profile, launchGame, toggleFavorite, favorites, dailyChallenges } = usePlayStore();
+  const modifier = ChallengeManager.getDailyModifier();
+  const [activeTab, setActiveTab] = useState('all');
 
   const GAMES = [
     { id: 'last-light', name: 'Last Light', cat: 'Arcade', color: '#67e8f9', desc: 'Atmospheric light collection.' },
@@ -15,85 +18,109 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen p-8 md:p-16 bg-[#0a0a0c] text-white space-y-16">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-        <div>
-           <h1 className="text-6xl font-black tracking-tighter italic leading-tight">PLAY<span className="text-accent-cyan">VERSE</span></h1>
-           <p className="text-[10px] text-white/20 uppercase tracking-[0.5em] font-bold mt-2">Premium Browser Mini-Games</p>
+    <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col">
+      {/* Mobile-First Header */}
+      <header className="p-6 md:p-12 flex justify-between items-center border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-accent-cyan rounded-xl flex items-center justify-center text-black font-black italic text-xl shadow-[0_0_20px_rgba(103,232,249,0.3)]">P</div>
+            <h1 className="text-2xl font-black tracking-tighter italic uppercase">Play<span className="text-accent-cyan">verse</span></h1>
         </div>
-        <div className="flex items-center gap-4">
-            <button className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/20 hover:text-white"><Share2 size={20} /></button>
-            <div className="p-4 bg-white/5 rounded-3xl border border-white/10 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-accent-violet/20 flex items-center justify-center text-accent-violet"><User size={24} /></div>
-                <div>
-                    <div className="font-black italic uppercase tracking-tighter text-lg">{profile.name}</div>
-                    <div className="text-[10px] text-white/30 uppercase font-bold tracking-widest">Lvl {profile.level} • {profile.xp} XP</div>
-                </div>
+        <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end mr-4 hidden md:block">
+                <div className="text-[10px] font-black uppercase tracking-widest text-accent-cyan">{profile.title}</div>
+                <div className="text-xs font-bold text-white/40">LVL {profile.level}</div>
             </div>
+            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40"><User size={20} /></div>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-              { icon: <TrendingUp className="text-accent-cyan" />, label: 'Rank', value: '#42 Global' },
-              { icon: <Zap className="text-accent-gold" />, label: 'Streak', value: `${profile.streak} Days` },
-              { icon: <Clock className="text-accent-rose" />, label: 'Played', value: '12.4 Hours' },
-          ].map((stat, i) => (
-              <div key={i} className="p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center gap-6">
-                  <div className="p-4 bg-white/5 rounded-2xl">{stat.icon}</div>
-                  <div>
-                      <div className="text-[10px] text-white/20 uppercase font-black tracking-widest">{stat.label}</div>
-                      <div className="text-xl font-black italic uppercase tracking-tighter">{stat.value}</div>
-                  </div>
-              </div>
-          ))}
-      </div>
+      <main className="flex-1 p-6 md:p-12 space-y-12 pb-32">
+        {/* Quick Stats Grid */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-1">
+                <Zap size={16} className="text-accent-gold" />
+                <div className="text-2xl font-black italic">{profile.streak}</div>
+                <div className="text-[8px] font-black uppercase tracking-widest text-white/20">Day Streak</div>
+            </div>
+            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-1">
+                <Sparkles size={16} className="text-accent-rose" />
+                <div className="text-2xl font-black italic truncate">{modifier.name}</div>
+                <div className="text-[8px] font-black uppercase tracking-widest text-white/20">Daily Event</div>
+            </div>
+            {/* Daily Challenge Preview */}
+            <div className="col-span-2 p-6 bg-accent-cyan/10 rounded-3xl border border-accent-cyan/20 flex items-center justify-between group">
+                <div>
+                    <div className="text-[8px] font-black uppercase tracking-widest text-accent-cyan mb-1">Daily Challenge</div>
+                    <div className="text-sm font-bold truncate max-w-[200px]">{dailyChallenges[0].description}</div>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-accent-cyan/20 flex items-center justify-center text-accent-cyan group-hover:scale-110 transition-transform">
+                    <Award size={24} />
+                </div>
+            </div>
+        </section>
 
-      <section className="space-y-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-              <div className="flex gap-4 p-2 bg-white/5 rounded-2xl border border-white/5">
-                  {['All', 'Board', 'Logic', 'Arcade'].map(c => (
-                      <button key={c} className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${c === 'All' ? 'bg-accent-cyan text-black' : 'text-white/40 hover:text-white'}`}>{c}</button>
-                  ))}
-              </div>
-              <div className="relative w-full md:w-96">
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-                  <input type="text" placeholder="Search Universe..." className="w-full bg-white/5 border border-white/5 rounded-full py-5 pl-16 pr-8 outline-none focus:border-accent-cyan/50 transition-all font-bold tracking-tight text-sm" />
-              </div>
-          </div>
+        {/* Discovery Feed */}
+        <section className="space-y-8">
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl font-black italic uppercase tracking-tighter">Discover</h2>
+                <div className="flex gap-2">
+                    {['all', 'arcade', 'logic'].map(t => (
+                        <button key={t} onClick={() => setActiveTab(t)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === t ? 'bg-white text-black' : 'bg-white/5 text-white/40'}`}>{t}</button>
+                    ))}
+                </div>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {GAMES.map(game => (
-                  <motion.div
-                    key={game.id}
-                    whileHover={{ y: -10 }}
-                    className="group relative bg-white/5 rounded-[2.5rem] border border-white/5 overflow-hidden flex flex-col h-full"
-                  >
-                    <div className="p-10 flex-1 space-y-8">
-                        <div className="flex justify-between items-start">
-                            <div className="p-5 rounded-2xl bg-white/5" style={{ color: game.color }}>
-                                <Play size={24} fill="currentColor" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {GAMES.filter(g => activeTab === 'all' || g.cat.toLowerCase() === activeTab).map(game => (
+                    <motion.div
+                        key={game.id}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => launchGame(game.id)}
+                        className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-white/20 transition-all cursor-pointer group flex flex-col justify-between h-64 relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Play size={32} className="text-accent-cyan" fill="currentColor" />
+                        </div>
+                        <div className="space-y-4">
+                            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center" style={{ color: game.color }}>
+                                <Play size={20} fill="currentColor" />
                             </div>
-                            <button onClick={() => toggleFavorite(game.id)} className={`transition-all ${favorites.includes(game.id) ? 'text-accent-rose' : 'text-white/10 hover:text-white'}`}>
-                                <Heart size={24} fill={favorites.includes(game.id) ? 'currentColor' : 'none'} />
+                            <div>
+                                <h3 className="text-2xl font-black italic uppercase tracking-tighter">{game.name}</h3>
+                                <p className="text-xs text-white/30 font-medium">{game.cat}</p>
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <div className="text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-accent-cyan transition-colors">Start Session</div>
+                            <button onClick={(e) => { e.stopPropagation(); toggleFavorite(game.id); }} className={favorites.includes(game.id) ? 'text-accent-rose' : 'text-white/10'}>
+                                <Heart size={20} fill={favorites.includes(game.id) ? 'currentColor' : 'none'} />
                             </button>
                         </div>
-                        <div className="space-y-3">
-                            <h3 className="text-3xl font-black italic tracking-tighter uppercase leading-none">{game.name}</h3>
-                            <div className="px-3 py-1 bg-white/5 border border-white/5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] w-fit opacity-40">{game.cat}</div>
-                        </div>
-                        <p className="text-xs text-white/40 font-medium leading-relaxed">{game.desc}</p>
-                    </div>
-                    <button
-                        onClick={() => launchGame(game.id)}
-                        className="w-full py-6 bg-white/5 hover:bg-accent-cyan hover:text-black transition-all text-[10px] font-black uppercase tracking-[0.3em] border-t border-white/5"
-                    >
-                        Enter Reality
-                    </button>
-                  </motion.div>
-              ))}
-          </div>
-      </section>
+                    </motion.div>
+                ))}
+            </div>
+        </section>
+      </main>
+
+      {/* Thumb-First Navigation Bar */}
+      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-3 flex justify-between items-center shadow-2xl z-[100]">
+          <button className="flex-1 flex flex-col items-center gap-1 text-accent-cyan">
+              <LayoutGrid size={24} />
+              <span className="text-[8px] font-black uppercase tracking-widest">Universe</span>
+          </button>
+          <button className="flex-1 flex flex-col items-center gap-1 text-white/20">
+              <Award size={24} />
+              <span className="text-[8px] font-black uppercase tracking-widest">Hall</span>
+          </button>
+          <button className="flex-1 flex flex-col items-center gap-1 text-white/20">
+              <Share2 size={24} />
+              <span className="text-[8px] font-black uppercase tracking-widest">Social</span>
+          </button>
+          <button className="flex-1 flex flex-col items-center gap-1 text-white/20">
+              <Settings size={24} />
+              <span className="text-[8px] font-black uppercase tracking-widest">Core</span>
+          </button>
+      </nav>
     </div>
   );
 };

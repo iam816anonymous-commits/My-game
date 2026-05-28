@@ -63,3 +63,9 @@ export const Badge: React.FC<{ children: React.ReactNode, color?: string }> = ({
         {children}
     </div>
 );
+
+export const hapticFeedback = () => {
+    if ('vibrate' in navigator) {
+        navigator.vibrate(10);
+    }
+};
