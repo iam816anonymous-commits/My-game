@@ -13,6 +13,8 @@ const Game2048 = lazy(() => import('./games/2048/Game2048'));
 const Minesweeper = lazy(() => import('./games/minesweeper/Minesweeper'));
 const Sudoku = lazy(() => import('./games/sudoku/Sudoku'));
 const Wordle = lazy(() => import('./games/wordle/Wordle'));
+const Reaction = lazy(() => import('./games/reaction/Reaction'));
+const Tower = lazy(() => import('./games/tower/Tower'));
 const PostGameOverlay = lazy(() => import('./shared/ui/PostGameOverlay'));
 
 function App() {
@@ -55,6 +57,8 @@ function App() {
                 {activeGameId === 'minesweeper' && <Minesweeper />}
                 {activeGameId === 'sudoku' && <Sudoku />}
                 {activeGameId === 'wordle' && <Wordle />}
+                {activeGameId === 'reaction' && <Reaction />}
+                {activeGameId === 'tower' && <Tower />}
             </Suspense>
           </motion.div>
         )}

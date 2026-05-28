@@ -12,9 +12,10 @@ const Dashboard: React.FC = () => {
   const GAMES = [
     { id: 'last-light', name: 'Last Light', cat: 'Arcade', color: '#67e8f9', desc: 'Atmospheric light collection.' },
     { id: 'snake', name: 'Snake Zen', cat: 'Arcade', color: '#4ade80', desc: 'Minimalist snake action.' },
-    { id: 'chess', name: 'Grandmaster', cat: 'Board', color: '#fde68a', desc: 'Classical strategy.' },
     { id: '2048', name: '2048', cat: 'Logic', color: '#8b5cf6', desc: 'Merge the reality.' },
     { id: 'minesweeper', name: 'Mines', cat: 'Logic', color: '#f9a8d4', desc: 'Clear the void.' },
+    { id: 'reaction', name: 'Reaction', cat: 'Skill', color: '#67e8f9', desc: 'Test your focus.' },
+    { id: 'tower', name: 'Stack', cat: 'Arcade', color: '#8b5cf6', desc: 'Reach the stars.' },
   ];
 
   return (

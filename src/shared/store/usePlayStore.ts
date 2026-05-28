@@ -55,7 +55,13 @@ export const usePlayStore = create<PlayStore>((set) => ({
   })),
 
   finishGame: (score: number) => set((state) => {
-      ChallengeManager.checkProgress(state.activeGameId!, score);
+      ChallengeManager.checkProgress(
+          state.activeGameId!,
+          score,
+          state.dailyChallenges,
+          state.completeChallenge,
+          state.updateXP
+      );
       return {
         currentScene: 'postgame',
         sessionStats: { ...state.sessionStats, lastScore: score },

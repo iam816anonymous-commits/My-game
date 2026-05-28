@@ -1,12 +1,16 @@
-import { usePlayStore } from '../store/usePlayStore';
+import type { DailyChallenge } from '../types';
 
 export class ChallengeManager {
   /**
    * Checks if any daily challenges were completed during a game session.
    */
-  public static checkProgress(gameId: string, score: number) {
-    const { dailyChallenges, completeChallenge, updateXP } = usePlayStore.getState();
-
+  public static checkProgress(
+      gameId: string,
+      score: number,
+      dailyChallenges: DailyChallenge[],
+      completeChallenge: (id: string) => void,
+      updateXP: (amount: number) => void
+  ) {
     dailyChallenges.forEach(challenge => {
       if (!challenge.completed && challenge.gameId === gameId) {
         if (score >= challenge.goal) {

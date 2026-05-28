@@ -1,25 +1,27 @@
-# Last Light - Product Requirements Document
+# PRD: PLAYVERSE Platform
 
-## 1. Vision
-"Last Light" is an atmospheric, addictive browser game where players maintain a fading light in an evolving procedural world.
+## Vision
+To build a high-fidelity, social microgaming platform that prioritizes "Game Feel" and "Obsession Loops" over complex mechanics.
 
-## 2. Core Mechanics
-- **Light Orb:** Responsive mouse/touch-controlled entity.
-- **Energy:** Decays over time; restored by collecting memory particles.
-- **Evolution:** The world transforms through 7 stages as progress increases.
-- **Minimalism:** No menus or complex controls; experience-driven.
+## Core Pillars
+1. **Atmospheric Design:** "Premium Dark" aesthetics, glassmorphism, and minimal UI.
+2. **Kinetic Feedback:** Every action must result in visual or tactile satisfaction (screen shake, vignettes, pulses).
+3. **Low Friction:** Instant load times, one-tap restarts, and universal controls.
+4. **Meta-Addiction:** XP bursts, level-up celebrations, and daily streaks.
 
-## 3. Evolution Levels
-1. **Void:** Pure darkness.
-2. **Grass:** Greenery emerges.
-3. **Fireflies:** Animated glowing particles.
-4. **Trees:** Forest silhouettes.
-5. **Rain:** Vertical particle weather.
-6. **Animals:** Ghostly companion spirits.
-7. **Constellations:** Permanent celestial patterns.
+## User Persona
+- **The Zen Seeker:** Plays for relaxation and atmospheric beauty (Last Light, Snake Zen).
+- **The Competitor:** Plays for high scores and perfect combos (Reaction Arena, Stack Rush).
+- **The Strategic:** Plays for logical mastery (2048 Fusion, Mine Rush).
 
-## 4. Technical Specifications
-- **Stack:** React 19 + PixiJS 8 + Vite + TypeScript.
-- **Persistence:** Progress saved automatically to IndexedDB.
-- **Audio:** Dynamic ambient layers that evolve with the world.
-- **Mobile:** Fully responsive and PWA-ready.
+## Functional Requirements
+- Global Player Profile (XP, Level, Title).
+- Modular Game Registry (Lazy-loaded modules).
+- Throttled Persistence (Save to IDB every 5 seconds or on significant event).
+- Unified Post-Game Experience (Score breakdown, XP progress, Viral sharing).
+- Daily Modifier System (Global gameplay changes).
+
+## Non-Functional Requirements
+- 60FPS on Mobile (iPhone 12+ / Galaxy S21+).
+- < 1MB Initial Bundle Size (Gzip).
+- Full PWA support (Offline manifests, Service Workers).
