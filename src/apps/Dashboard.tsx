@@ -23,6 +23,8 @@ const Dashboard: React.FC = () => {
     { id: 'wordle', name: 'Word Crypt', cat: 'Logic', color: '#8B5CF6', desc: 'Daily Sequence.' },
     { id: 'tower', name: 'Stack Rush', cat: 'Arcade', color: '#8b5cf6', desc: 'Rhythm Stacking.' },
     { id: 'reaction', name: 'Reaction Arena', cat: 'Skill', color: '#67e8f9', desc: 'Speed test.' },
+    { id: 'ludo', name: 'Neon Ludo', cat: 'Board', color: '#FACC15', desc: 'Strategic Board.' },
+    { id: 'snakes-ladders', name: 'Prism Ladders', cat: 'Board', color: '#F472B6', desc: 'Momentum Race.' },
   ];
 
   return (
@@ -94,9 +96,9 @@ const Dashboard: React.FC = () => {
         <section className="space-y-8">
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-black italic uppercase tracking-tighter">Discover</h2>
-                <div className="flex gap-2">
-                    {['all', 'arcade', 'logic'].map(t => (
-                        <button key={t} onClick={() => setActiveTab(t)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === t ? 'bg-white text-black' : 'bg-white/5 text-white/40'}`}>{t}</button>
+            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                {['all', 'arcade', 'logic', 'board'].map(t => (
+                    <button key={t} onClick={() => setActiveTab(t)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === t ? 'bg-white text-black' : 'bg-white/5 text-white/40'}`}>{t}</button>
                     ))}
                 </div>
             </div>

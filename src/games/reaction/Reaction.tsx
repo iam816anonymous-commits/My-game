@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RotateCcw, Zap, Target, Timer } from 'lucide-react';
+import { Home, RotateCcw, Zap, Target, Timer, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Reaction: React.FC = () => {
@@ -11,7 +11,7 @@ const Reaction: React.FC = () => {
   const [combo, setCombo] = useState(1);
   const [gameOver, setGameOver] = useState(false);
   const [lastHitTime, setLastHitTime] = useState(Date.now());
-  const [perfectWindow, setPerfectWindow] = useState(false);
+  const [grade, setGrade] = useState<'PERFECT' | 'GREAT' | 'GOOD' | null>(null);
 
   const spawn = useCallback(() => {
     setTarget({
@@ -26,6 +26,7 @@ const Reaction: React.FC = () => {
     setTimeLeft(30);
     setScore(0);
     setCombo(1);
+    setGrade(null);
     spawn();
   }, [spawn]);
 
@@ -50,61 +51,70 @@ const Reaction: React.FC = () => {
       const now = Date.now();
       const reactionTime = now - lastHitTime;
 
-      // V9 Precision Bonus
       let precisionBonus = 1.0;
-      if (reactionTime < 400) {
-          precisionBonus = 2.0;
-          setPerfectWindow(true);
-          setTimeout(() => setPerfectWindow(false), 300);
-      } else if (reactionTime < 700) {
-          precisionBonus = 1.5;
+      let currentGrade: 'PERFECT' | 'GREAT' | 'GOOD' = 'GOOD';
+
+      if (reactionTime < 350) {
+          precisionBonus = 2.5;
+          currentGrade = 'PERFECT';
+      } else if (reactionTime < 550) {
+          precisionBonus = 1.8;
+          currentGrade = 'GREAT';
       }
 
-      setScore(s => s + Math.floor(10 * combo * precisionBonus));
-      setCombo(c => Math.min(15, c + 0.5));
-      updateXP(10);
+      setGrade(currentGrade);
+      setTimeout(() => setGrade(null), 400);
+
+      const gain = Math.floor(10 * combo * precisionBonus);
+      setScore(s => s + gain);
+      setCombo(c => Math.min(20, c + (currentGrade === 'PERFECT' ? 1.0 : 0.5)));
+      updateXP(Math.floor(gain / 2));
       spawn();
   };
-
-  const miss = () => {
-      setCombo(1);
-  };
-
-  // V9 Intensity: Faster depletion or harder spawns could be added here
-  // For now, focus on the reaction feedback
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#050816] p-6 gap-8 overflow-hidden">
       <div className="flex w-full max-w-sm justify-between items-center z-10">
-        <button onClick={exitToDashboard} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white"><Home size={20} /></button>
+        <button onClick={exitToDashboard} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><Home size={20} /></button>
         <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter">Reaction <span className="text-accent-cyan text-glow">Arena</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">Precision V9</div>
+            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Reaction <span className="text-accent-cyan text-glow">Arena</span></h2>
+            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V10 Precision Combat</div>
         </div>
-        <button onClick={restart} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white"><RotateCcw size={20} /></button>
+        <button onClick={restart} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><RotateCcw size={20} /></button>
       </div>
 
       <div className="flex gap-4 w-full max-w-sm">
-          <div className="flex-1 p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between overflow-hidden relative">
-              <motion.div
-                animate={perfectWindow ? { scale: [1, 1.2, 1], color: '#22d3ee' } : {}}
-                className="relative z-10"
-              >
-                  <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Score</div>
+          <div className="flex-1 p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between relative overflow-hidden">
+              <div className="relative z-10">
+                  <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Reality Score</div>
                   <div className="text-2xl font-black italic text-white tabular-nums">{score}</div>
-              </motion.div>
-              <Zap size={20} className="text-white/5 absolute -right-2 -bottom-2 scale-150" />
+              </div>
+              <Sparkles size={24} className="text-white/5 absolute -right-2 -bottom-2 scale-150" />
           </div>
           <div className="p-6 bg-accent-cyan/10 rounded-3xl border border-accent-cyan/20 flex items-center gap-4">
               <Timer size={20} className="text-accent-cyan" />
-              <div className="text-2xl font-black italic tabular-nums">{timeLeft}s</div>
+              <div className="text-2xl font-black italic tabular-nums text-white">{timeLeft}s</div>
           </div>
       </div>
 
       <div
-        onClick={miss}
+        onClick={() => setCombo(1)}
         className="relative w-full max-w-sm aspect-square bg-white/5 rounded-[3rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden cursor-crosshair"
       >
+        {/* Grading Indicator */}
+        <AnimatePresence>
+            {grade && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.5 }}
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
+                >
+                    <div className={`text-4xl font-black italic uppercase tracking-tighter ${grade === 'PERFECT' ? 'text-accent-gold' : grade === 'GREAT' ? 'text-accent-cyan' : 'text-white'}`}>
+                        {grade}
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
         <AnimatePresence mode="popLayout">
             {!gameOver && (
                 <motion.div
@@ -117,6 +127,7 @@ const Reaction: React.FC = () => {
                     style={{ left: `${target.x}%`, top: `${target.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                     <Target size={32} className="text-black" />
+                    <div className="absolute inset-0 rounded-full border-4 border-white animate-ping opacity-20" />
                 </motion.div>
             )}
         </AnimatePresence>
@@ -125,24 +136,12 @@ const Reaction: React.FC = () => {
             {gameOver && (
                 <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="absolute inset-0 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center z-20"
+                    className="absolute inset-0 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center z-30"
                 >
                     <Zap size={48} className="text-accent-cyan mb-4" />
                     <h3 className="text-4xl font-black italic uppercase tracking-tighter mb-4 text-white">Focus Failed</h3>
-                    <button onClick={restart} className="w-full py-4 bg-accent-cyan text-black font-black uppercase tracking-widest rounded-2xl shadow-xl">Re-Focus</button>
+                    <button onClick={restart} className="w-full py-4 bg-accent-cyan text-black font-black uppercase tracking-widest rounded-2xl shadow-xl">Re-Engage</button>
                 </motion.div>
-            )}
-        </AnimatePresence>
-
-        {/* Precision Indicators */}
-        <AnimatePresence>
-            {perfectWindow && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.2 }}
-                    className="absolute inset-0 border-8 border-accent-cyan/20 pointer-events-none"
-                />
             )}
         </AnimatePresence>
       </div>

@@ -9,7 +9,8 @@ export async function saveState() {
     profile: state.profile,
     highScores: state.highScores,
     favorites: state.favorites,
-    dailyChallenges: state.dailyChallenges
+    dailyChallenges: state.dailyChallenges,
+    onboardingSeen: state.onboardingSeen
   };
   await set(STORAGE_KEY, persistable);
 }
@@ -21,7 +22,8 @@ export async function loadState() {
       profile: saved.profile,
       highScores: saved.highScores,
       favorites: saved.favorites,
-      dailyChallenges: saved.dailyChallenges || usePlayStore.getState().dailyChallenges
+      dailyChallenges: saved.dailyChallenges || usePlayStore.getState().dailyChallenges,
+      onboardingSeen: saved.onboardingSeen || {}
     });
     return true;
   }

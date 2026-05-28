@@ -17,8 +17,8 @@ const Tower: React.FC = () => {
   const update = useCallback(() => {
     if (gameOver) return;
 
-    // V9 Pacing: Speed increases with height
-    const speedFactor = 1 + (blocks.length * 0.05);
+    // V10: Adaptive Pacing based on height
+    const speedFactor = 1 + (blocks.length * 0.04);
 
     setCurrentBlock(prev => {
         let newX = prev.x + dir * 2 * speedFactor;
@@ -60,20 +60,21 @@ const Tower: React.FC = () => {
           return;
       }
 
-      // V9 Precision Window
+      // V10: Authentic Precision Window
       const isPerfect = Math.abs(diff) < 2;
       if (isPerfect) {
           setCombo(c => c + 1);
           setPerfectFlash(true);
           setTimeout(() => setPerfectFlash(false), 200);
+          updateXP(100 + combo * 50);
       } else {
           setCombo(0);
+          updateXP(50);
       }
 
       const newBlock = { width: newWidth, x: diff > 0 ? currentBlock.x : last.x };
       setBlocks(prev => [...prev, newBlock]);
       setCurrentBlock({ width: newWidth, x: 0 });
-      updateXP(100 + combo * 50);
   };
 
   return (
@@ -81,8 +82,8 @@ const Tower: React.FC = () => {
       <div className="flex w-full max-w-sm justify-between items-center z-10">
         <button onClick={(e) => { e.stopPropagation(); exitToDashboard(); }} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white"><Home size={20} /></button>
         <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter">Stack <span className="text-accent-violet text-glow">Rush</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">Rhythm V9</div>
+            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Stack <span className="text-accent-violet text-glow">Rush</span></h2>
+            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V10 Stability Logic</div>
         </div>
         <button onClick={(e) => { e.stopPropagation(); restart(); }} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white"><RotateCcw size={20} /></button>
       </div>
@@ -99,7 +100,6 @@ const Tower: React.FC = () => {
                 className="h-8 bg-white/10 border border-white/20 rounded-md mb-1 relative overflow-hidden"
                 style={{ width: `${b.width}%`, marginLeft: `${b.x}%` }}
               >
-                  {/* Internal Glow for high combos */}
                   {combo > 5 && <div className="absolute inset-0 bg-accent-violet/20 animate-pulse" />}
               </motion.div>
           ))}
@@ -157,7 +157,7 @@ const Tower: React.FC = () => {
       </div>
 
       <div className="text-[10px] text-white/10 uppercase font-black tracking-[0.4em] italic text-center">
-          Precision placement builds rhythm energy
+          Precision placement builds stability energy
       </div>
     </div>
   );

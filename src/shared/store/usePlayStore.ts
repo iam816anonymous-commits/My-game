@@ -11,7 +11,9 @@ interface PlayStore extends PlayState {
   completeChallenge: (id: string) => void;
   setTitle: (title: string) => void;
   setLastLightState: (state: any) => void;
+  markOnboardingSeen: (gameId: string) => void;
   lastLight?: any;
+  onboardingSeen: Record<string, number>;
 }
 
 const DEFAULT_CHALLENGES: DailyChallenge[] = [
@@ -39,6 +41,7 @@ export const usePlayStore = create<PlayStore>((set) => ({
   highScores: {},
   favorites: [],
   dailyChallenges: DEFAULT_CHALLENGES,
+  onboardingSeen: {},
   sessionStats: {
     startTime: Date.now(),
     gamesPlayed: 0,
@@ -133,5 +136,9 @@ export const usePlayStore = create<PlayStore>((set) => ({
 
   setLastLightState: (llState) => set((state) => ({
       lastLight: { ...state.lastLight, ...llState }
+  })),
+
+  markOnboardingSeen: (gameId) => set((state) => ({
+      onboardingSeen: { ...state.onboardingSeen, [gameId]: Date.now() }
   }))
 }));

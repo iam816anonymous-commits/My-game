@@ -20,9 +20,10 @@ const OrbitDodge = lazy(() => import('./games/orbit-dodge/OrbitDodge'));
 const TapDash = lazy(() => import('./games/tap-dash/TapDash'));
 const Connect4 = lazy(() => import('./games/connect4/Connect4'));
 const PostGameOverlay = lazy(() => import('./shared/ui/PostGameOverlay'));
+const GameOnboarding = lazy(() => import('./shared/ui/GameOnboarding'));
 
 function App() {
-  const { currentScene, activeGameId, profile, highScores, favorites } = usePlayStore();
+  const { currentScene, activeGameId, profile, highScores, favorites, onboardingSeen, markOnboardingSeen } = usePlayStore();
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -54,6 +55,14 @@ function App() {
         {currentScene === 'game' && (
           <motion.div key="game" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="fixed inset-0 z-50 bg-[#0a0a0c]">
             <Suspense fallback={null}>
+                <AnimatePresence>
+                    {activeGameId && (!onboardingSeen[activeGameId] || (Date.now() - onboardingSeen[activeGameId] > 24 * 60 * 60 * 1000)) && (
+                        <GameOnboarding
+                            gameId={activeGameId}
+                            onClose={() => markOnboardingSeen(activeGameId)}
+                        />
+                    )}
+                </AnimatePresence>
                 {activeGameId === 'last-light' && <LastLight />}
                 {activeGameId === 'chess' && <Chess />}
                 {activeGameId === 'snake' && <Snake />}

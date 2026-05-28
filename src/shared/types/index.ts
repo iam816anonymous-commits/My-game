@@ -36,6 +36,7 @@ export interface PlayState {
   highScores: Record<string, number>;
   favorites: string[];
   dailyChallenges: DailyChallenge[];
+  onboardingSeen: Record<string, number>;
   sessionStats: {
     startTime: number;
     gamesPlayed: number;
