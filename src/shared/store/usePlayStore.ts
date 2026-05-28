@@ -16,7 +16,10 @@ interface PlayStore extends PlayState {
 
 const DEFAULT_CHALLENGES: DailyChallenge[] = [
     { id: 'c1', gameId: 'last-light', goal: 50, current: 0, description: 'Collect 50 particles in Last Light', rewardXP: 500, completed: false },
-    { id: 'c2', gameId: 'snake', goal: 500, current: 0, description: 'Score 500 in Snake Zen', rewardXP: 300, completed: false }
+    { id: 'c2', gameId: 'snake', goal: 500, current: 0, description: 'Score 500 in Snake Zen', rewardXP: 300, completed: false },
+    { id: 'c3', gameId: 'chess', goal: 1, current: 0, description: 'Win a Chess Match', rewardXP: 1000, completed: false },
+    { id: 'c4', gameId: 'wordle', goal: 1, current: 0, description: 'Solve the Daily Word Crypt', rewardXP: 500, completed: false },
+    { id: 'c5', gameId: 'connect4', goal: 1, current: 0, description: 'Win a Connect 4 Game', rewardXP: 400, completed: false }
 ];
 
 export const usePlayStore = create<PlayStore>((set) => ({
@@ -72,7 +75,33 @@ export const usePlayStore = create<PlayStore>((set) => ({
       };
   }),
 
-  exitToDashboard: () => set({ currentScene: 'dashboard', activeGameId: null }),
+  exitToDashboard: () => set((state) => {
+      // Daily Reward Check
+      const now = Date.now();
+      const lastLogin = state.profile.lastLogin;
+      const diff = now - lastLogin;
+      const oneDay = 24 * 60 * 60 * 1000;
+
+      let streak = state.profile.streak;
+      let bonusXP = 0;
+
+      if (diff > oneDay && diff < oneDay * 2) {
+          streak += 1;
+          bonusXP = streak * 100;
+      } else if (diff >= oneDay * 2) {
+          streak = 1;
+      }
+
+      if (bonusXP > 0) {
+          setTimeout(() => state.updateXP(bonusXP), 500);
+      }
+
+      return {
+          currentScene: 'dashboard',
+          activeGameId: null,
+          profile: { ...state.profile, streak, lastLogin: now }
+      };
+  }),
 
   updateXP: (amount) => set((state) => {
       const newXP = state.profile.xp + amount;

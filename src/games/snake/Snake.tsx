@@ -61,13 +61,19 @@ const Snake: React.FC = () => {
       if (gameOver) return;
 
       setSnake(prev => {
-        const head = [prev[0][0] + dir[0], prev[0][1] + dir[1]];
+        const newHead = [prev[0][0] + dir[0], prev[0][1] + dir[1]];
 
-        // Near-miss / Death check
-        const willHitWall = head[0] < 0 || head[0] >= GRID_SIZE || head[1] < 0 || head[1] >= GRID_SIZE;
-        const willHitSelf = prev.some(s => s[0] === head[0] && s[1] === head[1]);
+        // Boundary check
+        if (newHead[0] < 0 || newHead[0] >= GRID_SIZE || newHead[1] < 0 || newHead[1] >= GRID_SIZE) {
+          setGameOver(true);
+          setGhostTrail(prev);
+          finishGame(score);
+          return prev;
+        }
 
-        if (willHitWall || willHitSelf) {
+        // Self-collision check (excluding the tail which will move)
+        const hitSelf = prev.slice(0, -1).some(s => s[0] === newHead[0] && s[1] === newHead[1]);
+        if (hitSelf) {
           setGameOver(true);
           setGhostTrail(prev);
           finishGame(score);
@@ -77,15 +83,15 @@ const Snake: React.FC = () => {
         // Magnet Logic
         let targetPos = food.pos;
         if (isMagnet) {
-            const dx = food.pos[0] - head[0];
-            const dy = food.pos[1] - head[1];
+            const dx = food.pos[0] - newHead[0];
+            const dy = food.pos[1] - newHead[1];
             if (Math.abs(dx) <= 2 && Math.abs(dy) <= 2) {
-                targetPos = head;
+                targetPos = newHead;
             }
         }
 
-        const newSnake = [head, ...prev];
-        if (head[0] === targetPos[0] && head[1] === targetPos[1]) {
+        const newSnake = [newHead, ...prev];
+        if (newHead[0] === targetPos[0] && newHead[1] === targetPos[1]) {
           const comboMult = 1 + (combo * 0.1);
           const basePoints = food.type === 'rare' ? 50 : 10;
           setScore(s => s + Math.floor(basePoints * comboMult));
@@ -109,11 +115,10 @@ const Snake: React.FC = () => {
       });
     };
 
-    // Pacing Logic
-    let baseSpeed = 150;
-    if (gameTime > 120) baseSpeed = 60;
-    else if (gameTime > 60) baseSpeed = 90;
-    else if (gameTime > 20) baseSpeed = 120;
+    // Pacing Logic: Adaptive difficulty based on length AND time
+    const lengthFactor = Math.max(0, (snake.length - 3) * 2);
+    const timeFactor = Math.floor(gameTime / 10) * 5;
+    const baseSpeed = Math.max(50, 180 - lengthFactor - timeFactor);
 
     const speed = isSlowMo ? baseSpeed * 2.5 : baseSpeed;
     const interval = setInterval(handleMove, speed);

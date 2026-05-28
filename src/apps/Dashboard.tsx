@@ -16,7 +16,13 @@ const Dashboard: React.FC = () => {
     { id: 'orbit-dodge', name: 'Orbit Dodge', cat: 'Skill', color: '#22D3EE', desc: 'Evasive maneuvers.' },
     { id: 'tap-dash', name: 'Tap Dash', cat: 'Skill', color: '#F472B6', desc: 'Clear the void fast.' },
     { id: '2048', name: '2048', cat: 'Logic', color: '#8b5cf6', desc: 'Merge the reality.' },
+    { id: 'chess', name: 'Chess', cat: 'Logic', color: '#8B5CF6', desc: 'Grandmaster' },
     { id: 'minesweeper', name: 'Mines', cat: 'Logic', color: '#f9a8d4', desc: 'Clear the void.' },
+    { id: 'connect4', name: 'Vector 4', cat: 'Logic', color: '#22D3EE', desc: 'Strategy Connect.' },
+    { id: 'sudoku', name: 'Logic Grid', cat: 'Logic', color: '#8B5CF6', desc: 'Sudoku Master.' },
+    { id: 'wordle', name: 'Word Crypt', cat: 'Logic', color: '#8B5CF6', desc: 'Daily Sequence.' },
+    { id: 'tower', name: 'Stack Rush', cat: 'Arcade', color: '#8b5cf6', desc: 'Rhythm Stacking.' },
+    { id: 'reaction', name: 'Reaction Arena', cat: 'Skill', color: '#67e8f9', desc: 'Speed test.' },
   ];
 
   return (

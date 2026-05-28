@@ -38,6 +38,12 @@ export class World {
     this.initStars();
   }
 
+  private levelFlash = 0;
+
+  public flashLevelTransition() {
+    this.levelFlash = 1.0;
+  }
+
   private initStars() {
     for (let i = 0; i < 200; i++) {
       const s = new PIXI.Graphics();
@@ -52,6 +58,14 @@ export class World {
   }
 
   public update(delta: number, level: EvolutionLevel, playerX: number, playerY: number) {
+    // Level Transition Flash
+    if (this.levelFlash > 0) {
+      this.levelFlash -= 0.05 * delta;
+      this.container.alpha = 0.5 + Math.random() * 0.5;
+    } else {
+      this.container.alpha = 1;
+    }
+
     // Parallax Stars
     this.stars.forEach(s => {
         s.pivot.x = playerX * (s as any).depth;

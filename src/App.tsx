@@ -18,6 +18,7 @@ const Tower = lazy(() => import('./games/tower/Tower'));
 const ColorRush = lazy(() => import('./games/color-rush/ColorRush'));
 const OrbitDodge = lazy(() => import('./games/orbit-dodge/OrbitDodge'));
 const TapDash = lazy(() => import('./games/tap-dash/TapDash'));
+const Connect4 = lazy(() => import('./games/connect4/Connect4'));
 const PostGameOverlay = lazy(() => import('./shared/ui/PostGameOverlay'));
 
 function App() {
@@ -65,6 +66,7 @@ function App() {
                 {activeGameId === 'color-rush' && <ColorRush />}
                 {activeGameId === 'orbit-dodge' && <OrbitDodge />}
                 {activeGameId === 'tap-dash' && <TapDash />}
+                {activeGameId === 'connect4' && <Connect4 />}
             </Suspense>
           </motion.div>
         )}

@@ -52,6 +52,11 @@ export class Engine {
 
   public destroy() {
     window.removeEventListener('resize', this.handleResize);
-    this.app.destroy(true, { children: true, texture: true, context: true });
+    this.app.destroy({
+      removeView: true,
+      children: true,
+      texture: true,
+      context: true
+    });
   }
 }

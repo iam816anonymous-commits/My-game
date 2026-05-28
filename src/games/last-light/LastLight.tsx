@@ -57,6 +57,12 @@ const LastLight: React.FC = () => {
             engine.ticker.stop();
         }
 
+        // Trigger flash on level change
+        if ((progression as any).lastLevel !== state.evolutionLevel) {
+          world.flashLevelTransition();
+          (progression as any).lastLevel = state.evolutionLevel;
+        }
+
         const isOverload = (state as any).currentCombo >= 10;
         player.update(delta, state.energy, isOverload);
         entityManager.update(player.x, player.y, delta, state.totalMemoriesCollected);
