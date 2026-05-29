@@ -17,14 +17,15 @@ export class Engine {
   }
 
   private handleResize = () => {
-    this.app.renderer.resize(window.innerWidth, window.innerHeight);
+    const parent = this.app.canvas.parentElement;
+    if (parent) {
+        this.app.renderer.resize(parent.clientWidth, parent.clientHeight);
+    }
   };
 
   private async init() {
     await this.app.init({
       background: '#0a0a0c',
-      resizeTo: window,
-      antialias: true,
       resolution: Math.min(window.devicePixelRatio, 2),
       autoDensity: true,
       hello: false,

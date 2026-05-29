@@ -11,7 +11,7 @@ const LastLightHUD: React.FC = () => {
   const levelName = (EvolutionLevel as any)[evolutionLevel];
 
   return (
-    <div className="fixed inset-0 pointer-events-none flex flex-col justify-between p-8 select-none overflow-hidden">
+    <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-12 select-none overflow-hidden">
       {/* Near Miss Vignette */}
       <motion.div
         className="absolute inset-0 bg-[radial-gradient(circle,transparent_40%,rgba(249,168,212,0.1)_100%)]"
@@ -43,12 +43,23 @@ const LastLightHUD: React.FC = () => {
             {currentCombo > 1 && (
                 <motion.div
                     initial={{ scale: 0, x: 20 }}
-                    animate={{ scale: 1, x: 0 }}
+                    animate={{
+                        scale: currentCombo >= 10 ? [1, 1.1, 1] : 1,
+                        x: 0
+                    }}
+                    transition={{
+                        scale: { repeat: Infinity, duration: 0.5 },
+                        type: 'spring'
+                    }}
                     exit={{ scale: 0, x: 20 }}
                     className="flex flex-col items-end"
                 >
-                    <div className="text-accent-cyan font-black italic text-2xl tracking-tighter">x{(1 + currentCombo * 0.1).toFixed(1)}</div>
-                    <div className="text-[8px] font-black uppercase tracking-widest text-white/40">Combo {currentCombo}</div>
+                    <div className={`font-black italic text-3xl tracking-tighter ${currentCombo >= 10 ? 'text-accent-gold drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]' : 'text-accent-cyan'}`}>
+                        x{(1 + currentCombo * 0.15).toFixed(1)}
+                    </div>
+                    <div className="text-[8px] font-black uppercase tracking-widest text-white/40">
+                        {currentCombo >= 10 ? 'AURA OVERLOAD' : `RESONANCE CHAIN ${currentCombo}`}
+                    </div>
                 </motion.div>
             )}
         </AnimatePresence>
@@ -60,9 +71,9 @@ const LastLightHUD: React.FC = () => {
             <span className="text-[10px] text-white/30 uppercase tracking-widest font-black italic">Light Energy</span>
             <span className="text-[10px] text-white/30 font-mono">{Math.round(energy)}%</span>
         </div>
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+        <div className={`h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 transition-all ${energy < 20 ? 'shadow-[0_0_15px_rgba(251,113,133,0.3)] border-accent-rose/20' : ''}`}>
           <motion.div
-            className="h-full bg-gradient-to-r from-white/40 to-white/80"
+            className={`h-full ${energy < 20 ? 'bg-accent-rose' : 'bg-gradient-to-r from-white/40 to-white/80'}`}
             initial={false}
             animate={{ width: `${energy}%` }}
             transition={{ type: 'spring', damping: 20 }}

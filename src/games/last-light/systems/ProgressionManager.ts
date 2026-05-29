@@ -24,7 +24,7 @@ export class ProgressionManager {
   private comboCount = 0;
   private lastCollectTime = 0;
 
-  public collectMemory(type: 'standard' | 'rare' | 'gold'): GameState {
+  public collectMemory(type: 'standard' | 'rare' | 'gold' | 'legendary'): GameState {
     const now = Date.now();
     if (now - this.lastCollectTime < 1500) {
       this.comboCount++;
@@ -33,13 +33,14 @@ export class ProgressionManager {
     }
     this.lastCollectTime = now;
 
-    const energyGain = type === 'gold' ? 50 : type === 'rare' ? 25 : 10;
-    const comboBonus = Math.min(2, 1 + this.comboCount * 0.1);
+    const energyGain = type === 'legendary' ? 80 : type === 'gold' ? 40 : type === 'rare' ? 20 : 8;
+    const comboBonus = Math.min(3, 1 + this.comboCount * 0.15); // Higher cap for V18
 
     this.state.energy = Math.min(100, this.state.energy + energyGain * comboBonus);
     this.state.memoriesCollected += 1;
     this.state.totalMemoriesCollected += 1;
     (this.state as any).currentCombo = this.comboCount;
+    (this.state as any).maxCombo = Math.max((this.state as any).maxCombo || 0, this.comboCount);
 
     // Check achievements and evolution
     this.checkAchievements(type);
@@ -62,7 +63,7 @@ export class ProgressionManager {
     if (currentLevel !== this.state.evolutionLevel) {
       this.state.evolutionLevel = currentLevel;
       const ach = this.state.achievements.find(a => a.id === 'level_2');
-      if (currentLevel >= EvolutionLevel.Grass && ach && !ach.unlocked) {
+      if (currentLevel >= EvolutionLevel.Starlight && ach && !ach.unlocked) {
         ach.unlocked = true;
         ach.unlockedAt = Date.now();
       }
@@ -78,12 +79,12 @@ export class ProgressionManager {
     );
   }
 
-  private checkAchievements(type: 'standard' | 'rare' | 'gold') {
+  private checkAchievements(type: 'standard' | 'rare' | 'gold' | 'legendary') {
     if (this.state.totalMemoriesCollected === 1) {
       const ach = this.state.achievements.find(a => a.id === 'first_memory');
       if (ach) { ach.unlocked = true; ach.unlockedAt = Date.now(); }
     }
-    if (type === 'rare') {
+    if (type === 'rare' || type === 'legendary') {
       const ach = this.state.achievements.find(a => a.id === 'rare_memory');
       if (ach) { ach.unlocked = true; ach.unlockedAt = Date.now(); }
     }

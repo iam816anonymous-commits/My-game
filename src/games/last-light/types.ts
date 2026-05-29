@@ -1,16 +1,16 @@
 export const EvolutionLevel = {
   Void: 1,
-  Grass: 2,
+  Starlight: 2,
   Fireflies: 3,
-  Trees: 4,
-  Rain: 5,
-  Animals: 6,
+  Grasslands: 4,
+  Forest: 5,
+  Weather: 6,
   Constellations: 7
 } as const;
 
 export type EvolutionLevel = typeof EvolutionLevel[keyof typeof EvolutionLevel];
 
-export type MemoryType = 'standard' | 'rare' | 'gold';
+export type MemoryType = 'standard' | 'rare' | 'gold' | 'legendary';
 
 export interface Memory {
   id: string;
@@ -42,11 +42,11 @@ export interface GameState {
 
 export const EVOLUTION_THRESHOLDS = {
   [EvolutionLevel.Void]: 0,
-  [EvolutionLevel.Grass]: 10,
-  [EvolutionLevel.Fireflies]: 25,
-  [EvolutionLevel.Trees]: 50,
-  [EvolutionLevel.Rain]: 100,
-  [EvolutionLevel.Animals]: 200,
+  [EvolutionLevel.Starlight]: 15,
+  [EvolutionLevel.Fireflies]: 40,
+  [EvolutionLevel.Grasslands]: 80,
+  [EvolutionLevel.Forest]: 150,
+  [EvolutionLevel.Weather]: 250,
   [EvolutionLevel.Constellations]: 400
 };
 

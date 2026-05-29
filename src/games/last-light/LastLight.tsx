@@ -110,9 +110,12 @@ const LastLight: React.FC = () => {
   }, [updateXP]);
 
   return (
-    <div className={`relative w-full h-screen bg-[#0a0a0c] overflow-hidden transition-all duration-1000 ${isDistorted ? 'hue-rotate-90 scale-[1.02]' : ''}`}>
-      <div ref={canvasRef} className={`absolute inset-0 transition-all duration-1000 ${isDistorted ? 'blur-sm opacity-80' : ''}`} />
-      <LastLightHUD />
+    <div className={`relative w-full h-screen bg-[#050505] flex items-center justify-center p-4 md:p-12 overflow-hidden transition-all duration-1000 ${isDistorted ? 'hue-rotate-90' : ''}`}>
+
+      {/* Game Frame (V18 Rebuild) */}
+      <div className="relative w-full h-full max-w-5xl aspect-video md:aspect-[16/9] bg-[#0a0a0c] rounded-[3rem] border border-white/5 shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden">
+        <div ref={canvasRef} className={`absolute inset-0 transition-all duration-1000 ${isDistorted ? 'blur-sm opacity-80 scale-[1.05]' : ''}`} />
+        <LastLightHUD />
 
       <AnimatePresence>
           {lastLight?.energy <= 0 && (
@@ -135,8 +138,8 @@ const LastLight: React.FC = () => {
                             <div className="text-xs font-bold text-white uppercase tracking-widest">Extinguished</div>
                         </div>
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Particles</div>
-                            <div className="text-xl font-black text-accent-cyan">{lastLight?.totalMemoriesCollected}</div>
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Resonance Peak</div>
+                                <div className="text-xl font-black text-accent-cyan">x{(1 + (lastLight?.maxCombo || 0) * 0.15).toFixed(1)}</div>
                         </div>
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                             <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
@@ -165,6 +168,8 @@ const LastLight: React.FC = () => {
               </motion.div>
           )}
       </AnimatePresence>
+
+      </div>
 
       {/* Exit Button */}
       <button

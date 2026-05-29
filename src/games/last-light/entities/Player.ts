@@ -79,6 +79,14 @@ export class Player {
   }
 
   public update(delta: number, energy: number, isOverload: boolean = false) {
+    const parent = this.container.parent?.parent as any;
+    const viewWidth = parent?.clientWidth || window.innerWidth;
+    const viewHeight = parent?.clientHeight || window.innerHeight;
+
+    // Constrain target within viewport
+    this.targetX = Math.max(20, Math.min(viewWidth - 20, this.targetX));
+    this.targetY = Math.max(20, Math.min(viewHeight - 20, this.targetY));
+
     // Screen Shake
     let offsetX = 0;
     let offsetY = 0;

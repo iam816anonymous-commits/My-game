@@ -120,13 +120,15 @@ export class World {
         this.fireflyLayer.addChild(f);
     }
     this.fireflies.forEach(f => {
-        f.x += (f as any).vx * delta;
+        // Wind influence in later stages
+        const wind = level >= EvolutionLevel.Weather ? Math.sin(Date.now() * 0.001) * 0.5 : 0;
+        f.x += ((f as any).vx + wind) * delta;
         f.y += (f as any).vy * delta;
         f.alpha = 0.2 + Math.sin(Date.now() * 0.002 + f.x) * 0.4;
     });
 
-    // Level 4: Grass Glow
-    if (level >= EvolutionLevel.Grass && this.grassLayer.children.length < 200) {
+    // Level 4: Grasslands (V18 Rebuild)
+    if (level >= EvolutionLevel.Grasslands && this.grassLayer.children.length < 200) {
         const g = new PIXI.Graphics();
         g.rect(0, 0, 1, 6);
         g.fill({ color: 0x22d3ee, alpha: 0.2 });
@@ -135,8 +137,8 @@ export class World {
         this.grassLayer.addChild(g);
     }
 
-    // Level 5: Tree Silhouettes
-    if (level >= EvolutionLevel.Trees && this.treeLayer.children.length < 30) {
+    // Level 5: Forest (V18 Rebuild)
+    if (level >= EvolutionLevel.Forest && this.treeLayer.children.length < 30) {
         const t = new PIXI.Graphics();
         const height = 100 + Math.random() * 200;
         t.rect(-15, -height/2, 30, height);
@@ -147,7 +149,7 @@ export class World {
     }
 
     // Level 6: Weather Systems (Rain)
-    if (level >= EvolutionLevel.Rain && this.rainDrops.length < 150) {
+    if (level >= EvolutionLevel.Weather && this.rainDrops.length < 150) {
         const r = new PIXI.Graphics();
         r.rect(0, 0, 1, 15);
         r.fill({ color: 0x22d3ee, alpha: 0.2 });
