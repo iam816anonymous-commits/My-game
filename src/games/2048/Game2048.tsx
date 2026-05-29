@@ -128,6 +128,18 @@ const Game2048: React.FC = () => {
         animate={fusionEffect ? { scale: [1, 1.02, 1], filter: 'brightness(1.5)' } : {}}
         className="relative w-full max-w-sm aspect-square bg-white/5 p-3 rounded-[2.5rem] border border-white/10 shadow-2xl"
       >
+        <AnimatePresence>
+            {state.score === 0 && (
+                <motion.div
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+                >
+                    <div className="bg-accent-gold/20 text-accent-gold px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border border-accent-gold/30 animate-pulse">
+                        Swipe or use Arrows to Merge
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
         <div className="grid grid-cols-4 grid-rows-4 gap-2 w-full h-full">
             {Array(16).fill(null).map((_, i) => (
                 <div key={i} className="bg-white/5 rounded-xl border border-white/5" />

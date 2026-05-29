@@ -67,7 +67,7 @@ const SnakesAndLadders: React.FC = () => {
 
   useEffect(() => {
       if (turn === 'ai' && !isRolling && playerPos < 100 && aiPos < 100) {
-          const t = setTimeout(() => executeMove(aiPos, setAiPos, 'AI CORE'), 1500);
+          const t = setTimeout(() => executeMove(aiPos, setAiPos, 'AI CORE'), 800); // V11: Faster AI
           return () => clearTimeout(t);
       }
   }, [turn, isRolling, aiPos, playerPos, executeMove]);

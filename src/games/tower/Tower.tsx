@@ -17,8 +17,8 @@ const Tower: React.FC = () => {
   const update = useCallback(() => {
     if (gameOver) return;
 
-    // V10: Adaptive Pacing based on height
-    const speedFactor = 1 + (blocks.length * 0.04);
+    // V10: Adaptive Pacing based on height (V11: Slower start)
+    const speedFactor = blocks.length < 5 ? 0.7 : 1 + (blocks.length * 0.04);
 
     setCurrentBlock(prev => {
         let newX = prev.x + dir * 2 * speedFactor;

@@ -78,7 +78,7 @@ const Ludo: React.FC = () => {
                   setTimeout(() => {
                       const bestPiece = playable.sort((a, b) => b.progress - a.progress)[0];
                       executeMove(bestPiece.id, val);
-                  }, 800);
+                  }, 400); // V11: Faster AI turns
               }
           } else {
               addLog(`${PLAYER_NAMES[turn]} rolled ${val} - Blocked`);

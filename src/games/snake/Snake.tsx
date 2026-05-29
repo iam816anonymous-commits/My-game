@@ -152,10 +152,11 @@ const Snake: React.FC = () => {
     // Phase 3: Flow (60-120s) -> High Speed
     // Phase 4: Intensity (120s+) -> Critical
 
-    let baseSpeed = 200;
+    let baseSpeed = 300; // V11 Gentle Onboarding: Start slower
     if (gameTime > 120) baseSpeed = 60;
     else if (gameTime > 60) baseSpeed = 100;
-    else if (gameTime > 20) baseSpeed = 150;
+    else if (gameTime > 30) baseSpeed = 150;
+    else if (gameTime > 15) baseSpeed = 200;
 
     // Length modifier
     const speed = (isSlowMo ? baseSpeed * 2.5 : baseSpeed) - (Math.min(50, snake.length * 1.5));

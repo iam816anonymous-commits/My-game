@@ -13,13 +13,16 @@ const Reaction: React.FC = () => {
   const [lastHitTime, setLastHitTime] = useState(Date.now());
   const [grade, setGrade] = useState<'PERFECT' | 'GREAT' | 'GOOD' | null>(null);
 
+  const [hits, setHits] = useState(0);
+
   const spawn = useCallback(() => {
+    const calibration = hits < 5;
     setTarget({
-        x: 15 + Math.random() * 70,
-        y: 15 + Math.random() * 70
+        x: (calibration ? 25 : 15) + Math.random() * (calibration ? 50 : 70),
+        y: (calibration ? 25 : 15) + Math.random() * (calibration ? 50 : 70)
     });
     setLastHitTime(Date.now());
-  }, []);
+  }, [hits]);
 
   const restart = useCallback(() => {
     setGameOver(false);
@@ -50,6 +53,7 @@ const Reaction: React.FC = () => {
   const hit = () => {
       const now = Date.now();
       const reactionTime = now - lastHitTime;
+      setHits(h => h + 1);
 
       let precisionBonus = 1.0;
       let currentGrade: 'PERFECT' | 'GREAT' | 'GOOD' = 'GOOD';
@@ -123,10 +127,10 @@ const Reaction: React.FC = () => {
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 1.5, opacity: 0 }}
                     onClick={(e) => { e.stopPropagation(); hit(); }}
-                    className="absolute w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[0_0_40px_white] z-10"
+                    className={`absolute bg-white rounded-full flex items-center justify-center shadow-[0_0_40px_white] z-10 ${hits < 5 ? 'w-24 h-24' : 'w-20 h-20'}`}
                     style={{ left: `${target.x}%`, top: `${target.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
-                    <Target size={32} className="text-black" />
+                    <Target size={hits < 5 ? 40 : 32} className="text-black" />
                     <div className="absolute inset-0 rounded-full border-4 border-white animate-ping opacity-20" />
                 </motion.div>
             )}

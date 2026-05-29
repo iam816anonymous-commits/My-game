@@ -10,8 +10,9 @@ export class ProgressionManager {
   }
 
   public update(delta: number): GameState {
-    // Decay energy
-    const decay = (this.DECAY_RATE * delta) / 60;
+    // Decay energy (V11: Slower decay early on)
+    const decayMult = this.state.evolutionLevel === 1 ? 0.4 : 1.0;
+    const decay = (this.DECAY_RATE * delta * decayMult) / 60;
     this.state.energy = Math.max(0, this.state.energy - decay);
 
     // Update evolution progress
