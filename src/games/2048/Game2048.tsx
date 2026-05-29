@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 import { initGame, move } from './logic';
 import type { GameState } from './logic';
+import { AnalyticsManager } from '../../shared/systems/AnalyticsManager';
 
 const Game2048: React.FC = () => {
   const { exitToDashboard, updateXP, finishGame, updateStats } = usePlayStore();
@@ -28,6 +29,7 @@ const Game2048: React.FC = () => {
     setState(prev => {
       const { state: nextState, moved } = move(prev, direction);
       if (moved) {
+        if (prev.score === 0) AnalyticsManager.trackFirstAction('2048');
         setHistory(h => [...h, prev].slice(-15)); // Increased undo steps V9
 
         const now = Date.now();
@@ -53,6 +55,7 @@ const Game2048: React.FC = () => {
         }
 
         if (nextState.gameOver) {
+            AnalyticsManager.trackGameComplete('2048', nextState.score);
             finishGame(nextState.score);
         }
 

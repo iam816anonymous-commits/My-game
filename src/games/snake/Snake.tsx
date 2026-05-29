@@ -4,6 +4,7 @@ import { Home, RotateCcw, Zap, Sparkles, Magnet, Timer, Ghost, ShieldAlert } fro
 import { motion, AnimatePresence } from 'framer-motion';
 import { AudioController } from '../../shared/systems/AudioController';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
+import { AnalyticsManager } from '../../shared/systems/AnalyticsManager';
 
 const GRID_SIZE = 20;
 
@@ -62,6 +63,7 @@ const Snake: React.FC = () => {
         if (!gameOver) {
             setGameTime(t => {
                 const nt = t + 1;
+                AnalyticsManager.trackGameHeartbeat('snake', nt);
                 if (nt === 1) AudioController.start();
                 if (nt === 15) AudioController.setIntensity('comfort');
                 if (nt === 30) AudioController.setIntensity('challenge');
@@ -95,6 +97,7 @@ const Snake: React.FC = () => {
         if (willHitWall || willHitSelf) {
           setGameOver(true);
           setGhostTrail(prev);
+          AnalyticsManager.trackGameComplete('snake', score);
           finishGame(score);
           return prev;
         }
@@ -111,6 +114,7 @@ const Snake: React.FC = () => {
 
         const newSnake = [newHead, ...prev];
         if (newHead[0] === targetPos[0] && newHead[1] === targetPos[1]) {
+          if (score === 0) AnalyticsManager.trackFirstAction('snake');
           // Score Calculation
           let basePoints = 10;
           if (food.type === 'rare') basePoints = 30;
@@ -178,7 +182,7 @@ const Snake: React.FC = () => {
       if ((e.key === 'ArrowDown' || e.key === 's') && dir[1] !== -1) setDir([0, 1]);
       if ((e.key === 'ArrowLeft' || e.key === 'a') && dir[0] !== 1) setDir([-1, 0]);
       if ((e.key === 'ArrowRight' || e.key === 'd') && dir[0] !== -1) setDir([1, 0]);
-      if (e.key === 'r' || e.key === 'R') restart();
+      if (e.key === 'r' || e.key === 'R') { AnalyticsManager.trackGameRestart('snake'); restart(); }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);

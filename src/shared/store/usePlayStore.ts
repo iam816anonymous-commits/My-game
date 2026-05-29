@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import type { PlayState, DailyChallenge } from '../types';
 import { ChallengeManager } from '../systems/ChallengeManager';
+import { AnalyticsManager } from '../systems/AnalyticsManager';
 
 interface PlayStore extends PlayState {
   launchGame: (gameId: string) => void;
   finishGame: (score: number) => void;
   exitToDashboard: () => void;
+  adminLogin: () => void;
+  isAdmin: boolean;
   updateXP: (amount: number) => void;
   toggleFavorite: (gameId: string) => void;
   completeChallenge: (id: string) => void;
@@ -28,6 +31,7 @@ const DEFAULT_CHALLENGES: DailyChallenge[] = [
 export const usePlayStore = create<PlayStore>((set) => ({
   currentScene: 'dashboard',
   activeGameId: null,
+  isAdmin: false,
   profile: {
     name: 'Dreamer One',
     level: 1,
@@ -88,6 +92,9 @@ export const usePlayStore = create<PlayStore>((set) => ({
   }),
 
   exitToDashboard: () => set((state) => {
+      if (state.currentScene === 'game' && state.activeGameId) {
+          AnalyticsManager.trackGameAbandon(state.activeGameId);
+      }
       // Daily Reward Check
       const now = Date.now();
       const lastLogin = state.profile.lastLogin;
@@ -114,6 +121,8 @@ export const usePlayStore = create<PlayStore>((set) => ({
           profile: { ...state.profile, streak, lastLogin: now }
       };
   }),
+
+  adminLogin: () => set({ isAdmin: true, currentScene: 'admin' }),
 
   updateXP: (amount) => set((state) => {
       const newXP = state.profile.xp + amount;

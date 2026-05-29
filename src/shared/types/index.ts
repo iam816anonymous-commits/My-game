@@ -38,7 +38,7 @@ export interface PlayerProfile {
 }
 
 export interface PlayState {
-  currentScene: 'dashboard' | 'game' | 'profile' | 'postgame';
+  currentScene: 'dashboard' | 'game' | 'profile' | 'postgame' | 'admin';
   activeGameId: string | null;
   profile: PlayerProfile;
   highScores: Record<string, number>;

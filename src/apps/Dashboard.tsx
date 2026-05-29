@@ -3,9 +3,16 @@ import { usePlayStore } from '../shared/store/usePlayStore';
 import { User, Share2, Zap, TrendingUp, Clock, Play, Heart, Search, LayoutGrid, Award, Settings, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChallengeManager } from '../shared/systems/ChallengeManager';
+import { AnalyticsManager } from '../shared/systems/AnalyticsManager';
 
 const Dashboard: React.FC = () => {
-  const { profile, launchGame, toggleFavorite, favorites, dailyChallenges } = usePlayStore();
+  const { profile, launchGame, toggleFavorite, favorites, dailyChallenges, adminLogin } = usePlayStore();
+
+  const handleLaunch = (gameId: string) => {
+      AnalyticsManager.trackDashboardInteraction('click', gameId);
+      AnalyticsManager.trackGameOpen(gameId);
+      launchGame(gameId);
+  };
   const modifier = ChallengeManager.getDailyModifier();
   const [activeTab, setActiveTab] = useState('all');
 
@@ -31,7 +38,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-[#0a0a0c] text-white flex flex-col selection:bg-accent-cyan/30">
       {/* Mobile-First Header */}
       <header className="p-6 md:p-12 flex justify-between items-center border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={(e) => { if (e.detail === 5) adminLogin(); }}>
             <div className="w-10 h-10 bg-accent-cyan rounded-xl flex items-center justify-center text-black font-black italic text-xl shadow-[0_0_20px_rgba(103,232,249,0.3)]">P</div>
             <h1 className="text-2xl font-black tracking-tighter italic uppercase">Play<span className="text-accent-cyan">verse</span></h1>
         </div>
@@ -70,7 +77,7 @@ const Dashboard: React.FC = () => {
         </section>
 
         {/* Featured break-out game */}
-        <section className="relative group cursor-pointer" onClick={() => launchGame('last-light')}>
+        <section className="relative group cursor-pointer" onClick={() => handleLaunch('last-light')}>
             <div className="absolute inset-0 bg-gradient-to-r from-accent-cyan/20 to-accent-violet/20 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity" />
             <div className="relative p-12 bg-white/5 border border-white/10 rounded-[3rem] flex flex-col md:flex-row justify-between items-center gap-12 overflow-hidden">
                 <div className="space-y-6 flex-1">
@@ -98,7 +105,7 @@ const Dashboard: React.FC = () => {
                 <h2 className="text-xl font-black italic uppercase tracking-tighter">Discover</h2>
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {['all', 'arcade', 'logic', 'board'].map(t => (
-                    <button key={t} onClick={() => setActiveTab(t)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === t ? 'bg-white text-black' : 'bg-white/5 text-white/40'}`}>{t}</button>
+                    <button key={t} onClick={() => { setActiveTab(t); AnalyticsManager.trackDashboardInteraction('search', t); }} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === t ? 'bg-white text-black' : 'bg-white/5 text-white/40'}`}>{t}</button>
                     ))}
                 </div>
             </div>
@@ -108,7 +115,7 @@ const Dashboard: React.FC = () => {
                     <motion.div
                         key={game.id}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => launchGame(game.id)}
+                        onClick={() => handleLaunch(game.id)}
                         className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-white/20 transition-all cursor-pointer group flex flex-col justify-between h-64 relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -125,7 +132,7 @@ const Dashboard: React.FC = () => {
                         </div>
                         <div className="flex justify-between items-center">
                             <div className="text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-accent-cyan transition-colors">Start Session</div>
-                            <button onClick={(e) => { e.stopPropagation(); toggleFavorite(game.id); }} className={favorites.includes(game.id) ? 'text-accent-rose' : 'text-white/10'}>
+                            <button onClick={(e) => { e.stopPropagation(); toggleFavorite(game.id); AnalyticsManager.trackDashboardInteraction('favorite', game.id); }} className={favorites.includes(game.id) ? 'text-accent-rose' : 'text-white/10'}>
                                 <Heart size={20} fill={favorites.includes(game.id) ? 'currentColor' : 'none'} />
                             </button>
                         </div>

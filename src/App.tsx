@@ -20,11 +20,12 @@ const ColorRush = lazy(() => import('./games/color-rush/ColorRush'));
 const OrbitDodge = lazy(() => import('./games/orbit-dodge/OrbitDodge'));
 const TapDash = lazy(() => import('./games/tap-dash/TapDash'));
 const Connect4 = lazy(() => import('./games/connect4/Connect4'));
+const AdminDashboard = lazy(() => import('./apps/admin/AdminDashboard'));
 const PostGameOverlay = lazy(() => import('./shared/ui/PostGameOverlay'));
 const GameOnboarding = lazy(() => import('./shared/ui/GameOnboarding'));
 
 function App() {
-  const { currentScene, activeGameId, profile, highScores, favorites, onboardingSeen, markOnboardingSeen } = usePlayStore();
+  const { currentScene, activeGameId, profile, highScores, favorites, onboardingSeen, markOnboardingSeen, isAdmin } = usePlayStore();
   const [loaded, setLoaded] = useState(false);
   const [shake, setShake] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,8 +42,23 @@ function App() {
   useEffect(() => {
     loadState().then(() => {
         setLoaded(true);
-        AnalyticsManager.trackSessionStart();
+
+        // V13 Analytics: Session & Retention
+        const store = usePlayStore.getState();
+        const lastLogin = store.profile.lastLogin;
+        const now = Date.now();
+        const isReturning = lastLogin > 0;
+        const dailyReturn = (now - lastLogin) < 24 * 60 * 60 * 1000 * 2 && (now - lastLogin) > 24 * 60 * 60 * 1000;
+
+        AnalyticsManager.trackSessionStart(isReturning, dailyReturn, store.profile.streak);
     });
+
+    const handleBeforeUnload = () => {
+        AnalyticsManager.trackSessionEnd();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
   const throttledSave = useMemo(() => throttle(() => saveState(), 5000), []);
@@ -102,6 +118,12 @@ function App() {
           <motion.div key="postgame" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
              <Suspense fallback={null}><PostGameOverlay /></Suspense>
           </motion.div>
+        )}
+
+        {currentScene === 'admin' && isAdmin && (
+            <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <Suspense fallback={null}><AdminDashboard /></Suspense>
+            </motion.div>
         )}
       </AnimatePresence>
     </div>

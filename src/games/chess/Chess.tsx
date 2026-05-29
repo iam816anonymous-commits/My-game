@@ -5,6 +5,7 @@ import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RotateCcw, Trophy, History, Swords } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChessAI } from './ai';
+import { AnalyticsManager } from '../../shared/systems/AnalyticsManager';
 
 const ChessGame: React.FC = () => {
   const { exitToDashboard, updateXP, finishGame } = usePlayStore();
@@ -23,6 +24,7 @@ const ChessGame: React.FC = () => {
   const makeMove = useCallback((move: any) => {
     try {
       const result = game.move(move);
+      if (result && game.turn() === 'b') AnalyticsManager.trackFirstAction('chess');
       if (result) {
         setGame(new Chess(game.fen()));
         setMoveHistory(h => [...h, result.san]);
@@ -39,6 +41,7 @@ const ChessGame: React.FC = () => {
         }
 
         if (game.isGameOver()) {
+            AnalyticsManager.trackGameComplete('chess', moveHistory.length);
             finishGame(moveHistory.length);
         }
         return true;
@@ -81,6 +84,7 @@ const ChessGame: React.FC = () => {
   }, [game, difficulty, makeMove]);
 
   const restart = () => {
+    AnalyticsManager.trackGameRestart('chess');
     setGame(new Chess());
     setSelectedSquare(null);
     setMoveHistory([]);
