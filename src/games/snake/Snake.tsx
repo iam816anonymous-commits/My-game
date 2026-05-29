@@ -11,7 +11,7 @@ const GRID_SIZE = 20;
 type FoodType = 'standard' | 'rare' | 'legendary' | 'slowmo' | 'magnet';
 
 const Snake: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, updateStats } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, updateStats, highScores } = usePlayStore();
   const [snake, setSnake] = useState([[10, 10], [10, 11], [10, 12]]);
   const [food, setFood] = useState<{pos: number[], type: FoodType}>({ pos: [5, 5], type: 'standard' });
   const [dir, setDir] = useState([0, -1]);
@@ -26,6 +26,7 @@ const Snake: React.FC = () => {
   const [nearMiss, setNearMiss] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [failureReason, setFailureReason] = useState<string>('');
+  const [wallHugTime, setWallHugTime] = useState(0);
 
   const lastKeyTime = useRef(0);
 
@@ -88,6 +89,11 @@ const Snake: React.FC = () => {
         const willHitWall = newHead[0] < 0 || newHead[0] >= GRID_SIZE || newHead[1] < 0 || newHead[1] >= GRID_SIZE;
         const willHitSelf = prev.slice(0, -1).some(s => s[0] === newHead[0] && s[1] === newHead[1]);
 
+        // Wall Hugger Logic (V15 Rebuild)
+        const isHugging = !willHitWall && (newHead[0] === 0 || newHead[0] === GRID_SIZE - 1 || newHead[1] === 0 || newHead[1] === GRID_SIZE - 1);
+        if (isHugging) setWallHugTime(t => t + 1);
+        else setWallHugTime(0);
+
         if ((willHitWall || willHitSelf) && !isSlowMo && !gameOver) {
             setNearMiss(true);
             JuiceManager.danger();
@@ -130,7 +136,9 @@ const Snake: React.FC = () => {
           const isPerfectTurn = Date.now() - lastKeyTime.current < 150;
           const turnBonus = isPerfectTurn ? 1.2 : 1.0;
 
-          const totalGain = Math.floor(basePoints * (1 + combo * 0.1) * riskyBonus * turnBonus);
+          // Wall Hugger Multiplier
+          const hugBonus = 1 + (Math.min(wallHugTime, 10) * 0.05);
+          const totalGain = Math.floor(basePoints * (1 + combo * 0.1) * riskyBonus * turnBonus * hugBonus);
           setScore(s => s + totalGain);
           setCombo(c => Math.min(20, c + 1));
 
@@ -216,7 +224,7 @@ const Snake: React.FC = () => {
             y: [0, -shake, shake, 0],
             scale: zoom
         }}
-        className="relative w-full max-w-md aspect-square bg-white/5 rounded-[2.5rem] border border-white/10 p-2 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
+        className="relative w-full max-w-md aspect-square bg-[#022c22] rounded-[2.5rem] border border-emerald-500/20 p-2 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden"
       >
         {/* Reactive Flow Vignettes (V13 Fix) */}
         <div
@@ -239,8 +247,8 @@ const Snake: React.FC = () => {
                         key={i}
                         className={`rounded-sm transition-all duration-300 ${
                             isHead ? 'bg-white shadow-[0_0_30px_white] z-20 scale-110' :
-                            isSnake ? 'bg-[#22c55e] opacity-80 scale-95 shadow-[0_0_15px_rgba(34,197,94,0.4)]' :
-                            isGhost ? 'bg-white/10 scale-75' :
+                            isSnake ? 'bg-emerald-400 opacity-90 scale-95 shadow-[0_0_15px_rgba(52,211,153,0.3)]' :
+                            isGhost ? 'bg-emerald-900/40 scale-75' :
                             isFood ? (
                                 food.type === 'legendary' ? 'bg-accent-gold shadow-[0_0_30px_#FACC15] animate-pulse scale-125' :
                                 food.type === 'rare' ? 'bg-[#22D3EE] shadow-[0_0_20px_#22D3EE] animate-bounce' :
@@ -269,8 +277,8 @@ const Snake: React.FC = () => {
         <div className="absolute top-8 left-8 space-y-1 pointer-events-none z-30">
             <motion.div
                 key={score}
-                initial={{ scale: 1.5 }} animate={{ scale: 1 }}
-                className="text-5xl font-black italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                initial={{ scale: 1.5, x: -20 }} animate={{ scale: 1, x: 0 }}
+                className="text-6xl font-black italic text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
             >
                 {score}
             </motion.div>
@@ -324,6 +332,14 @@ const Snake: React.FC = () => {
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                             <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Flow Peak</div>
                             <div className="text-xl font-black text-accent-cyan">x{(1 + combo * 0.1).toFixed(1)}</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                            <div className="text-xl font-black text-white">{highScores['snake'] || 0}</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Next Goal</div>
+                            <div className="text-xl font-black text-accent-gold">{(highScores['snake'] || 0) + 100}</div>
                         </div>
                     </div>
 

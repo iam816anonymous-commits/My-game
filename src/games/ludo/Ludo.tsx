@@ -43,7 +43,7 @@ const HOME_PATHS: [number, number][][] = [
 ];
 
 const Ludo: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
   const [pieces, setPieces] = useState<Piece[]>(() => {
       const p: Piece[] = [];
       for(let i=0; i<4; i++) {
@@ -255,6 +255,14 @@ const Ludo: React.FC = () => {
                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                 <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">XP Gain</div>
                                 <div className="text-xl font-black text-white">+{winner === 0 ? 1000 : 100}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                                <div className="text-xl font-black text-white">{highScores['ludo'] || 0} Cycles</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Outcome</div>
+                                <div className="text-xl font-black text-accent-gold">{winner === 0 ? 'MASTERY' : 'DISRUPTION'}</div>
                             </div>
                         </div>
 

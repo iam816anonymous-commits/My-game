@@ -6,7 +6,7 @@ import { Connect4Logic } from './logic';
 import type { Player } from './logic';
 
 const Connect4: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
   const [board, setBoard] = useState<(Player | null)[][]>(Array(6).fill(null).map(() => Array(7).fill(null)));
   const [turn, setTurn] = useState<Player>(1);
   const [winner, setWinner] = useState<Player | 'draw' | null>(null);
@@ -146,6 +146,14 @@ const Connect4: React.FC = () => {
                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                 <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">XP Gain</div>
                                 <div className="text-xl font-black text-white">+{winner === 1 ? 500 : 50}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                                <div className="text-xl font-black text-white">{highScores['connect4'] || 0} Wins</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Strategy Node</div>
+                                <div className="text-xl font-black text-accent-gold">{difficulty.toUpperCase()}</div>
                             </div>
                         </div>
 

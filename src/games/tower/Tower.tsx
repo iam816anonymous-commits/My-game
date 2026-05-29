@@ -4,12 +4,13 @@ import { Home, RotateCcw, Layers, Zap, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Tower: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
   const [blocks, setBlocks] = useState<{ width: number, x: number }[]>([{ width: 60, x: 20 }]);
   const [currentBlock, setCurrentBlock] = useState({ width: 60, x: 0 });
   const [dir, setDir] = useState(1);
   const [gameOver, setGameOver] = useState(false);
   const [combo, setCombo] = useState(0);
+  const [maxCombo, setMaxCombo] = useState(0);
   const [perfectFlash, setPerfectFlash] = useState(false);
 
   const requestRef = useRef<number>(0);
@@ -63,7 +64,11 @@ const Tower: React.FC = () => {
       // V10: Authentic Precision Window
       const isPerfect = Math.abs(diff) < 2;
       if (isPerfect) {
-          setCombo(c => c + 1);
+          setCombo(c => {
+              const next = c + 1;
+              setMaxCombo(m => Math.max(m, next));
+              return next;
+          });
           setPerfectFlash(true);
           setTimeout(() => setPerfectFlash(false), 200);
           updateXP(100 + combo * 50);
@@ -136,7 +141,15 @@ const Tower: React.FC = () => {
                             </div>
                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                 <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Peak Rhythm</div>
-                                <div className="text-xl font-black text-accent-violet">{combo} Perfects</div>
+                                <div className="text-xl font-black text-accent-violet">{maxCombo} Perfects</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                                <div className="text-xl font-black text-white">{highScores['tower'] || 0}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Stability Rank</div>
+                                <div className="text-xl font-black text-accent-gold">{blocks.length > 30 ? 'TITAN' : blocks.length > 20 ? 'MASTER' : blocks.length > 10 ? 'PILOT' : 'NOVICE'}</div>
                             </div>
                         </div>
 

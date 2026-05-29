@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const SnakesAndLadders: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
   const [dice, setDice] = useState(1);
   const [playerPos, setPos] = useState(1);
   const [aiPos, setAiPos] = useState(1);
@@ -167,6 +167,14 @@ const SnakesAndLadders: React.FC = () => {
                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                 <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Position</div>
                                 <div className="text-xl font-black text-white">{playerPos}/100</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                                <div className="text-xl font-black text-white">{highScores['snakes-ladders'] || 0} Wins</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Ascension</div>
+                                <div className="text-xl font-black text-accent-gold">{playerPos === 100 ? 'COMPLETE' : 'INTERRUPTED'}</div>
                             </div>
                         </div>
 

@@ -6,7 +6,7 @@ import { MinesweeperLogic, DIFFICULTIES } from './logic';
 import type { Difficulty } from './logic';
 
 const Minesweeper: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, profile } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, profile, highScores } = usePlayStore();
   const [difficulty, setDifficulty] = useState<Difficulty>('beginner');
   const [board, setBoard] = useState<number[][]>([]);
   const [revealed, setRevealed] = useState<boolean[][]>([]);
@@ -89,13 +89,19 @@ const Minesweeper: React.FC = () => {
     checkWin(newRevealed, currentBoard);
   };
 
+  const [revealedCount, setRevealedCount] = useState(0);
+
   const checkWin = (currentRevealed: boolean[][], currentBoard: number[][]) => {
       const { rows, cols, mines } = DIFFICULTIES[difficulty];
-      let revealedCount = 0;
-      currentRevealed.forEach(row => row.forEach(cell => { if(cell) revealedCount++; }));
-      if (revealedCount === rows * cols - mines) {
+      let rCount = 0;
+      currentRevealed.forEach(row => row.forEach(cell => { if(cell) rCount++; }));
+      setRevealedCount(rCount);
+      if (rCount === rows * cols - mines) {
           setWin(true);
-          updateXP(mines * 10);
+          // V15 Reward Scaling
+          const speedBonus = Math.max(1, 300 / (time || 1));
+          const totalReward = Math.floor(mines * 20 * speedBonus);
+          updateXP(totalReward);
           finishGame(time);
       }
   };
@@ -206,6 +212,14 @@ const Minesweeper: React.FC = () => {
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                     <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Mission Time</div>
                                     <div className="text-xl font-black text-white">{time}s</div>
+                                </div>
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                    <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Best Time</div>
+                                    <div className="text-xl font-black text-white">{highScores[`minesweeper-${difficulty}`] || '---'}s</div>
+                                </div>
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                    <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Efficiency</div>
+                                    <div className="text-xl font-black text-accent-gold">{win ? Math.round((revealedCount / (time || 1)) * 10) / 10 : 0} p/s</div>
                                 </div>
                             </div>
 

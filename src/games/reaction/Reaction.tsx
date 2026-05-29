@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const Reaction: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
   const [target, setTarget] = useState({ x: 50, y: 50 });
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -15,6 +15,7 @@ const Reaction: React.FC = () => {
   const [grade, setGrade] = useState<'PERFECT' | 'GREAT' | 'GOOD' | null>(null);
 
   const [hits, setHits] = useState(0);
+  const [bestReflex, setBestReflex] = useState(999);
 
   const spawn = useCallback(() => {
     const calibration = hits < 5;
@@ -55,6 +56,7 @@ const Reaction: React.FC = () => {
       const now = Date.now();
       const reactionTime = now - lastHitTime;
       setHits(h => h + 1);
+      setBestReflex(b => Math.min(b, reactionTime));
 
       let precisionBonus = 1.0;
       let currentGrade: 'PERFECT' | 'GREAT' | 'GOOD' = 'GOOD';
@@ -160,8 +162,16 @@ const Reaction: React.FC = () => {
                                 <div className="text-xl font-black text-white">{hits}</div>
                             </div>
                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Peak Reflex</div>
-                                <div className="text-xl font-black text-accent-cyan">x{(1 + combo * 0.1).toFixed(1)}</div>
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Best Reflex</div>
+                                <div className="text-xl font-black text-accent-cyan">{bestReflex}ms</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                                <div className="text-xl font-black text-white">{highScores['reaction'] || 0}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Reflex Grade</div>
+                                <div className="text-xl font-black text-accent-gold">{hits > 30 ? 'S' : hits > 20 ? 'A' : hits > 10 ? 'B' : 'C'}</div>
                             </div>
                         </div>
 

@@ -11,7 +11,7 @@ const KEYBOARD = [
 ];
 
 const Wordle: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
   const [target, setTarget] = useState('');
   const [guesses, setGuesses] = useState<string[]>([]);
   const [results, setResults] = useState<LetterStatus[][]>([]);
@@ -189,6 +189,14 @@ const Wordle: React.FC = () => {
                                 {won ? 'Verified' : 'Offline'}
                             </div>
                         </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                                <div className="text-xl font-black text-white">{highScores['wordle'] || 0} Crypts</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Efficiency</div>
+                                <div className="text-xl font-black text-accent-gold">{won ? `${6 - guesses.length} Spare` : '0'}</div>
+                            </div>
                     </div>
 
                     <div className={`p-6 ${won ? 'bg-accent-cyan/5 border-accent-cyan/20' : 'bg-accent-rose/5 border-accent-rose/20'} border rounded-3xl`}>

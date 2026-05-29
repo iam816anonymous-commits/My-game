@@ -16,7 +16,7 @@ const LastLight: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const [isDistorted, setIsDistorted] = useState(false);
-  const { exitToDashboard, updateXP, setLastLightState, finishGame, lastLight } = usePlayStore();
+  const { exitToDashboard, updateXP, setLastLightState, finishGame, lastLight, highScores } = usePlayStore();
 
   useEffect(() => {
     let progression: ProgressionManager;
@@ -137,6 +137,14 @@ const LastLight: React.FC = () => {
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                             <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Particles</div>
                             <div className="text-xl font-black text-accent-cyan">{lastLight?.totalMemoriesCollected}</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                            <div className="text-xl font-black text-white">{highScores['last-light'] || 0}</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Evolution</div>
+                            <div className="text-xl font-black text-accent-gold">LVL {lastLight?.evolutionLevel}</div>
                         </div>
                     </div>
 

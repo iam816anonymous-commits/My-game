@@ -8,7 +8,7 @@ import type { GameState } from './logic';
 import { AnalyticsManager } from '../../shared/systems/AnalyticsManager';
 
 const Game2048: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, updateStats } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, updateStats, highScores } = usePlayStore();
   const [isDaily, setIsDaily] = useState(false);
   const [state, setState] = useState<GameState>(initGame());
   const [history, setHistory] = useState<GameState[]>([]);
@@ -42,7 +42,16 @@ const Game2048: React.FC = () => {
 
         const scoreDiff = nextState.score - prev.score;
         if (scoreDiff > 0) {
-            updateXP(Math.floor(scoreDiff * (1 + combo * 0.1)));
+            // Corner Mastery Logic (V15 Rebuild)
+            const highestValue = Math.max(...nextState.tiles.map(t => t.value));
+            const highestTile = nextState.tiles.find(t => t.value === highestValue);
+            const isInCorner = highestTile && (
+                (highestTile.position[0] === 0 || highestTile.position[0] === 3) &&
+                (highestTile.position[1] === 0 || highestTile.position[1] === 3)
+            );
+
+            const cornerBonus = isInCorner ? 1.5 : 1.0;
+            updateXP(Math.floor(scoreDiff * (1 + combo * 0.1) * cornerBonus));
             updateStats({ puzzlesSolved: 1 });
 
             // Fusion Flash for high value merges
@@ -203,6 +212,14 @@ const Game2048: React.FC = () => {
                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                 <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Score</div>
                                 <div className="text-xl font-black text-white">{state.score}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                                <div className="text-xl font-black text-white">{highScores['2048'] || 0}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Next Goal</div>
+                                <div className="text-xl font-black text-accent-gold">{(highScores['2048'] || 0) + 1000}</div>
                             </div>
                         </div>
 

@@ -12,13 +12,14 @@ type CellState = {
 };
 
 const SudokuGame: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
   const [grid, setGrid] = useState<CellState[][]>([]);
   const [solution, setSolution] = useState<number[][]>([]);
   const [selected, setSelected] = useState<[number, number] | null>(null);
   const [difficulty, setDifficulty] = useState<SudokuDifficulty>('medium');
   const [isNoteMode, setIsNoteMode] = useState(false);
   const [mistakes, setMistakes] = useState(0);
+  const [maxMistakes] = useState(3);
   const [gameOver, setGameOver] = useState(false);
 
   const init = useCallback(() => {
@@ -207,11 +208,19 @@ const SudokuGame: React.FC = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                 <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Mistakes</div>
-                                <div className={`text-xl font-black ${mistakes >= 3 ? 'text-accent-rose' : 'text-white'}`}>{mistakes}/3</div>
+                                <div className={`text-xl font-black ${mistakes >= maxMistakes ? 'text-accent-rose' : 'text-white'}`}>{mistakes}/{maxMistakes}</div>
                             </div>
                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                 <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Status</div>
-                                <div className="text-xl font-black text-accent-violet">{mistakes < 3 ? 'SECURE' : 'OFFLINE'}</div>
+                                <div className="text-xl font-black text-accent-violet">{mistakes < maxMistakes ? 'SECURE' : 'OFFLINE'}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                                <div className="text-xl font-black text-white">{highScores['sudoku'] || 0} Grids</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Logic Accuracy</div>
+                                <div className="text-xl font-black text-accent-gold">{mistakes === 0 ? 'FLAWLESS' : mistakes === 1 ? 'ELITE' : 'STABLE'}</div>
                             </div>
                         </div>
 

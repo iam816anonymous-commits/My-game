@@ -8,12 +8,13 @@ import { ChessAI } from './ai';
 import { AnalyticsManager } from '../../shared/systems/AnalyticsManager';
 
 const ChessGame: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
   const [game, setGame] = useState(new Chess());
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [capturedPieces, setCapturedPieces] = useState<{ w: string[], b: string[] }>({ w: [], b: [] });
+  const [bestMaterial, setBestMaterial] = useState(0);
   const [lastMove, setLastMove] = useState<{ from: string, to: string } | null>(null);
 
   const validMoves = useMemo(() => {
@@ -33,10 +34,14 @@ const ChessGame: React.FC = () => {
         // Handle captured pieces
         if (result.captured) {
             const color = result.color === 'w' ? 'b' : 'w';
-            setCapturedPieces(prev => ({
-                ...prev,
-                [color]: [...prev[color as keyof typeof prev], result.captured!]
-            }));
+            setCapturedPieces(prev => {
+                const next = {
+                    ...prev,
+                    [color]: [...prev[color as keyof typeof prev], result.captured!]
+                };
+                setBestMaterial(m => Math.max(m, next.w.length + next.b.length));
+                return next;
+            });
             updateXP(50);
         }
 
@@ -244,6 +249,14 @@ const ChessGame: React.FC = () => {
                         <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                             <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Material</div>
                             <div className="text-xl font-black text-accent-cyan">+{capturedPieces.w.length + capturedPieces.b.length}</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
+                            <div className="text-xl font-black text-white">{highScores['chess'] || 0} Wins</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Strategic Rank</div>
+                            <div className="text-xl font-black text-accent-gold">{moveHistory.length > 40 ? 'GRANDMASTER' : moveHistory.length > 25 ? 'TACTICIAN' : 'STUDENT'}</div>
                         </div>
                     </div>
 
