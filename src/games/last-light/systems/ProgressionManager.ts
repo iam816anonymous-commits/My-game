@@ -9,11 +9,19 @@ export class ProgressionManager {
     this.state = { ...initialState };
   }
 
-  public update(delta: number): GameState {
+  public update(delta: number, isDashing: boolean = false): GameState {
     // Decay energy (V11: Slower decay early on)
-    const decayMult = this.state.evolutionLevel === 1 ? 0.4 : 1.0;
+    let decayMult = this.state.evolutionLevel === 1 ? 0.4 : 1.0;
+
+    // Aura Overload Burn (V19 Rebuild)
+    if (this.comboCount >= 10) {
+        decayMult *= 3.0; // Triple decay during overload
+    }
+
+    const dashCost = isDashing ? 5 : 0;
     const decay = (this.DECAY_RATE * delta * decayMult) / 60;
-    this.state.energy = Math.max(0, this.state.energy - decay);
+
+    this.state.energy = Math.max(0, this.state.energy - (decay + dashCost));
 
     // Update evolution progress
     this.updateEvolution();
@@ -54,7 +62,7 @@ export class ProgressionManager {
     let currentLevel: EvolutionLevel = EvolutionLevel.Void;
 
     for (const level of levels) {
-      const threshold = EVOLUTION_THRESHOLDS[level as EvolutionLevel];
+      const threshold = (EVOLUTION_THRESHOLDS as any)[level];
       if (this.state.totalMemoriesCollected >= threshold) {
         currentLevel = level as EvolutionLevel;
       }

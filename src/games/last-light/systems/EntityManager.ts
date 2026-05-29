@@ -49,7 +49,7 @@ export class EntityManager {
     this.effects.addChild(p);
   }
 
-  public spawnMemory(x: number, y: number, type: 'standard' | 'rare' | 'gold' | 'legendary' = 'standard') {
+  public spawnMemory(x: number, y: number, type: 'standard' | 'rare' | 'gold' | 'legendary' = 'standard', drift: {vx: number, vy: number} = {vx:0, vy:0}) {
     const memory = this.getFromPool();
     memory.clear();
 
@@ -67,6 +67,9 @@ export class EntityManager {
     memory.y = y;
     (memory as any).memoryType = type;
     (memory as any).pulse = Math.random() * Math.PI;
+    (memory as any).vx = drift.vx;
+    (memory as any).vy = drift.vy;
+    (memory as any).expiry = -1; // -1 means no expiry yet
 
     this.memories.addChild(memory);
   }
@@ -100,6 +103,13 @@ export class EntityManager {
       const isLegendarySpawn = Math.random() < 0.01;
       const clusterSize = isLegendarySpawn ? 1 : 3 + Math.floor(Math.random() * 5);
 
+      const drift = {
+          vx: evolutionLevel >= 4 ? (Math.random() - 0.5) * 1.5 : 0,
+          vy: evolutionLevel >= 4 ? (Math.random() - 0.5) * 1.5 : 0
+      };
+
+      const clusterId = Math.random().toString(36).substr(2, 9);
+
       for(let i=0; i<clusterSize; i++) {
           const type = isLegendarySpawn ? 'legendary' :
                        Math.random() < 0.05 ? 'gold' :
@@ -107,18 +117,34 @@ export class EntityManager {
           this.spawnMemory(
               centerX + (Math.random() - 0.5) * (isLegendarySpawn ? 0 : 200),
               centerY + (Math.random() - 0.5) * (isLegendarySpawn ? 0 : 200),
-              type
+              type,
+              drift
           );
+          const m = this.memories.children[this.memories.children.length - 1] as any;
+          m.clusterId = clusterId;
       }
     }
 
-    // Update Memories (Pulsing and Floating)
-    this.memories.children.forEach(m => {
-        const gm = m as any;
-        gm.pulse += 0.05 * delta;
-        gm.scale.set(1 + Math.sin(gm.pulse) * 0.1);
-        gm.alpha = 0.8 + Math.sin(gm.pulse) * 0.2;
-    });
+    // Update Memories (Pulsing, Floating, Drifting, Expiry)
+    for (let i = this.memories.children.length - 1; i >= 0; i--) {
+        const m = this.memories.children[i] as any;
+        m.pulse += 0.05 * delta;
+        m.x += m.vx * delta;
+        m.y += m.vy * delta;
+
+        // Cluster Expiry Logic (V19)
+        if (m.expiry > 0) {
+            m.expiry -= (delta / 60);
+            m.alpha = Math.min(m.expiry, 1.0);
+            if (m.expiry <= 0) {
+                this.collect(m);
+                continue;
+            }
+        }
+
+        m.scale.set(1 + Math.sin(m.pulse) * 0.1);
+        if (m.expiry <= 0) m.alpha = 0.8 + Math.sin(m.pulse) * 0.2;
+    }
 
     // Update Ambient Particles with Bounds Awareness
     const parent = this.stage.parent?.parent as any;

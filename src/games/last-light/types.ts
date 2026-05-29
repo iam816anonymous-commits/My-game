@@ -17,8 +17,11 @@ export interface Memory {
   type: MemoryType;
   x: number;
   y: number;
+  vx: number;
+  vy: number;
   energyValue: number;
   collected: boolean;
+  expiry?: number; // Time in seconds before it implodes (for clusters)
 }
 
 export interface Achievement {

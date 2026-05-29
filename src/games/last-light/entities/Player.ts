@@ -12,6 +12,8 @@ export class Player {
 
   private readonly TRAIL_LENGTH = 20;
   private readonly LERP_FACTOR = 0.08;
+  private dashVelocity = 0;
+  private dashTime = 0;
 
   constructor() {
     this.container = new PIXI.Container();
@@ -60,14 +62,24 @@ export class Player {
     }
   };
 
+  private handleDash = (e: MouseEvent | TouchEvent) => {
+      if (this.dashTime <= 0) {
+          this.dashTime = 1.0; // 1 second cooldown
+          this.dashVelocity = 15;
+          this.container.emit('dash');
+      }
+  };
+
   private setupListeners() {
     window.addEventListener('mousemove', this.handleMouseMove);
+    window.addEventListener('mousedown', this.handleDash);
     window.addEventListener('touchstart', this.handleTouch, { passive: false });
     window.addEventListener('touchmove', this.handleTouch, { passive: false });
   }
 
   public cleanup() {
     window.removeEventListener('mousemove', this.handleMouseMove);
+    window.removeEventListener('mousedown', this.handleDash);
     window.removeEventListener('touchstart', this.handleTouch);
     window.removeEventListener('touchmove', this.handleTouch);
   }
@@ -113,8 +125,19 @@ export class Player {
     }
 
     // Smooth movement
-    this.currentX += (this.targetX - this.currentX) * this.LERP_FACTOR * delta;
-    this.currentY += (this.targetY - this.currentY) * this.LERP_FACTOR * delta;
+    const dx = (this.targetX - this.currentX);
+    const dy = (this.targetY - this.currentY);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    const speed = (this.LERP_FACTOR + (this.dashVelocity / 100)) * delta;
+    this.currentX += dx * speed;
+    this.currentY += dy * speed;
+
+    if (this.dashVelocity > 0) {
+        this.dashVelocity *= Math.pow(0.92, delta);
+        if (this.dashVelocity < 0.1) this.dashVelocity = 0;
+    }
+    if (this.dashTime > 0) this.dashTime -= (delta / 60);
 
     this.orb.position.set(this.currentX + offsetX, this.currentY + offsetY);
     this.glow.position.set(this.currentX + offsetX, this.currentY + offsetY);

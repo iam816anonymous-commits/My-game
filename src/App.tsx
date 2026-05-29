@@ -27,15 +27,33 @@ const GameOnboarding = lazy(() => import('./shared/ui/GameOnboarding'));
 function App() {
   const { currentScene, activeGameId, profile, highScores, favorites, onboardingSeen, markOnboardingSeen, isAdmin } = usePlayStore();
   const [loaded, setLoaded] = useState(false);
-  const [shake, setShake] = useState(0);
+  const [shake, setShake] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const unsub = JuiceManager.subscribe((intensity: number) => {
-        setShake(intensity);
+    let frame: number;
+    let intensity = 0;
+
+    const unsub = JuiceManager.subscribe((i: number) => {
+        intensity = i;
     });
+
+    const loop = () => {
+        if (intensity > 0) {
+            setShake({
+                x: (Math.random() - 0.5) * intensity,
+                y: (Math.random() - 0.5) * intensity
+            });
+        } else {
+            setShake({ x: 0, y: 0 });
+        }
+        frame = requestAnimationFrame(loop);
+    };
+
+    frame = requestAnimationFrame(loop);
     return () => {
         unsub();
+        cancelAnimationFrame(frame);
     };
   }, []);
 
@@ -75,7 +93,7 @@ function App() {
     <div
         ref={containerRef}
         style={{
-            transform: shake > 0 ? `translate(${(Math.random()-0.5)*shake}px, ${(Math.random()-0.5)*shake}px)` : 'none'
+            transform: (shake.x !== 0 || shake.y !== 0) ? `translate(${shake.x}px, ${shake.y}px)` : 'none'
         }}
         className="min-h-screen bg-[#0a0a0c] text-white selection:bg-accent-cyan/30"
     >

@@ -51,9 +51,13 @@ const LastLight: React.FC = () => {
         });
       }, 100);
 
+      let dashActive = false;
+      player.container.on('dash', () => { dashActive = true; });
+
       engine.ticker.add((ticker) => {
         const delta = ticker.deltaTime;
-        const state = progression.update(delta);
+        const state = progression.update(delta, dashActive);
+        dashActive = false;
 
         if (state.energy <= 0) {
             finishGame(state.totalMemoriesCollected);
@@ -88,6 +92,17 @@ const LastLight: React.FC = () => {
             const dy = m.y - player.y;
             if (dx*dx + dy*dy < 400) {
                 const type = (m as any).memoryType;
+                const clusterId = (m as any).clusterId;
+
+                // Trigger expiry for rest of cluster on first pick
+                if (clusterId) {
+                    entityManager.getMemories().forEach(rm => {
+                        if ((rm as any).clusterId === clusterId && (rm as any).expiry === -1) {
+                            (rm as any).expiry = 5.0; // 5 seconds to clear cluster
+                        }
+                    });
+                }
+
                 const newState = progression.collectMemory(type);
                 entityManager.collect(m);
                 audio.resume();
