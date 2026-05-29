@@ -212,7 +212,11 @@ const Snake: React.FC = () => {
         }}
         className="relative w-full max-w-md aspect-square bg-white/5 rounded-[2.5rem] border border-white/10 p-2 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
       >
-        {/* Phase Vignettes */}
+        {/* Reactive Flow Vignettes (V13 Fix) */}
+        <div
+            className="absolute inset-0 transition-opacity duration-500 pointer-events-none bg-[radial-gradient(circle,transparent_50%,#22D3EE_150%)]"
+            style={{ opacity: Math.min(0.6, combo * 0.03) }}
+        />
         <div className={`absolute inset-0 transition-opacity duration-1000 pointer-events-none ${gameTime > 120 ? 'opacity-40' : gameTime > 60 ? 'opacity-20' : 'opacity-0'} bg-[radial-gradient(circle,transparent_50%,#F472B6_150%)]`} />
 
         <div className="grid grid-cols-20 grid-rows-20 w-full h-full gap-0.5">

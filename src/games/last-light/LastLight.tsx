@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Engine } from './Engine';
 import { Player } from './entities/Player';
 import { EntityManager } from './systems/EntityManager';
@@ -9,10 +9,12 @@ import { usePlayStore } from '../../shared/store/usePlayStore';
 import LastLightHUD from './LastLightHUD';
 import throttle from 'lodash/throttle';
 import { Home } from 'lucide-react';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const LastLight: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Engine | null>(null);
+  const [isDistorted, setIsDistorted] = useState(false);
   const { exitToDashboard, updateXP, setLastLightState, finishGame } = usePlayStore();
 
   useEffect(() => {
@@ -69,9 +71,12 @@ const LastLight: React.FC = () => {
         world.update(delta, state.evolutionLevel, player.x, player.y);
         audio.update(state.evolutionLevel);
 
-        // V11 Rare Event Trigger
+        // V13 Rare Event Trigger with Distortion
         if (Math.random() < 0.0005 * delta) {
             world.spawnMeteorShower();
+            setIsDistorted(true);
+            setTimeout(() => setIsDistorted(false), 5000);
+            JuiceManager.shake(10);
         }
 
         throttledSync(state);
@@ -104,8 +109,8 @@ const LastLight: React.FC = () => {
   }, [updateXP]);
 
   return (
-    <div className="relative w-full h-screen bg-[#0a0a0c] overflow-hidden">
-      <div ref={canvasRef} className="absolute inset-0" />
+    <div className={`relative w-full h-screen bg-[#0a0a0c] overflow-hidden transition-all duration-1000 ${isDistorted ? 'hue-rotate-90 scale-[1.02]' : ''}`}>
+      <div ref={canvasRef} className={`absolute inset-0 transition-all duration-1000 ${isDistorted ? 'blur-sm opacity-80' : ''}`} />
       <LastLightHUD />
 
       {/* Exit Button */}

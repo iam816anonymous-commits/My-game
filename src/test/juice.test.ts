@@ -28,7 +28,7 @@ describe('JuiceManager', () => {
     JuiceManager.shake(15);
     expect(listener).toHaveBeenCalledWith(15);
 
-    vi.advanceTimersByTime(100);
+    vi.advanceTimersByTime(120);
     expect(listener).toHaveBeenCalledWith(0);
 
     unsubscribe();

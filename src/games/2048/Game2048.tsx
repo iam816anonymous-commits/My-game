@@ -164,7 +164,7 @@ const Game2048: React.FC = () => {
                             y: tile.position[0] * ((boardRef.current?.offsetHeight || 340) / 4 - 2)
                         }}
                         exit={{ scale: 1.2, opacity: 0 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                        transition={{ type: 'spring', damping: 20, stiffness: 450 }}
                         className="absolute w-[calc(25%-6px)] h-[calc(25%-6px)] flex items-center justify-center text-2xl font-black rounded-xl text-black shadow-lg"
                         style={{
                             backgroundColor: getTileColor(tile.value),

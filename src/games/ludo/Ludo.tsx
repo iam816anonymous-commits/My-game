@@ -61,6 +61,24 @@ const Ludo: React.FC = () => {
   const [log, setLog] = useState<string[]>(['System Online']);
   const [winner, setWinner] = useState<number | null>(null);
 
+  const reset = useCallback(() => {
+    setPieces(() => {
+        const p: Piece[] = [];
+        for(let i=0; i<4; i++) {
+            for(let j=0; j<4; j++) {
+                p.push({ id: i*4+j, progress: -1, colorIndex: i });
+            }
+        }
+        return p;
+    });
+    setTurn(0);
+    setDice(0);
+    setIsRolling(false);
+    setCanMove(false);
+    setLog(['System Reset']);
+    setWinner(null);
+  }, []);
+
   const addLog = (msg: string) => setLog(prev => [msg, ...prev].slice(0, 5));
 
   const rollDice = useCallback(() => {
@@ -156,7 +174,7 @@ const Ludo: React.FC = () => {
             <h2 className="text-2xl font-black italic uppercase tracking-tighter">Neon <span className="text-accent-gold text-glow">Ludo</span></h2>
             <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V10 Full Logic</div>
         </div>
-        <button onClick={() => window.location.reload()} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><RotateCcw size={20} /></button>
+        <button onClick={reset} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><RotateCcw size={20} /></button>
       </div>
 
       <div className="flex gap-4 w-full max-w-sm">
@@ -199,6 +217,7 @@ const Ludo: React.FC = () => {
                       <motion.div
                         key={p.id}
                         layout
+                        transition={{ type: 'spring', damping: 15, stiffness: 200 }}
                         animate={{ left: `${(c / 15) * 100}%`, top: `${(r / 15) * 100}%`, scale: isSelectable ? 1.25 : 1 }}
                         onClick={() => isSelectable && executeMove(p.id, dice)}
                         className={`absolute w-[5.5%] h-[5.5%] rounded-full border border-black/50 shadow-lg pointer-events-auto cursor-pointer flex items-center justify-center
@@ -216,7 +235,7 @@ const Ludo: React.FC = () => {
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center z-[100]">
                       <Trophy size={64} className="text-accent-gold mb-6" />
                       <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white mb-2">{PLAYER_NAMES[winner]} VICTORIOUS</h3>
-                      <button onClick={() => window.location.reload()} className="px-12 py-6 bg-accent-gold text-black font-black uppercase tracking-widest rounded-2xl shadow-lg">New Cycle</button>
+                      <button onClick={reset} className="px-12 py-6 bg-accent-gold text-black font-black uppercase tracking-widest rounded-2xl shadow-lg">New Cycle</button>
                   </motion.div>
               )}
           </AnimatePresence>

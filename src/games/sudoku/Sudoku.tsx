@@ -155,6 +155,10 @@ const SudokuGame: React.FC = () => {
               const isSelected = selected?.[0] === r && selected?.[1] === c;
               const isRelated = selected && (selected[0] === r || selected[1] === c || (Math.floor(selected[0]/3) === Math.floor(r/3) && Math.floor(selected[1]/3) === Math.floor(c/3)));
 
+              // Same Number Highlighting (V13 Flow Fix)
+              const selectedValue = selected ? grid[selected[0]][selected[1]].value : null;
+              const isSameNumber = selectedValue !== null && cell.value === selectedValue;
+
               const borderR = (c + 1) % 3 === 0 && c < 8 ? 'border-r-2 border-white/20' : 'border-r border-white/5';
               const borderB = (r + 1) % 3 === 0 && r < 8 ? 'border-b-2 border-white/20' : 'border-b border-white/5';
 
@@ -164,6 +168,7 @@ const SudokuGame: React.FC = () => {
                     onClick={() => setSelected([r, c])}
                     className={`relative flex items-center justify-center cursor-pointer transition-all ${borderR} ${borderB} ${
                         isSelected ? 'bg-accent-violet/40' :
+                        isSameNumber ? 'bg-accent-violet/10 ring-1 ring-inset ring-accent-violet/20' :
                         isRelated ? 'bg-white/5' : ''
                     }`}
                   >

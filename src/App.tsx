@@ -30,9 +30,12 @@ function App() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    return JuiceManager.subscribe((intensity) => {
+    const unsub = JuiceManager.subscribe((intensity: number) => {
         setShake(intensity);
     });
+    return () => {
+        unsub();
+    };
   }, []);
 
   useEffect(() => {
@@ -71,7 +74,7 @@ function App() {
           <motion.div key="game" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="fixed inset-0 z-50 bg-[#0a0a0c]">
             <Suspense fallback={null}>
                 <AnimatePresence>
-                    {activeGameId && (!onboardingSeen[activeGameId] || (Date.now() - onboardingSeen[activeGameId] > 24 * 60 * 60 * 1000)) && (
+                    {activeGameId && !onboardingSeen[activeGameId] && (
                         <GameOnboarding
                             gameId={activeGameId}
                             onClose={() => markOnboardingSeen(activeGameId)}
