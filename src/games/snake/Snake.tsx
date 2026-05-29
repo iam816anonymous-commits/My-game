@@ -25,6 +25,7 @@ const Snake: React.FC = () => {
   const [ghostTrail, setGhostTrail] = useState<number[][] | null>(null);
   const [nearMiss, setNearMiss] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [failureReason, setFailureReason] = useState<string>('');
 
   const lastKeyTime = useRef(0);
 
@@ -96,6 +97,7 @@ const Snake: React.FC = () => {
 
         if (willHitWall || willHitSelf) {
           setGameOver(true);
+          setFailureReason(willHitWall ? 'Structural Collision (Wall)' : 'Self-Intersection (Tail)');
           setGhostTrail(prev);
           AnalyticsManager.trackGameComplete('snake', score);
           finishGame(score);
@@ -237,11 +239,11 @@ const Snake: React.FC = () => {
                         key={i}
                         className={`rounded-sm transition-all duration-300 ${
                             isHead ? 'bg-white shadow-[0_0_30px_white] z-20 scale-110' :
-                            isSnake ? 'bg-accent-cyan opacity-80 scale-90 shadow-[0_0_15px_#22D3EE]' :
+                            isSnake ? 'bg-[#22c55e] opacity-80 scale-95 shadow-[0_0_15px_rgba(34,197,94,0.4)]' :
                             isGhost ? 'bg-white/10 scale-75' :
                             isFood ? (
                                 food.type === 'legendary' ? 'bg-accent-gold shadow-[0_0_30px_#FACC15] animate-pulse scale-125' :
-                                food.type === 'rare' ? 'bg-accent-cyan shadow-[0_0_20px_#22D3EE] animate-bounce' :
+                                food.type === 'rare' ? 'bg-[#22D3EE] shadow-[0_0_20px_#22D3EE] animate-bounce' :
                                 food.type === 'slowmo' ? 'bg-accent-violet shadow-[0_0_20px_#8B5CF6] animate-ping' :
                                 food.type === 'magnet' ? 'bg-accent-rose shadow-[0_0_20px_#F472B6] animate-pulse' :
                                 'bg-accent-rose/60 shadow-[0_0_10px_#F472B6]'
@@ -264,7 +266,7 @@ const Snake: React.FC = () => {
         </AnimatePresence>
 
         {/* HUD Overlays */}
-        <div className="absolute top-8 left-8 space-y-1 pointer-events-none">
+        <div className="absolute top-8 left-8 space-y-1 pointer-events-none z-30">
             <motion.div
                 key={score}
                 initial={{ scale: 1.5 }} animate={{ scale: 1 }}
@@ -284,7 +286,7 @@ const Snake: React.FC = () => {
       </motion.div>
 
       {/* Powerup Footer */}
-      <div className="flex gap-4 w-full max-w-md">
+      <div className="flex gap-4 w-full max-w-md z-10">
           <div className={`flex-1 p-4 rounded-3xl border transition-all flex items-center gap-4 ${isSlowMo ? 'bg-accent-violet/20 border-accent-violet/50 text-accent-violet' : 'bg-white/5 border-white/5 text-white/20'}`}>
               <Timer size={20} />
               <div className="text-[10px] font-black uppercase tracking-widest">Slow-Mo</div>
@@ -298,6 +300,50 @@ const Snake: React.FC = () => {
       <div className="text-[10px] text-white/10 uppercase font-black tracking-[0.4em] italic flex items-center gap-2">
           <ShieldAlert size={12} /> Risks yield higher reality rewards
       </div>
+
+      <AnimatePresence>
+          {gameOver && (
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+              >
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                    className="max-w-sm w-full space-y-8"
+                  >
+                    <div className="space-y-2">
+                        <div className="text-accent-rose font-black uppercase tracking-widest text-[10px]">Neural Link Severed</div>
+                        <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Snake Zen</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Failure</div>
+                            <div className="text-xs font-bold text-white truncate">{failureReason}</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Flow Peak</div>
+                            <div className="text-xl font-black text-accent-cyan">x{(1 + combo * 0.1).toFixed(1)}</div>
+                        </div>
+                    </div>
+
+                    <div className="p-6 bg-accent-cyan/5 border border-accent-cyan/20 rounded-3xl">
+                        <div className="text-[8px] font-black uppercase tracking-widest text-accent-cyan mb-2">Operational Insight</div>
+                        <p className="text-xs text-white/60 font-medium leading-relaxed">
+                            {score < 500 ? 'Focus on safe pathing. Speed increases every 15 seconds.' :
+                             combo < 10 ? 'Maintain rapid collection to trigger Flow State multipliers.' :
+                             'Extreme speed detected. Utilize "Perfect Turns" (last-second inputs) for precision.'}
+                        </p>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                        <button onClick={restart} className="flex-[2] py-4 bg-accent-cyan text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:scale-[1.02] transition-all">Re-Engage</button>
+                    </div>
+                  </motion.div>
+              </motion.div>
+          )}
+      </AnimatePresence>
     </div>
   );
 };

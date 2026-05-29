@@ -117,13 +117,42 @@ const Tower: React.FC = () => {
           <AnimatePresence>
             {gameOver && (
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                    className="absolute inset-0 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center z-20"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
                 >
-                    <Layers size={48} className="text-accent-violet mb-4" />
-                    <h3 className="text-4xl font-black italic uppercase tracking-tighter mb-4 text-white">Tower Fallen</h3>
-                    <p className="text-white/40 font-bold mb-8">HEIGHT: {blocks.length}</p>
-                    <button onClick={(e) => { e.stopPropagation(); restart(); }} className="w-full py-4 bg-accent-violet text-white font-black uppercase tracking-widest rounded-2xl shadow-lg">Re-Stack</button>
+                    <motion.div
+                        initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                        className="max-w-sm w-full space-y-8"
+                    >
+                        <div className="space-y-2">
+                            <div className="text-accent-violet font-black uppercase tracking-widest text-[10px]">Structural Integrity Lost</div>
+                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Stack Rush</h3>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Total Height</div>
+                                <div className="text-xl font-black text-white">{blocks.length}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Peak Rhythm</div>
+                                <div className="text-xl font-black text-accent-violet">{combo} Perfects</div>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-accent-violet/5 border border-accent-violet/20 rounded-3xl">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-accent-violet mb-2">Operational Insight</div>
+                            <p className="text-xs text-white/60 font-medium leading-relaxed">
+                                {blocks.length < 15 ? 'Synchronize your rhythm. Speed escalates significantly every 5 blocks.' :
+                                 'Maintain "Perfect" placements to preserve block width—narrow towers collapse quickly.'}
+                            </p>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={(e) => { e.stopPropagation(); exitToDashboard(); }} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                            <button onClick={(e) => { e.stopPropagation(); restart(); }} className="flex-[2] py-4 bg-accent-violet text-white font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all">Re-Stack</button>
+                        </div>
+                    </motion.div>
                 </motion.div>
             )}
           </AnimatePresence>

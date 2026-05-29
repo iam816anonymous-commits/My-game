@@ -6,7 +6,7 @@ import { MinesweeperLogic, DIFFICULTIES } from './logic';
 import type { Difficulty } from './logic';
 
 const Minesweeper: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, profile } = usePlayStore();
   const [difficulty, setDifficulty] = useState<Difficulty>('beginner');
   const [board, setBoard] = useState<number[][]>([]);
   const [revealed, setRevealed] = useState<boolean[][]>([]);
@@ -183,12 +183,45 @@ const Minesweeper: React.FC = () => {
                   {(gameOver || win) && (
                       <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-8 z-50 rounded-[2rem]"
+                        className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
                       >
-                          {win ? <Trophy size={48} className="text-accent-gold mb-4" /> : <ShieldAlert size={48} className="text-accent-rose mb-4" />}
-                          <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-2">{win ? 'Sector Secure' : 'Void Triggered'}</h3>
-                          <div className="text-xs text-white/40 uppercase tracking-[0.3em] font-black mb-8">Final Time: {time}s</div>
-                          <button onClick={init} className={`px-12 py-4 ${win ? 'bg-accent-gold' : 'bg-accent-rose'} text-black font-black uppercase tracking-widest rounded-2xl`}>Restart</button>
+                          <motion.div
+                            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                            className="max-w-sm w-full space-y-8"
+                          >
+                            <div className="space-y-2">
+                                <div className={`${win ? 'text-accent-cyan' : 'text-accent-rose'} font-black uppercase tracking-widest text-[10px]`}>
+                                    {win ? 'Area Sanitized' : 'Structural Detonation'}
+                                </div>
+                                <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Sector Clear</h3>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                    <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Status</div>
+                                    <div className={`text-xs font-bold uppercase tracking-widest ${win ? 'text-accent-cyan' : 'text-accent-rose'}`}>
+                                        {win ? 'Secured' : 'Offline'}
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                    <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Mission Time</div>
+                                    <div className="text-xl font-black text-white">{time}s</div>
+                                </div>
+                            </div>
+
+                            <div className={`p-6 ${win ? 'bg-accent-cyan/5 border-accent-cyan/20' : 'bg-accent-rose/5 border-accent-rose/20'} border rounded-3xl`}>
+                                <div className={`text-[8px] font-black uppercase tracking-widest mb-2 ${win ? 'text-accent-cyan' : 'text-accent-rose'}`}>Operational Insight</div>
+                                <p className="text-xs text-white/60 font-medium leading-relaxed">
+                                    {win ? 'Superior pattern recognition. Advanced sectors available in the Logic Core.' :
+                                     'Logical deduction failed. Observe numeric proximity markers before initiating a deep scan.'}
+                                </p>
+                            </div>
+
+                            <div className="flex gap-4">
+                                <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                                <button onClick={init} className={`flex-[2] py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${win ? 'bg-accent-cyan text-black' : 'bg-white text-black'}`}>New Scan</button>
+                            </div>
+                          </motion.div>
                       </motion.div>
                   )}
               </AnimatePresence>

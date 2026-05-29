@@ -143,11 +143,41 @@ const Reaction: React.FC = () => {
             {gameOver && (
                 <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="absolute inset-0 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center z-30"
+                    className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
                 >
-                    <Zap size={48} className="text-accent-cyan mb-4" />
-                    <h3 className="text-4xl font-black italic uppercase tracking-tighter mb-4 text-white">Focus Failed</h3>
-                    <button onClick={restart} className="w-full py-4 bg-accent-cyan text-black font-black uppercase tracking-widest rounded-2xl shadow-xl">Re-Engage</button>
+                    <motion.div
+                        initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                        className="max-w-sm w-full space-y-8"
+                    >
+                        <div className="space-y-2">
+                            <div className="text-accent-cyan font-black uppercase tracking-widest text-[10px]">Neural Reflex Terminated</div>
+                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Reaction Arena</h3>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Targets Hit</div>
+                                <div className="text-xl font-black text-white">{hits}</div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Peak Reflex</div>
+                                <div className="text-xl font-black text-accent-cyan">x{(1 + combo * 0.1).toFixed(1)}</div>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-accent-cyan/5 border border-accent-cyan/20 rounded-3xl">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-accent-cyan mb-2">Operational Insight</div>
+                            <p className="text-xs text-white/60 font-medium leading-relaxed">
+                                {hits < 10 ? 'Calibration complete. Target size decreases as your proficiency increases.' :
+                                 'Perfect grades (under 350ms) grant massive multipliers. Find the rhythm.'}
+                            </p>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                            <button onClick={restart} className="flex-[2] py-4 bg-accent-cyan text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:scale-[1.02] transition-all">Re-Engage</button>
+                        </div>
+                    </motion.div>
                 </motion.div>
             )}
         </AnimatePresence>

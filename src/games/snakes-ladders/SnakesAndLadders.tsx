@@ -142,10 +142,47 @@ const SnakesAndLadders: React.FC = () => {
 
           <AnimatePresence>
               {(playerPos === 100 || aiPos === 100) && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center z-50">
-                      <Trophy size={64} className={playerPos === 100 ? 'text-accent-rose' : 'text-white/20'} />
-                      <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white mb-2">{playerPos === 100 ? 'Ascended' : 'Core Dominated'}</h3>
-                      <button onClick={reset} className="px-12 py-6 bg-accent-rose text-white font-black uppercase tracking-widest rounded-2xl shadow-lg">New Cycle</button>
+                  <motion.div
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                  >
+                      <motion.div
+                        initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                        className="max-w-sm w-full space-y-8"
+                      >
+                        <div className="space-y-2">
+                            <div className={`${playerPos === 100 ? 'text-accent-rose' : 'text-white/20'} font-black uppercase tracking-widest text-[10px]`}>
+                                {playerPos === 100 ? 'Ascension Complete' : 'Momentum Terminated'}
+                            </div>
+                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Prism Ladders</h3>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Status</div>
+                                <div className={`text-xs font-bold uppercase tracking-widest ${playerPos === 100 ? 'text-accent-rose' : 'text-white/40'}`}>
+                                    {playerPos === 100 ? 'Ascended' : 'Offline'}
+                                </div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Position</div>
+                                <div className="text-xl font-black text-white">{playerPos}/100</div>
+                            </div>
+                        </div>
+
+                        <div className={`p-6 ${playerPos === 100 ? 'bg-accent-rose/5 border-accent-rose/20' : 'bg-white/5 border-white/10'} border rounded-3xl`}>
+                            <div className={`text-[8px] font-black uppercase tracking-widest mb-2 ${playerPos === 100 ? 'text-accent-rose' : 'text-white/20'}`}>Operational Insight</div>
+                            <p className="text-xs text-white/60 font-medium leading-relaxed">
+                                {playerPos === 100 ? 'Superior trajectory navigation. Quantum shortcuts utilized effectively.' :
+                                 'Temporal variance detected. Maintain momentum and monitor high-density snake sectors to minimize regression.'}
+                            </p>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                            <button onClick={reset} className={`flex-[2] py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${playerPos === 100 ? 'bg-accent-rose text-white' : 'bg-white text-black'}`}>New Cycle</button>
+                        </div>
+                      </motion.div>
                   </motion.div>
               )}
           </AnimatePresence>

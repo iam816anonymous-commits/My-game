@@ -222,15 +222,44 @@ const ChessGame: React.FC = () => {
       <AnimatePresence>
           {game.isGameOver() && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
               >
-                  <Trophy size={64} className="text-accent-cyan mb-6" />
-                  <h3 className="text-6xl font-black italic uppercase tracking-tighter mb-4 text-white">Logic Victory</h3>
-                  <div className="text-accent-cyan font-black uppercase tracking-[0.4em] text-sm mb-12">
-                      {game.turn() === 'w' ? 'Opponent Mastery' : 'Human Mastery'}
-                  </div>
-                  <button onClick={restart} className="px-12 py-6 bg-white text-black font-black uppercase tracking-widest rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.3)]">Restart Loop</button>
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                    className="max-w-sm w-full space-y-8"
+                  >
+                    <div className="space-y-2">
+                        <div className="text-accent-cyan font-black uppercase tracking-widest text-[10px]">Logical Sequence Terminated</div>
+                        <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Grandmaster Chess</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Outcome</div>
+                            <div className="text-xs font-bold text-white uppercase tracking-widest">
+                                {game.isCheckmate() ? 'Checkmate' : game.isDraw() ? 'Draw' : 'Game Over'}
+                            </div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Material</div>
+                            <div className="text-xl font-black text-accent-cyan">+{capturedPieces.w.length + capturedPieces.b.length}</div>
+                        </div>
+                    </div>
+
+                    <div className="p-6 bg-accent-cyan/5 border border-accent-cyan/20 rounded-3xl">
+                        <div className="text-[8px] font-black uppercase tracking-widest text-accent-cyan mb-2">Operational Insight</div>
+                        <p className="text-xs text-white/60 font-medium leading-relaxed">
+                            {moveHistory.length < 15 ? 'Aggressive opening detected. Focus on center control and minor piece development.' :
+                             'Mid-game complexity reached. Evaluate pawn structures and king safety before initiating trades.'}
+                        </p>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                        <button onClick={restart} className="flex-[2] py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-[1.02] transition-all">New Cycle</button>
+                    </div>
+                  </motion.div>
               </motion.div>
           )}
       </AnimatePresence>

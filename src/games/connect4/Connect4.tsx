@@ -123,11 +123,45 @@ const Connect4: React.FC = () => {
               {winner && (
                   <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="absolute inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-8 z-50"
+                    className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
                   >
-                      {winner === 1 ? <Trophy size={48} className="text-accent-cyan mb-4" /> : <Swords size={48} className="text-accent-rose mb-4" />}
-                      <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-2">{winner === 1 ? 'Tactical Win' : winner === 'draw' ? 'Stalemate' : 'AI Dominance'}</h3>
-                      <button onClick={restart} className={`px-12 py-4 ${winner === 1 ? 'bg-accent-cyan' : 'bg-accent-rose'} text-black font-black uppercase tracking-widest rounded-2xl mt-8`}>Restart</button>
+                      <motion.div
+                        initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                        className="max-w-sm w-full space-y-8"
+                      >
+                        <div className="space-y-2">
+                            <div className={`${winner === 1 ? 'text-accent-cyan' : 'text-accent-rose'} font-black uppercase tracking-widest text-[10px]`}>
+                                {winner === 1 ? 'Logic Path Connected' : 'Sequence Broken'}
+                            </div>
+                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Vector 4</h3>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Status</div>
+                                <div className={`text-xs font-bold uppercase tracking-widest ${winner === 1 ? 'text-accent-cyan' : 'text-accent-rose'}`}>
+                                    {winner === 1 ? 'Victory' : 'Offline'}
+                                </div>
+                            </div>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">XP Gain</div>
+                                <div className="text-xl font-black text-white">+{winner === 1 ? 500 : 50}</div>
+                            </div>
+                        </div>
+
+                        <div className={`p-6 ${winner === 1 ? 'bg-accent-cyan/5 border-accent-cyan/20' : 'bg-accent-rose/5 border-accent-rose/20'} border rounded-3xl`}>
+                            <div className={`text-[8px] font-black uppercase tracking-widest mb-2 ${winner === 1 ? 'text-accent-cyan' : 'text-accent-rose'}`}>Operational Insight</div>
+                            <p className="text-xs text-white/60 font-medium leading-relaxed">
+                                {winner === 1 ? 'Optimal connection achieved. Neural pathways reinforced for high-stakes strategy.' :
+                                 'Tactical error detected. Monitor diagonal vectors to preempt opponent sequence completions.'}
+                            </p>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                            <button onClick={restart} className={`flex-[2] py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${winner === 1 ? 'bg-accent-cyan text-black' : 'bg-white text-black'}`}>New Cycle</button>
+                        </div>
+                      </motion.div>
                   </motion.div>
               )}
           </AnimatePresence>

@@ -162,15 +162,50 @@ const Wordle: React.FC = () => {
       </div>
 
       <AnimatePresence>
-        {gameOver && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="absolute bottom-32 bg-white text-black px-8 py-4 rounded-full font-black uppercase tracking-widest shadow-2xl flex items-center gap-4"
-          >
-            {won ? 'Sequence Solved' : `Sequence Failed: ${target}`}
-            <button onClick={restart} className="p-2 bg-black text-white rounded-full"><RotateCcw size={16} /></button>
-          </motion.div>
-        )}
+          {gameOver && (
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+              >
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                    className="max-w-sm w-full space-y-8"
+                  >
+                    <div className="space-y-2">
+                        <div className={`${won ? 'text-accent-cyan' : 'text-accent-rose'} font-black uppercase tracking-widest text-[10px]`}>
+                            {won ? 'Sequence Deciphered' : 'Data Integrity Failure'}
+                        </div>
+                        <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Word Crypt</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Target</div>
+                            <div className="text-xs font-bold text-white uppercase tracking-widest">{target}</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Status</div>
+                            <div className={`text-xs font-bold uppercase tracking-widest ${won ? 'text-accent-cyan' : 'text-accent-rose'}`}>
+                                {won ? 'Verified' : 'Offline'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={`p-6 ${won ? 'bg-accent-cyan/5 border-accent-cyan/20' : 'bg-accent-rose/5 border-accent-rose/20'} border rounded-3xl`}>
+                        <div className={`text-[8px] font-black uppercase tracking-widest mb-2 ${won ? 'text-accent-cyan' : 'text-accent-rose'}`}>Operational Insight</div>
+                        <p className="text-xs text-white/60 font-medium leading-relaxed">
+                            {won ? 'Optimal linguistic decoding. Vocabulary parameters expanded for future cycles.' :
+                             'Pattern mismatch detected. Eliminate gray-coded variables early to narrow solution possibilities.'}
+                        </p>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                        <button onClick={restart} className={`flex-[2] py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${won ? 'bg-accent-cyan text-black' : 'bg-white text-black'}`}>New Sequence</button>
+                    </div>
+                  </motion.div>
+              </motion.div>
+          )}
       </AnimatePresence>
     </div>
   );

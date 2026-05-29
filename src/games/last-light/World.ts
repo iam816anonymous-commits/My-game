@@ -164,17 +164,26 @@ export class World {
         }
     });
 
-    // Level 7: Cosmic Atmosphere
+    // Level 7: Cosmic Atmosphere (V15 Rebuild)
     if (level >= EvolutionLevel.Constellations) {
         this.cosmicLayer.alpha = Math.min(1, this.cosmicLayer.alpha + 0.001);
-        if (this.cosmicLayer.children.length < 5) {
+        if (this.cosmicLayer.children.length < 8) {
             const nebula = new PIXI.Graphics();
-            nebula.circle(0, 0, 400);
-            nebula.fill({ color: 0x8b5cf6, alpha: 0.02 });
-            nebula.x = playerX + (Math.random() - 0.5) * 4000;
-            nebula.y = playerY + (Math.random() - 0.5) * 4000;
+            const radius = 300 + Math.random() * 300;
+            nebula.circle(0, 0, radius);
+            const color = Math.random() > 0.5 ? 0x8b5cf6 : 0x22d3ee;
+            nebula.fill({ color, alpha: 0.03 });
+            nebula.x = playerX + (Math.random() - 0.5) * 5000;
+            nebula.y = playerY + (Math.random() - 0.5) * 5000;
+            (nebula as any).pulse = Math.random() * Math.PI;
             this.cosmicLayer.addChild(nebula);
         }
     }
+    this.cosmicLayer.children.forEach(n => {
+        if ((n as any).pulse !== undefined) {
+            (n as any).pulse += 0.01 * delta;
+            n.alpha = 0.5 + Math.sin((n as any).pulse) * 0.2;
+        }
+    });
   }
 }

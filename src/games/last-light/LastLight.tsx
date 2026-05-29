@@ -10,12 +10,13 @@ import LastLightHUD from './LastLightHUD';
 import throttle from 'lodash/throttle';
 import { Home } from 'lucide-react';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const LastLight: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const [isDistorted, setIsDistorted] = useState(false);
-  const { exitToDashboard, updateXP, setLastLightState, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, setLastLightState, finishGame, lastLight } = usePlayStore();
 
   useEffect(() => {
     let progression: ProgressionManager;
@@ -112,6 +113,50 @@ const LastLight: React.FC = () => {
     <div className={`relative w-full h-screen bg-[#0a0a0c] overflow-hidden transition-all duration-1000 ${isDistorted ? 'hue-rotate-90 scale-[1.02]' : ''}`}>
       <div ref={canvasRef} className={`absolute inset-0 transition-all duration-1000 ${isDistorted ? 'blur-sm opacity-80' : ''}`} />
       <LastLightHUD />
+
+      <AnimatePresence>
+          {lastLight?.energy <= 0 && (
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+              >
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                    className="max-w-sm w-full space-y-8"
+                  >
+                    <div className="space-y-2">
+                        <div className="text-white/40 font-black uppercase tracking-widest text-[10px]">The Void Prevails</div>
+                        <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Last Light</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">State</div>
+                            <div className="text-xs font-bold text-white uppercase tracking-widest">Extinguished</div>
+                        </div>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Particles</div>
+                            <div className="text-xl font-black text-accent-cyan">{lastLight?.totalMemoriesCollected}</div>
+                        </div>
+                    </div>
+
+                    <div className="p-6 bg-accent-cyan/5 border border-accent-cyan/20 rounded-3xl">
+                        <div className="text-[8px] font-black uppercase tracking-widest text-accent-cyan mb-2">Operational Insight</div>
+                        <p className="text-xs text-white/60 font-medium leading-relaxed">
+                            {lastLight?.totalMemoriesCollected < 20 ? 'Maintain speed. Particles restore energy but fade if you linger.' :
+                             lastLight?.evolutionLevel < 3 ? 'Trigger rapid Merges (Combos) to accelerate evolution of the void.' :
+                             'Rare Meteor Showers detected. Follow the trails for legendary memory resonance.'}
+                        </p>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
+                        <button onClick={() => window.location.reload()} className="flex-[2] py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-[1.02] transition-all">Relight</button>
+                    </div>
+                  </motion.div>
+              </motion.div>
+          )}
+      </AnimatePresence>
 
       {/* Exit Button */}
       <button
