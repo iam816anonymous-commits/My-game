@@ -7,7 +7,7 @@ import { initGame, move } from './logic';
 import type { GameState } from './logic';
 
 const Game2048: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, updateStats } = usePlayStore();
   const [isDaily, setIsDaily] = useState(false);
   const [state, setState] = useState<GameState>(initGame());
   const [history, setHistory] = useState<GameState[]>([]);
@@ -41,6 +41,7 @@ const Game2048: React.FC = () => {
         const scoreDiff = nextState.score - prev.score;
         if (scoreDiff > 0) {
             updateXP(Math.floor(scoreDiff * (1 + combo * 0.1)));
+            updateStats({ puzzlesSolved: 1 });
 
             // Fusion Flash for high value merges
             if (scoreDiff >= 128) {

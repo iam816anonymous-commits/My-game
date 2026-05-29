@@ -140,7 +140,7 @@ const ChessGame: React.FC = () => {
                                     isDark ? 'bg-white/[0.02]' : 'bg-transparent'
                                 } ${isSelected ? 'bg-accent-cyan/30 shadow-inner' : ''} ${isLastMove ? 'bg-accent-gold/10' : ''}`}
                               >
-                                  {(isValidTarget || (selectedSquare && isValidTarget)) && (
+                                  {isValidTarget && (
                                       <div className={`absolute w-3 h-3 rounded-full ${piece ? 'border-2 border-accent-cyan/40 scale-150' : 'bg-accent-cyan/20 animate-pulse'}`} />
                                   )}
 

@@ -12,6 +12,7 @@ interface PlayStore extends PlayState {
   setTitle: (title: string) => void;
   setLastLightState: (state: any) => void;
   markOnboardingSeen: (gameId: string) => void;
+  updateStats: (updates: Partial<PlayStore['profile']['stats']>) => void;
   lastLight?: any;
   onboardingSeen: Record<string, number>;
 }
@@ -36,7 +37,15 @@ export const usePlayStore = create<PlayStore>((set) => ({
     title: 'Zen Initiate',
     unlockedTitles: ['Zen Initiate'],
     cosmetics: [],
-    activeCosmetic: null
+    activeCosmetic: null,
+    stats: {
+        totalPlayTime: 0,
+        perfectTurns: 0,
+        highestCombo: 0,
+        puzzlesSolved: 0,
+        zenMilestones: 0,
+        nearMisses: 0
+    }
   },
   highScores: {},
   favorites: [],
@@ -140,5 +149,12 @@ export const usePlayStore = create<PlayStore>((set) => ({
 
   markOnboardingSeen: (gameId) => set((state) => ({
       onboardingSeen: { ...state.onboardingSeen, [gameId]: Date.now() }
+  })),
+
+  updateStats: (updates) => set((state) => ({
+      profile: {
+          ...state.profile,
+          stats: { ...state.profile.stats, ...updates }
+      }
   }))
 }));

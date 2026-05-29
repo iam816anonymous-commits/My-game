@@ -1,8 +1,9 @@
-import { useEffect, lazy, Suspense, useState, useMemo } from 'react';
+import { useEffect, lazy, Suspense, useState, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePlayStore } from './shared/store/usePlayStore';
 import { loadState, saveState } from './shared/systems/PersistenceManager';
 import { AnalyticsManager } from './shared/systems/AnalyticsManager';
+import { JuiceManager } from './shared/systems/JuiceManager';
 import throttle from 'lodash/throttle';
 
 const Dashboard = lazy(() => import('./apps/Dashboard'));
@@ -25,6 +26,14 @@ const GameOnboarding = lazy(() => import('./shared/ui/GameOnboarding'));
 function App() {
   const { currentScene, activeGameId, profile, highScores, favorites, onboardingSeen, markOnboardingSeen } = usePlayStore();
   const [loaded, setLoaded] = useState(false);
+  const [shake, setShake] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return JuiceManager.subscribe((intensity) => {
+        setShake(intensity);
+    });
+  }, []);
 
   useEffect(() => {
     loadState().then(() => {
@@ -44,7 +53,13 @@ function App() {
   if (!loaded) return <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center font-black italic uppercase tracking-tighter text-accent-cyan animate-pulse">Initializing Reality...</div>;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-accent-cyan/30">
+    <div
+        ref={containerRef}
+        style={{
+            transform: shake > 0 ? `translate(${(Math.random()-0.5)*shake}px, ${(Math.random()-0.5)*shake}px)` : 'none'
+        }}
+        className="min-h-screen bg-[#0a0a0c] text-white selection:bg-accent-cyan/30"
+    >
       <AnimatePresence mode="wait">
         {currentScene === 'dashboard' && (
           <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

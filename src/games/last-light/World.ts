@@ -39,9 +39,15 @@ export class World {
   }
 
   private levelFlash = 0;
+  private meteorTime = 0;
+  private meteors: PIXI.Graphics[] = [];
 
   public flashLevelTransition() {
     this.levelFlash = 1.0;
+  }
+
+  public spawnMeteorShower() {
+      this.meteorTime = 10.0; // 10 seconds of meteors
   }
 
   private initStars() {
@@ -58,6 +64,31 @@ export class World {
   }
 
   public update(delta: number, level: EvolutionLevel, playerX: number, playerY: number) {
+    // Meteor Shower (V11 Rare Event)
+    if (this.meteorTime > 0) {
+        this.meteorTime -= delta / 60;
+        if (Math.random() < 0.1) {
+            const m = new PIXI.Graphics();
+            m.rect(0, 0, 2, 40);
+            m.fill({ color: 0x22d3ee, alpha: 0.4 });
+            m.x = Math.random() * window.innerWidth;
+            m.y = -50;
+            m.rotation = Math.PI / 4;
+            this.bgLayer.addChild(m);
+            this.meteors.push(m);
+        }
+    }
+    for (let i = this.meteors.length - 1; i >= 0; i--) {
+        const m = this.meteors[i];
+        m.x += 10 * delta;
+        m.y += 10 * delta;
+        m.alpha -= 0.01 * delta;
+        if (m.alpha <= 0) {
+            this.bgLayer.removeChild(m);
+            this.meteors.splice(i, 1);
+        }
+    }
+
     // Level Transition Flash
     if (this.levelFlash > 0) {
       this.levelFlash -= 0.05 * delta;

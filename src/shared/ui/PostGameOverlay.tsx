@@ -1,9 +1,11 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayStore } from '../store/usePlayStore';
-import { RotateCcw, Home, Share2, Award, Zap, Check } from 'lucide-react';
+import { Share2, Award, Zap, Check, Camera, Home, RotateCcw } from 'lucide-react';
 import { copyShareLink } from '../systems/SocialManager';
 import { JuiceManager } from '../systems/JuiceManager';
+import ShareCard from './ShareCard';
+import { GAMES } from '../constants';
 
 const PostGameOverlay: React.FC = () => {
   const [copied, setCopied] = React.useState(false);
@@ -14,8 +16,11 @@ const PostGameOverlay: React.FC = () => {
     JuiceManager.shake(10);
   }, []);
 
+  const [showCard, setShowCard] = React.useState(false);
+  const game = GAMES.find(g => g.id === activeGameId);
+
   return (
-    <div className="fixed inset-0 z-[100] bg-[#0a0a0c]/95 backdrop-blur-xl flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[100] bg-[#0a0a0c]/95 backdrop-blur-xl flex items-center justify-center p-6 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -78,16 +83,36 @@ const PostGameOverlay: React.FC = () => {
             </button>
             <button
                 onClick={() => {
-                    copyShareLink();
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
+                    if (showCard) {
+                        copyShareLink();
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                    } else {
+                        setShowCard(true);
+                    }
                 }}
                 className={`p-6 rounded-3xl border transition-all flex flex-col items-center gap-2 ${copied ? 'bg-accent-rose/20 border-accent-rose/50 text-accent-rose' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
             >
-                {copied ? <Check size={20} /> : <Share2 size={20} className="opacity-40" />}
-                <span className="text-[8px] font-black uppercase tracking-widest">{copied ? 'Copied' : 'Viral'}</span>
+                {copied ? <Check size={20} /> : (showCard ? <Share2 size={20} /> : <Camera size={20} className="opacity-40" />)}
+                <span className="text-[8px] font-black uppercase tracking-widest">{copied ? 'Copied' : (showCard ? 'Copy' : 'Snapshot')}</span>
             </button>
         </div>
+
+        <AnimatePresence>
+            {showCard && (
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+                    className="flex justify-center pt-8"
+                >
+                    <ShareCard
+                        gameName={game?.name || 'Unknown Reality'}
+                        score={sessionStats.lastScore}
+                        title={profile.title}
+                        level={profile.level}
+                    />
+                </motion.div>
+            )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );

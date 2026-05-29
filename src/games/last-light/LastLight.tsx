@@ -69,6 +69,11 @@ const LastLight: React.FC = () => {
         world.update(delta, state.evolutionLevel, player.x, player.y);
         audio.update(state.evolutionLevel);
 
+        // V11 Rare Event Trigger
+        if (Math.random() < 0.0005 * delta) {
+            world.spawnMeteorShower();
+        }
+
         throttledSync(state);
 
         const memories = entityManager.getMemories();

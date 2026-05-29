@@ -1,60 +1,71 @@
 @import "tailwindcss";
 
 @theme {
+  /* Premium Gen Z Palette V11 */
   --color-background: #050816;
-  --color-surface: #0F172A;
-  --color-accent-cyan: #22D3EE;
+  --color-surface-deep: #0B1020;
+  --color-surface-light: #111827;
+
   --color-accent-violet: #8B5CF6;
+  --color-accent-cyan: #22D3EE;
   --color-accent-gold: #FACC15;
-  --color-accent-rose: #F472B6;
-  --color-accent-white: #E2E8F0;
+  --color-accent-rose: #FB7185;
+  --color-accent-white: #E5E7EB;
 }
 
 @layer base {
   body {
     background-color: var(--color-background);
     color: var(--color-accent-white);
-    font-family: sans-serif;
+    font-family: 'Inter', sans-serif;
     -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
   }
 }
 
 @layer components {
   .glass-panel {
-    background-color: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(226, 232, 240, 0.1);
-    border-radius: 1.5rem;
+    background-color: rgba(11, 16, 32, 0.4);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(229, 231, 235, 0.05);
+    border-radius: 2rem;
   }
 
-  .text-premium {
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    font-weight: 200;
+  .text-glow {
+    text-shadow: 0 0 20px currentColor;
   }
 
   .premium-button {
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(226, 232, 240, 0.1);
+    background-color: rgba(139, 92, 246, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(139, 92, 246, 0.2);
     color: var(--color-accent-white);
-    border-radius: 9999px;
-    padding: 0.75rem 1.5rem;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 1.5rem;
+    padding: 1rem 2rem;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .premium-button:hover {
     background-color: rgba(139, 92, 246, 0.2);
-    border-color: rgba(139, 92, 246, 0.4);
-    transform: translateY(-2px) scale(1.02);
+    border-color: var(--color-accent-violet);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
   }
 }
 
 @layer utilities {
-  @keyframes success-flash {
-    0% { filter: brightness(1); }
-    20% { filter: brightness(2) contrast(1.2) saturate(1.5); }
-    100% { filter: brightness(1); }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
   }
 
   .reality-success-flash {
@@ -62,11 +73,12 @@
   }
 
   .reality-danger-vignette {
-    box-shadow: inset 0 0 150px rgba(239, 68, 68, 0.4);
-    transition: box-shadow 0.2s ease-in;
+    box-shadow: inset 0 0 100px rgba(251, 113, 133, 0.5);
+    transition: box-shadow 0.3s ease-in-out;
   }
 
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+  @keyframes success-flash {
+    0% { background-color: rgba(34, 211, 238, 0.2); }
+    100% { background-color: transparent; }
   }
 }

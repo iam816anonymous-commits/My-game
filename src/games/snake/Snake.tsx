@@ -10,7 +10,7 @@ const GRID_SIZE = 20;
 type FoodType = 'standard' | 'rare' | 'legendary' | 'slowmo' | 'magnet';
 
 const Snake: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { exitToDashboard, updateXP, finishGame, updateStats } = usePlayStore();
   const [snake, setSnake] = useState([[10, 10], [10, 11], [10, 12]]);
   const [food, setFood] = useState<{pos: number[], type: FoodType}>({ pos: [5, 5], type: 'standard' });
   const [dir, setDir] = useState([0, -1]);
@@ -63,8 +63,9 @@ const Snake: React.FC = () => {
             setGameTime(t => {
                 const nt = t + 1;
                 if (nt === 1) AudioController.start();
-                if (nt === 60) AudioController.setIntensity('mid');
-                if (nt === 120) AudioController.setIntensity('high');
+                if (nt === 15) AudioController.setIntensity('comfort');
+                if (nt === 30) AudioController.setIntensity('challenge');
+                if (nt === 120) AudioController.setIntensity('mastery');
                 return nt;
             });
         }
@@ -84,9 +85,10 @@ const Snake: React.FC = () => {
         const willHitWall = newHead[0] < 0 || newHead[0] >= GRID_SIZE || newHead[1] < 0 || newHead[1] >= GRID_SIZE;
         const willHitSelf = prev.slice(0, -1).some(s => s[0] === newHead[0] && s[1] === newHead[1]);
 
-        if ((willHitWall || willHitSelf) && !isSlowMo) {
+        if ((willHitWall || willHitSelf) && !isSlowMo && !gameOver) {
             setNearMiss(true);
             JuiceManager.danger();
+            updateStats({ nearMisses: 1 }); // Track for title
             setTimeout(() => setNearMiss(false), 500);
         }
 
@@ -126,6 +128,7 @@ const Snake: React.FC = () => {
           setScore(s => s + totalGain);
           setCombo(c => Math.min(20, c + 1));
 
+          if (isPerfectTurn) updateStats({ perfectTurns: 1 });
           if (food.type === 'legendary') JuiceManager.success();
           JuiceManager.shake(8);
           setZoom(1.05);

@@ -32,25 +32,33 @@ class GlobalAudioManager {
     this.layers.get('base')?.fade(0, 0.3, 2000);
   }
 
-  public setIntensity(level: 'low' | 'mid' | 'high') {
+  public setIntensity(level: 'discovery' | 'comfort' | 'challenge' | 'mastery') {
     if (!this.initialized) return;
 
     const fades: Record<string, number> = {
-        low: 0.1,
-        mid: 0.3,
-        high: 0.6
+        discovery: 0.1,
+        comfort: 0.2,
+        challenge: 0.4,
+        mastery: 0.7
     };
 
-    if (level === 'low') {
-        this.layers.get('tension')?.fade(this.layers.get('tension')!.volume(), 0, 1000);
-        this.layers.get('mastery')?.fade(this.layers.get('mastery')!.volume(), 0, 1000);
-    } else if (level === 'mid') {
-        if (!this.layers.get('tension')?.playing()) this.layers.get('tension')?.play();
-        this.layers.get('tension')?.fade(this.layers.get('tension')!.volume(), fades.mid, 1000);
-        this.layers.get('mastery')?.fade(this.layers.get('mastery')!.volume(), 0, 1000);
-    } else {
-        if (!this.layers.get('mastery')?.playing()) this.layers.get('mastery')?.play();
-        this.layers.get('mastery')?.fade(this.layers.get('mastery')!.volume(), fades.high, 1000);
+    const tension = this.layers.get('tension');
+    const mastery = this.layers.get('mastery');
+
+    if (level === 'discovery') {
+        tension?.fade(tension.volume(), 0, 2000);
+        mastery?.fade(mastery.volume(), 0, 2000);
+    } else if (level === 'comfort') {
+        if (!tension?.playing()) tension?.play();
+        tension?.fade(tension!.volume(), fades.comfort, 2000);
+        mastery?.fade(mastery.volume(), 0, 2000);
+    } else if (level === 'challenge') {
+        if (!tension?.playing()) tension?.play();
+        tension?.fade(tension!.volume(), fades.challenge, 2000);
+        mastery?.fade(mastery.volume(), 0, 2000);
+    } else if (level === 'mastery') {
+        if (!mastery?.playing()) mastery?.play();
+        mastery?.fade(mastery!.volume(), fades.mastery, 2000);
     }
   }
 

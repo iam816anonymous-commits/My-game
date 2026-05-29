@@ -27,6 +27,14 @@ export interface PlayerProfile {
   unlockedTitles: string[];
   cosmetics: string[];
   activeCosmetic: string | null;
+  stats: {
+    totalPlayTime: number;
+    perfectTurns: number;
+    highestCombo: number;
+    puzzlesSolved: number;
+    zenMilestones: number;
+    nearMisses: number;
+  };
 }
 
 export interface PlayState {
