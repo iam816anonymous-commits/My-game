@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RotateCcw, Trophy, User, Bot, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const SnakesAndLadders: React.FC = () => {
   const { exitToDashboard, updateXP, finishGame } = usePlayStore();
@@ -36,9 +37,14 @@ const SnakesAndLadders: React.FC = () => {
               const jump = MAP[newPos];
               if (jump > newPos) {
                   event += ` -> Ladder to ${jump}!`;
-                  if (name === 'PLAYER') updateXP(100);
+                  if (name === 'PLAYER') {
+                      updateXP(100);
+                      JuiceManager.success();
+                      JuiceManager.shake(10);
+                  }
               } else {
                   event += ` -> Snake to ${jump}...`;
+                  if (name === 'PLAYER') JuiceManager.danger();
               }
               newPos = jump;
           }

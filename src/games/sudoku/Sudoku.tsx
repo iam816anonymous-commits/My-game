@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RotateCcw, Trophy, Lightbulb, Pencil, Eraser, AlertCircle, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 import { SudokuLogic, type SudokuDifficulty } from './logic';
 
 type CellState = {
@@ -62,6 +63,7 @@ const SudokuGame: React.FC = () => {
         }));
         setGrid(newGrid);
         updateXP(50);
+        JuiceManager.shake(2);
         checkWin(newGrid);
       } else {
         const newMistakes = mistakes + 1;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, Zap, Timer } from 'lucide-react';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const TapDash: React.FC = () => {
   const [score, setScore] = useState(0);
@@ -35,6 +36,8 @@ const TapDash: React.FC = () => {
     if (!isActive) return;
     setScore(s => s + 1);
     updateXP(2);
+    JuiceManager.shake(2);
+    if ((score + 1) % 10 === 0) JuiceManager.success();
     setTargets(prev => prev.filter(t => t.id !== id));
     spawnTarget();
     if (score % 5 === 0) spawnTarget(); // Increase density

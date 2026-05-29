@@ -3,10 +3,16 @@ import { motion } from 'framer-motion';
 import { usePlayStore } from '../store/usePlayStore';
 import { RotateCcw, Home, Share2, Award, Zap, Check } from 'lucide-react';
 import { copyShareLink } from '../systems/SocialManager';
+import { JuiceManager } from '../systems/JuiceManager';
 
 const PostGameOverlay: React.FC = () => {
-    const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
   const { sessionStats, activeGameId, profile, exitToDashboard, launchGame } = usePlayStore();
+
+  React.useEffect(() => {
+    JuiceManager.success();
+    JuiceManager.shake(10);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[100] bg-[#0a0a0c]/95 backdrop-blur-xl flex items-center justify-center p-6">

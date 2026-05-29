@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, Zap } from 'lucide-react';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const COLORS = [
   { id: 'violet', value: '#8B5CF6', label: 'Violet' },
@@ -42,8 +43,11 @@ const ColorRush: React.FC = () => {
       setScore(s => s + 1);
       setTimeLeft(t => Math.min(100, t + 15 - Math.min(10, score / 5)));
       updateXP(5);
+      JuiceManager.shake(2);
+      if ((score + 1) % 10 === 0) JuiceManager.success();
       spawnNext();
     } else {
+      JuiceManager.danger();
       gameOver();
     }
   };

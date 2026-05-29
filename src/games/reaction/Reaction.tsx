@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RotateCcw, Zap, Target, Timer, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const Reaction: React.FC = () => {
   const { exitToDashboard, updateXP, finishGame } = usePlayStore();
@@ -67,6 +68,8 @@ const Reaction: React.FC = () => {
       }
 
       setGrade(currentGrade);
+      if (currentGrade === 'PERFECT') JuiceManager.success();
+      JuiceManager.shake(currentGrade === 'PERFECT' ? 10 : 5);
       setTimeout(() => setGrade(null), 400);
 
       const gain = Math.floor(10 * combo * precisionBonus);

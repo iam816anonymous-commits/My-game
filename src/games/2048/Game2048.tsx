@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RotateCcw, Zap, Sparkles, Trophy, Undo2, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 import { initGame, move } from './logic';
 import type { GameState } from './logic';
 
@@ -44,6 +45,8 @@ const Game2048: React.FC = () => {
             // Fusion Flash for high value merges
             if (scoreDiff >= 128) {
                 setFusionEffect(true);
+                JuiceManager.shake(scoreDiff >= 512 ? 15 : 5);
+                if (scoreDiff >= 1024) JuiceManager.success();
                 setTimeout(() => setFusionEffect(false), 300);
             }
         }

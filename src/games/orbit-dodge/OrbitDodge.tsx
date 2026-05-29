@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const OrbitDodge: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -118,7 +119,9 @@ const OrbitDodge: React.FC = () => {
             if (dx*dx + dy*dy < 400) {
                 gameActive = false;
                 setGameOver(true);
-                finishGame(localScore);
+                JuiceManager.danger();
+                JuiceManager.shake(20);
+                finishGame(Math.floor(localScore));
                 clearInterval(interval);
             }
 

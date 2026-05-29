@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RotateCcw, User, Zap, Trophy, ShieldCheck, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 type Piece = {
     id: number;
@@ -114,7 +115,11 @@ const Ludo: React.FC = () => {
                   if (victimIdx !== -1) {
                       addLog(`${PLAYER_NAMES[p.colorIndex]} captured ${PLAYER_NAMES[next[victimIdx].colorIndex]}`);
                       next[victimIdx] = { ...next[victimIdx], progress: -1 };
-                      if (p.colorIndex === 0) updateXP(200);
+                      if (p.colorIndex === 0) {
+                          updateXP(200);
+                          JuiceManager.shake(15);
+                          JuiceManager.success();
+                      }
                   }
               }
           }

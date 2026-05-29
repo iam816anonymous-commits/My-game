@@ -3,6 +3,7 @@ import { usePlayStore } from '../../shared/store/usePlayStore';
 import { Home, RotateCcw, Zap, Sparkles, Magnet, Timer, Ghost, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AudioController } from '../../shared/systems/AudioController';
+import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const GRID_SIZE = 20;
 
@@ -84,8 +85,8 @@ const Snake: React.FC = () => {
         const willHitSelf = prev.slice(0, -1).some(s => s[0] === newHead[0] && s[1] === newHead[1]);
 
         if ((willHitWall || willHitSelf) && !isSlowMo) {
-            // Give a 200ms grace period or trigger near miss effect
             setNearMiss(true);
+            JuiceManager.danger();
             setTimeout(() => setNearMiss(false), 500);
         }
 
@@ -125,7 +126,8 @@ const Snake: React.FC = () => {
           setScore(s => s + totalGain);
           setCombo(c => Math.min(20, c + 1));
 
-          setShake(8);
+          if (food.type === 'legendary') JuiceManager.success();
+          JuiceManager.shake(8);
           setZoom(1.05);
           setTimeout(() => setZoom(1), 200);
           updateXP(Math.floor(totalGain / 2));
