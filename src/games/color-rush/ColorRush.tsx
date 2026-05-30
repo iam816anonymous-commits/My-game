@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const COLORS = [
@@ -17,8 +17,7 @@ const ColorRush: React.FC = () => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(100);
   const [isActive, setIsActive] = useState(false);
-  const [highScore, setHighScore] = useState(0);
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { updateXP, finishGame, setLiveScore } = usePlayStore();
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -54,9 +53,12 @@ const ColorRush: React.FC = () => {
 
   const gameOver = () => {
     setIsActive(false);
-    if (score > highScore) setHighScore(score);
     finishGame(score);
   };
+
+  useEffect(() => {
+    setLiveScore(score);
+  }, [score]);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -79,26 +81,22 @@ const ColorRush: React.FC = () => {
   }, [isActive, score]);
 
   return (
-    <div className="relative w-full h-screen bg-[#050816] flex flex-col items-center justify-center p-8 overflow-hidden">
+    <div className="relative w-full max-w-md flex flex-col items-center gap-12">
       {/* Background Glow */}
       <motion.div
-        className="absolute inset-0 opacity-20 pointer-events-none"
+        className="fixed inset-0 opacity-20 pointer-events-none"
         animate={{ backgroundColor: targetColor.value }}
         transition={{ duration: 0.5 }}
       />
 
-      <div className="z-10 w-full max-w-md flex flex-col items-center gap-12">
+      <div className="z-10 w-full flex flex-col items-center gap-12">
         {/* HUD */}
-        <div className="w-full flex justify-between items-end">
-            <div className="space-y-1">
-                <div className="text-[10px] text-white/40 uppercase tracking-[0.4em] font-bold">Score</div>
-                <div className="text-4xl font-black italic text-white tracking-tighter">{score}</div>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-                <div className="text-[10px] text-white/40 uppercase tracking-[0.4em] font-bold">Time</div>
-                <div className="h-1 w-32 bg-white/5 rounded-full overflow-hidden border border-white/5">
+        <div className="w-full flex justify-center">
+            <div className="flex flex-col items-center gap-2">
+                <div className="text-[10px] text-white/40 uppercase tracking-[0.4em] font-bold">Time Flux</div>
+                <div className="h-1 w-64 bg-white/5 rounded-full overflow-hidden border border-white/5">
                     <motion.div
-                        className="h-full bg-white"
+                        className="h-full bg-white shadow-[0_0_10px_white]"
                         animate={{ width: `${timeLeft}%` }}
                         transition={{ duration: 0.1 }}
                     />
@@ -148,14 +146,6 @@ const ColorRush: React.FC = () => {
             </div>
         )}
       </div>
-
-      {/* Exit Button */}
-      <button
-        onClick={exitToDashboard}
-        className="fixed top-8 left-8 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all z-50 text-white/40 hover:text-white"
-      >
-        <Home size={20} />
-      </button>
     </div>
   );
 };

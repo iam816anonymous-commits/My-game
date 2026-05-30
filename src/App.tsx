@@ -20,9 +20,12 @@ const ColorRush = lazy(() => import('./games/color-rush/ColorRush'));
 const OrbitDodge = lazy(() => import('./games/orbit-dodge/OrbitDodge'));
 const TapDash = lazy(() => import('./games/tap-dash/TapDash'));
 const Connect4 = lazy(() => import('./games/connect4/Connect4'));
+const Ludo = lazy(() => import('./games/ludo/Ludo'));
+const SnakesLadders = lazy(() => import('./games/snakes-ladders/SnakesAndLadders'));
 const AdminDashboard = lazy(() => import('./apps/admin/AdminDashboard'));
 const PostGameOverlay = lazy(() => import('./shared/ui/PostGameOverlay'));
 const GameOnboarding = lazy(() => import('./shared/ui/GameOnboarding'));
+const GameShell = lazy(() => import('./shared/ui/GameShell'));
 
 function App() {
   const { currentScene, activeGameId, profile, highScores, favorites, onboardingSeen, markOnboardingSeen, isAdmin } = usePlayStore();
@@ -107,27 +110,31 @@ function App() {
         {currentScene === 'game' && (
           <motion.div key="game" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="fixed inset-0 z-50 bg-[#0a0a0c]">
             <Suspense fallback={null}>
-                <AnimatePresence>
-                    {activeGameId && !onboardingSeen[activeGameId] && (
-                        <GameOnboarding
-                            gameId={activeGameId}
-                            onClose={() => markOnboardingSeen(activeGameId)}
-                        />
-                    )}
-                </AnimatePresence>
-                {activeGameId === 'last-light' && <LastLight />}
-                {activeGameId === 'chess' && <Chess />}
-                {activeGameId === 'snake' && <Snake />}
-                {activeGameId === '2048' && <Game2048 />}
-                {activeGameId === 'minesweeper' && <Minesweeper />}
-                {activeGameId === 'sudoku' && <Sudoku />}
-                {activeGameId === 'wordle' && <Wordle />}
-                {activeGameId === 'reaction' && <Reaction />}
-                {activeGameId === 'tower' && <Tower />}
-                {activeGameId === 'color-rush' && <ColorRush />}
-                {activeGameId === 'orbit-dodge' && <OrbitDodge />}
-                {activeGameId === 'tap-dash' && <TapDash />}
-                {activeGameId === 'connect4' && <Connect4 />}
+                <GameShell>
+                    <AnimatePresence>
+                        {activeGameId && !onboardingSeen[activeGameId] && (
+                            <GameOnboarding
+                                gameId={activeGameId}
+                                onClose={() => markOnboardingSeen(activeGameId)}
+                            />
+                        )}
+                    </AnimatePresence>
+                    {activeGameId === 'last-light' && <LastLight />}
+                    {activeGameId === 'chess' && <Chess />}
+                    {activeGameId === 'snake' && <Snake />}
+                    {activeGameId === '2048' && <Game2048 />}
+                    {activeGameId === 'minesweeper' && <Minesweeper />}
+                    {activeGameId === 'sudoku' && <Sudoku />}
+                    {activeGameId === 'wordle' && <Wordle />}
+                    {activeGameId === 'reaction' && <Reaction />}
+                    {activeGameId === 'tower' && <Tower />}
+                    {activeGameId === 'color-rush' && <ColorRush />}
+                    {activeGameId === 'orbit-dodge' && <OrbitDodge />}
+                    {activeGameId === 'tap-dash' && <TapDash />}
+                    {activeGameId === 'connect4' && <Connect4 />}
+                {activeGameId === 'ludo' && <Ludo />}
+                {activeGameId === 'snakes-ladders' && <SnakesLadders />}
+                </GameShell>
             </Suspense>
           </motion.div>
         )}

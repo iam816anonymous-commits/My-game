@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RotateCcw, Zap, Target, Timer, Sparkles } from 'lucide-react';
+import { Target, Timer, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const Reaction: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
+  const { updateXP, finishGame, setLiveScore } = usePlayStore();
   const [target, setTarget] = useState({ x: 50, y: 50 });
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -46,11 +46,15 @@ const Reaction: React.FC = () => {
   useEffect(() => {
     if (gameOver || timeLeft <= 0) return;
     const t = setInterval(() => setTimeLeft(prev => {
-        if (prev <= 1) { setGameOver(true); finishGame(score); }
+        if (prev <= 1) { setGameOver(true); }
         return prev - 1;
     }), 1000);
     return () => clearInterval(t);
   }, [gameOver, timeLeft, score, finishGame]);
+
+  useEffect(() => {
+    setLiveScore(score);
+  }, [score]);
 
   const hit = () => {
       const now = Date.now();
@@ -82,16 +86,7 @@ const Reaction: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#050816] p-6 gap-8 overflow-hidden">
-      <div className="flex w-full max-w-sm justify-between items-center z-10">
-        <button onClick={exitToDashboard} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><Home size={20} /></button>
-        <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Reaction <span className="text-accent-cyan text-glow">Arena</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V10 Precision Combat</div>
-        </div>
-        <button onClick={restart} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><RotateCcw size={20} /></button>
-      </div>
-
+    <div className="flex flex-col items-center justify-center w-full max-w-md gap-8">
       <div className="flex gap-4 w-full max-w-sm">
           <div className="flex-1 p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between relative overflow-hidden">
               <div className="relative z-10">
@@ -145,48 +140,34 @@ const Reaction: React.FC = () => {
             {gameOver && (
                 <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                    className="absolute inset-0 z-[110] bg-[#050816]/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
                 >
                     <motion.div
                         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                        className="max-w-sm w-full space-y-8"
+                        className="max-w-xs w-full space-y-6"
                     >
-                        <div className="space-y-2">
-                            <div className="text-accent-cyan font-black uppercase tracking-widest text-[10px]">Neural Reflex Terminated</div>
-                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Reaction Arena</h3>
+                        <div className="space-y-1">
+                            <div className="text-accent-cyan font-black uppercase tracking-widest text-[10px]">Reflex Terminated</div>
+                            <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">Game Over</h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Targets Hit</div>
-                                <div className="text-xl font-black text-white">{hits}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Best Reflex</div>
-                                <div className="text-xl font-black text-accent-cyan">{bestReflex}ms</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
-                                <div className="text-xl font-black text-white">{highScores['reaction'] || 0}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Reflex Grade</div>
-                                <div className="text-xl font-black text-accent-gold">{hits > 30 ? 'S' : hits > 20 ? 'A' : hits > 10 ? 'B' : 'C'}</div>
-                            </div>
+                        <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Reflex Intensity</div>
+                            <div className="text-3xl font-black text-white tabular-nums">{score}</div>
                         </div>
 
-                        <div className="p-6 bg-accent-cyan/5 border border-accent-cyan/20 rounded-3xl">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-accent-cyan mb-2">Operational Insight</div>
-                            <p className="text-xs text-white/60 font-medium leading-relaxed">
-                                {hits < 10 ? 'Calibration complete. Target size decreases as your proficiency increases.' :
-                                 'Perfect grades (under 350ms) grant massive multipliers. Find the rhythm.'}
-                            </p>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
-                            <button onClick={restart} className="flex-[2] py-4 bg-accent-cyan text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:scale-[1.02] transition-all">Re-Engage</button>
-                        </div>
+                        <button
+                            onClick={restart}
+                            className="w-full py-4 bg-accent-cyan text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:scale-[1.02] transition-all"
+                        >
+                            Re-Engage
+                        </button>
+                        <button
+                            onClick={() => finishGame(score)}
+                            className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:text-white transition-all"
+                        >
+                            Finalize Session
+                        </button>
                     </motion.div>
                 </motion.div>
             )}

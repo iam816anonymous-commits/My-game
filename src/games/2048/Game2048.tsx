@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RotateCcw, Zap, Sparkles, Trophy, Undo2, Star } from 'lucide-react';
+import { Sparkles, Undo2, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 import { initGame, move } from './logic';
@@ -8,7 +8,7 @@ import type { GameState } from './logic';
 import { AnalyticsManager } from '../../shared/systems/AnalyticsManager';
 
 const Game2048: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, updateStats, highScores } = usePlayStore();
+  const { updateXP, finishGame, updateStats, setLiveScore } = usePlayStore();
   const [isDaily, setIsDaily] = useState(false);
   const [state, setState] = useState<GameState>(initGame());
   const [history, setHistory] = useState<GameState[]>([]);
@@ -65,9 +65,9 @@ const Game2048: React.FC = () => {
 
         if (nextState.gameOver) {
             AnalyticsManager.trackGameComplete('2048', nextState.score);
-            finishGame(nextState.score);
         }
 
+        setLiveScore(nextState.score);
         return nextState;
       }
       return prev;
@@ -113,30 +113,16 @@ const Game2048: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#050816] p-6 gap-6 overflow-hidden touch-none" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      <div className="flex w-full max-w-sm justify-between items-center z-10">
-        <button onClick={exitToDashboard} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white"><Home size={20} /></button>
-        <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter">2048 <span className="text-accent-gold text-glow">Fusion</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">{isDaily ? 'DAILY SEED' : 'MECHANICS V9'}</div>
+    <div className="flex flex-col items-center justify-center w-full max-w-md gap-8 touch-none" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <div className="flex w-full justify-between items-center px-4">
+        <div className="p-4 bg-accent-gold/10 rounded-3xl border border-accent-gold/20 flex items-center gap-4">
+            <div className="text-2xl font-black italic tabular-nums text-accent-gold">x{(1 + combo * 0.1).toFixed(1)}</div>
+            {combo > 10 && <Star size={16} className="text-accent-gold animate-spin-slow" />}
         </div>
         <div className="flex gap-2">
-            {!isDaily && <button onClick={() => restart(true)} className="p-4 bg-accent-gold/10 rounded-2xl border border-accent-gold/20 text-accent-gold hover:bg-accent-gold/20 transition-all"><Sparkles size={20} /></button>}
+            {!isDaily && <button onClick={() => restart(true)} className="p-4 bg-accent-gold/5 rounded-2xl border border-accent-gold/10 text-accent-gold/40 hover:text-accent-gold transition-all"><Sparkles size={20} /></button>}
             <button onClick={undo} disabled={history.length === 0} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white disabled:opacity-20"><Undo2 size={20} /></button>
         </div>
-      </div>
-
-      <div className="flex gap-4 w-full max-w-sm">
-          <div className="flex-1 p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between">
-              <div>
-                  <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Score</div>
-                  <div className="text-2xl font-black italic text-white tabular-nums">{state.score}</div>
-              </div>
-          </div>
-          <div className="p-6 bg-accent-gold/10 rounded-3xl border border-accent-gold/20 flex items-center gap-4 relative overflow-hidden">
-              <div className="text-2xl font-black italic tabular-nums">x{(1 + combo * 0.1).toFixed(1)}</div>
-              {combo > 10 && <Star size={16} className="text-accent-gold animate-spin-slow" />}
-          </div>
       </div>
 
       <motion.div
@@ -193,48 +179,34 @@ const Game2048: React.FC = () => {
             {state.gameOver && (
                 <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                    className="absolute inset-0 z-[110] bg-[#050816]/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
                 >
                     <motion.div
                         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                        className="max-w-sm w-full space-y-8"
+                        className="max-w-xs w-full space-y-6"
                     >
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                             <div className="text-accent-gold font-black uppercase tracking-widest text-[10px]">Logical Grid Exhausted</div>
-                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">2048 Fusion</h3>
+                            <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">Game Over</h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Peak Tile</div>
-                                <div className="text-xl font-black text-accent-gold">{Math.max(...state.tiles.map(t => t.value), 0)}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Score</div>
-                                <div className="text-xl font-black text-white">{state.score}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
-                                <div className="text-xl font-black text-white">{highScores['2048'] || 0}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Next Goal</div>
-                                <div className="text-xl font-black text-accent-gold">{(highScores['2048'] || 0) + 1000}</div>
-                            </div>
+                        <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Final Energy</div>
+                            <div className="text-3xl font-black text-white tabular-nums">{state.score}</div>
                         </div>
 
-                        <div className="p-6 bg-accent-gold/5 border border-accent-gold/20 rounded-3xl">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-accent-gold mb-2">Operational Insight</div>
-                            <p className="text-xs text-white/60 font-medium leading-relaxed">
-                                {state.score < 2048 ? 'Keep high-value tiles locked in a corner. Moving up/down randomly fills gaps.' :
-                                 'Fusion chain detected. Swift merges yield massive multipliers—plan your paths.'}
-                            </p>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
-                            <button onClick={() => restart(false)} className="flex-[2] py-4 bg-accent-gold text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(250,204,21,0.3)] hover:scale-[1.02] transition-all">Fusion Restart</button>
-                        </div>
+                        <button
+                            onClick={() => restart(false)}
+                            className="w-full py-4 bg-accent-gold text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(250,204,21,0.3)] hover:scale-[1.02] transition-all"
+                        >
+                            Ignite Fusion
+                        </button>
+                        <button
+                            onClick={() => finishGame(state.score)}
+                            className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:text-white transition-all"
+                        >
+                            Finalize Session
+                        </button>
                     </motion.div>
                 </motion.div>
             )}

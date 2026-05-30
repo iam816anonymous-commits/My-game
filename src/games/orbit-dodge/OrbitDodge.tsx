@@ -1,25 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const OrbitDodge: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { updateXP, finishGame, setLiveScore } = usePlayStore();
 
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [highScore, setHighScore] = useState(0);
 
   useEffect(() => {
     const init = async () => {
       const app = new PIXI.Application();
       await app.init({
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: 600,
+        height: 600,
         backgroundColor: 0x050816,
         antialias: true,
         resolution: window.devicePixelRatio || 1
@@ -133,6 +132,7 @@ const OrbitDodge: React.FC = () => {
 
         localScore += delta * 0.1;
         setScore(Math.floor(localScore));
+        setLiveScore(Math.floor(localScore));
       });
 
       return () => {
@@ -152,16 +152,10 @@ const OrbitDodge: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-[#050816] overflow-hidden">
+    <div className="relative w-[600px] h-[600px] bg-[#050816] overflow-hidden rounded-[3rem] border border-white/10 shadow-2xl">
       <div ref={canvasRef} className="absolute inset-0" />
 
-      {/* HUD */}
-      <div className="absolute top-12 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-          <div className="text-[10px] text-white/40 uppercase tracking-[0.4em] font-black">Orbit Score</div>
-          <div className="text-6xl font-black italic text-white tracking-tighter">{score}</div>
-      </div>
-
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white/20 text-[10px] uppercase font-black tracking-widest pointer-events-none">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/20 text-[10px] uppercase font-black tracking-widest pointer-events-none">
           Tap to Switch Orbits
       </div>
 
@@ -184,13 +178,6 @@ const OrbitDodge: React.FC = () => {
           )}
       </AnimatePresence>
 
-      {/* Exit Button */}
-      <button
-        onClick={exitToDashboard}
-        className="fixed top-8 left-8 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all z-50 text-white/40 hover:text-white"
-      >
-        <Home size={20} />
-      </button>
     </div>
   );
 };

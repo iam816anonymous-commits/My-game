@@ -18,6 +18,8 @@ interface PlayStore extends PlayState {
   updateStats: (updates: Partial<PlayStore['profile']['stats']>) => void;
   lastLight?: any;
   onboardingSeen: Record<string, number>;
+  liveScore: number;
+  setLiveScore: (score: number) => void;
 }
 
 const DEFAULT_CHALLENGES: DailyChallenge[] = [
@@ -54,6 +56,7 @@ export const usePlayStore = create<PlayStore>((set) => ({
   highScores: {},
   favorites: [],
   dailyChallenges: DEFAULT_CHALLENGES,
+  liveScore: 0,
   onboardingSeen: {},
   sessionStats: {
     startTime: Date.now(),
@@ -70,8 +73,11 @@ export const usePlayStore = create<PlayStore>((set) => ({
   launchGame: (gameId) => set((state) => ({
     currentScene: 'game',
     activeGameId: gameId,
+    liveScore: 0,
     sessionStats: { ...state.sessionStats, gamesPlayed: state.sessionStats.gamesPlayed + 1 }
   })),
+
+  setLiveScore: (score: number) => set({ liveScore: score }),
 
   finishGame: (score: number) => set((state) => {
       ChallengeManager.checkProgress(
@@ -83,6 +89,7 @@ export const usePlayStore = create<PlayStore>((set) => ({
       );
       return {
         currentScene: 'postgame',
+        liveScore: score,
         sessionStats: { ...state.sessionStats, lastScore: score },
         highScores: {
             ...state.highScores,

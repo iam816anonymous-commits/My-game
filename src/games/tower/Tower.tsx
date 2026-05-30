@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RotateCcw, Layers, Zap, Star } from 'lucide-react';
+import { Zap, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Tower: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
+  const { updateXP, finishGame, setLiveScore } = usePlayStore();
   const [blocks, setBlocks] = useState<{ width: number, x: number }[]>([{ width: 60, x: 20 }]);
   const [currentBlock, setCurrentBlock] = useState({ width: 60, x: 0 });
   const [dir, setDir] = useState(1);
@@ -49,6 +49,10 @@ const Tower: React.FC = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, [update]);
 
+  useEffect(() => {
+    setLiveScore(blocks.length - 1);
+  }, [blocks]);
+
   const place = () => {
       if (gameOver) return;
       const last = blocks[blocks.length - 1];
@@ -83,16 +87,7 @@ const Tower: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#050816] p-6 gap-8 overflow-hidden touch-none" onClick={place}>
-      <div className="flex w-full max-w-sm justify-between items-center z-10">
-        <button onClick={(e) => { e.stopPropagation(); exitToDashboard(); }} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white"><Home size={20} /></button>
-        <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Stack <span className="text-accent-violet text-glow">Rush</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V10 Stability Logic</div>
-        </div>
-        <button onClick={(e) => { e.stopPropagation(); restart(); }} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-white/40 hover:text-white"><RotateCcw size={20} /></button>
-      </div>
-
+    <div className="flex flex-col items-center justify-center w-full max-w-md gap-8 overflow-hidden touch-none" onClick={place}>
       <motion.div
         animate={perfectFlash ? { scale: 1.02 } : {}}
         className="relative w-full max-w-sm h-96 bg-white/5 rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col-reverse p-8"
@@ -123,48 +118,34 @@ const Tower: React.FC = () => {
             {gameOver && (
                 <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                    className="absolute inset-0 z-[110] bg-[#050816]/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
                 >
                     <motion.div
                         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                        className="max-w-sm w-full space-y-8"
+                        className="max-w-xs w-full space-y-6"
                     >
-                        <div className="space-y-2">
-                            <div className="text-accent-violet font-black uppercase tracking-widest text-[10px]">Structural Integrity Lost</div>
-                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Stack Rush</h3>
+                        <div className="space-y-1">
+                            <div className="text-accent-violet font-black uppercase tracking-widest text-[10px]">Integrity Lost</div>
+                            <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">Game Over</h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Total Height</div>
-                                <div className="text-xl font-black text-white">{blocks.length}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Peak Rhythm</div>
-                                <div className="text-xl font-black text-accent-violet">{maxCombo} Perfects</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
-                                <div className="text-xl font-black text-white">{highScores['tower'] || 0}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Stability Rank</div>
-                                <div className="text-xl font-black text-accent-gold">{blocks.length > 30 ? 'TITAN' : blocks.length > 20 ? 'MASTER' : blocks.length > 10 ? 'PILOT' : 'NOVICE'}</div>
-                            </div>
+                        <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Final Altitude</div>
+                            <div className="text-3xl font-black text-white tabular-nums">{blocks.length - 1}</div>
                         </div>
 
-                        <div className="p-6 bg-accent-violet/5 border border-accent-violet/20 rounded-3xl">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-accent-violet mb-2">Operational Insight</div>
-                            <p className="text-xs text-white/60 font-medium leading-relaxed">
-                                {blocks.length < 15 ? 'Synchronize your rhythm. Speed escalates significantly every 5 blocks.' :
-                                 'Maintain "Perfect" placements to preserve block width—narrow towers collapse quickly.'}
-                            </p>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <button onClick={(e) => { e.stopPropagation(); exitToDashboard(); }} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
-                            <button onClick={(e) => { e.stopPropagation(); restart(); }} className="flex-[2] py-4 bg-accent-violet text-white font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all">Re-Stack</button>
-                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); restart(); }}
+                            className="w-full py-4 bg-accent-violet text-white font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all"
+                        >
+                            Re-Stack
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); finishGame(blocks.length - 1); }}
+                            className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:text-white transition-all"
+                        >
+                            Finalize Session
+                        </button>
                     </motion.div>
                 </motion.div>
             )}

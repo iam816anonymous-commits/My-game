@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Chess } from 'chess.js';
 import type { Square } from 'chess.js';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RotateCcw, Trophy, History, Swords } from 'lucide-react';
+import { History, Swords } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChessAI } from './ai';
 import { AnalyticsManager } from '../../shared/systems/AnalyticsManager';
 
 const ChessGame: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
+  const { updateXP, finishGame, setLiveScore } = usePlayStore();
   const [game, setGame] = useState(new Chess());
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
@@ -28,7 +28,11 @@ const ChessGame: React.FC = () => {
       if (result && game.turn() === 'b') AnalyticsManager.trackFirstAction('chess');
       if (result) {
         setGame(new Chess(game.fen()));
-        setMoveHistory(h => [...h, result.san]);
+        setMoveHistory(h => {
+            const next = [...h, result.san];
+            setLiveScore(next.length);
+            return next;
+        });
         setLastMove({ from: result.from, to: result.to });
 
         // Handle captured pieces
@@ -100,18 +104,8 @@ const ChessGame: React.FC = () => {
   const board = game.board();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#050816] p-6 gap-6 overflow-hidden">
-      {/* Header */}
-      <div className="flex w-full max-w-4xl justify-between items-center z-10">
-        <button onClick={exitToDashboard} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><Home size={20} /></button>
-        <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter">Grandmaster <span className="text-accent-cyan text-glow">Chess</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V9 Strategy Logic</div>
-        </div>
-        <button onClick={restart} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><RotateCcw size={20} /></button>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl items-start justify-center">
+    <>
+    <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl items-start justify-center">
           {/* Sidebar Left: Captured Pieces */}
           <div className="hidden lg:flex flex-col gap-4 w-48">
               <div className="p-6 bg-white/5 rounded-3xl border border-white/5 h-64 overflow-y-auto">
@@ -228,55 +222,41 @@ const ChessGame: React.FC = () => {
           {game.isGameOver() && (
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                className="absolute inset-0 z-[110] bg-[#050816]/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
               >
                   <motion.div
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                    className="max-w-sm w-full space-y-8"
+                    className="max-w-xs w-full space-y-6"
                   >
-                    <div className="space-y-2">
-                        <div className="text-accent-cyan font-black uppercase tracking-widest text-[10px]">Logical Sequence Terminated</div>
-                        <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Grandmaster Chess</h3>
+                    <div className="space-y-1">
+                        <div className="text-accent-cyan font-black uppercase tracking-widest text-[10px]">Sequence Terminated</div>
+                        <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">Game Over</h3>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Outcome</div>
-                            <div className="text-xs font-bold text-white uppercase tracking-widest">
-                                {game.isCheckmate() ? 'Checkmate' : game.isDraw() ? 'Draw' : 'Game Over'}
-                            </div>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Material</div>
-                            <div className="text-xl font-black text-accent-cyan">+{capturedPieces.w.length + capturedPieces.b.length}</div>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
-                            <div className="text-xl font-black text-white">{highScores['chess'] || 0} Wins</div>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Strategic Rank</div>
-                            <div className="text-xl font-black text-accent-gold">{moveHistory.length > 40 ? 'GRANDMASTER' : moveHistory.length > 25 ? 'TACTICIAN' : 'STUDENT'}</div>
+                    <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                        <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Final State</div>
+                        <div className="text-lg font-black text-white uppercase tabular-nums">
+                            {game.isCheckmate() ? 'Checkmate' : game.isDraw() ? 'Draw' : 'Stalemate'}
                         </div>
                     </div>
 
-                    <div className="p-6 bg-accent-cyan/5 border border-accent-cyan/20 rounded-3xl">
-                        <div className="text-[8px] font-black uppercase tracking-widest text-accent-cyan mb-2">Operational Insight</div>
-                        <p className="text-xs text-white/60 font-medium leading-relaxed">
-                            {moveHistory.length < 15 ? 'Aggressive opening detected. Focus on center control and minor piece development.' :
-                             'Mid-game complexity reached. Evaluate pawn structures and king safety before initiating trades.'}
-                        </p>
-                    </div>
-
-                    <div className="flex gap-4">
-                        <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
-                        <button onClick={restart} className="flex-[2] py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-[1.02] transition-all">New Cycle</button>
-                    </div>
+                    <button
+                        onClick={restart}
+                        className="w-full py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-[1.02] transition-all"
+                    >
+                        New Sequence
+                    </button>
+                    <button
+                        onClick={() => finishGame(moveHistory.length)}
+                        className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:text-white transition-all"
+                    >
+                        Finalize Tactics
+                    </button>
                   </motion.div>
               </motion.div>
           )}
       </AnimatePresence>
-    </div>
+    </>
   );
 };
 

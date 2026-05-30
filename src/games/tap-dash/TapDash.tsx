@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, Zap, Timer } from 'lucide-react';
+import { Timer } from 'lucide-react';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 
 const TapDash: React.FC = () => {
@@ -9,7 +9,7 @@ const TapDash: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isActive, setIsActive] = useState(false);
   const [targets, setTargets] = useState<{ id: number; x: number; y: number; scale: number }[]>([]);
-  const { exitToDashboard, updateXP, finishGame } = usePlayStore();
+  const { updateXP, finishGame, setLiveScore } = usePlayStore();
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const nextId = useRef(0);
@@ -61,8 +61,12 @@ const TapDash: React.FC = () => {
     };
   }, [isActive, score]);
 
+  useEffect(() => {
+    setLiveScore(score);
+  }, [score]);
+
   return (
-    <div className="relative w-full h-screen bg-[#050816] flex flex-col items-center justify-center overflow-hidden touch-none">
+    <div className="relative w-full h-full max-w-5xl aspect-video bg-[#050816] flex flex-col items-center justify-center overflow-hidden touch-none rounded-[3rem] border border-white/10 shadow-2xl">
       {/* Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
@@ -86,15 +90,11 @@ const TapDash: React.FC = () => {
       {isActive && (
           <>
             {/* HUD */}
-            <div className="fixed top-12 left-0 w-full px-12 flex justify-between items-start pointer-events-none z-50">
-                <div className="space-y-1">
-                    <div className="text-[10px] text-white/40 uppercase tracking-[0.4em] font-black">Score</div>
-                    <div className="text-5xl font-black italic text-white tracking-tighter leading-none">{score}</div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
+            <div className="absolute top-8 left-0 w-full px-12 flex justify-center pointer-events-none z-50">
+                <div className="flex flex-col items-center gap-2">
                     <div className="flex items-center gap-2 text-accent-rose">
                         <Timer size={16} />
-                        <span className="text-2xl font-mono font-black italic">{timeLeft.toFixed(1)}s</span>
+                        <span className="text-2xl font-mono font-black italic tabular-nums">{timeLeft.toFixed(1)}s</span>
                     </div>
                 </div>
             </div>
@@ -121,13 +121,6 @@ const TapDash: React.FC = () => {
           </>
       )}
 
-      {/* Exit Button */}
-      <button
-        onClick={exitToDashboard}
-        className="fixed bottom-8 left-8 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all z-50 text-white/40 hover:text-white"
-      >
-        <Home size={20} />
-      </button>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RotateCcw, HelpCircle, Delete } from 'lucide-react';
+import { Delete } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WordleLogic, type LetterStatus } from './logic';
 
@@ -11,7 +11,7 @@ const KEYBOARD = [
 ];
 
 const Wordle: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
+  const { updateXP, finishGame, setLiveScore } = usePlayStore();
   const [target, setTarget] = useState('');
   const [guesses, setGuesses] = useState<string[]>([]);
   const [results, setResults] = useState<LetterStatus[][]>([]);
@@ -23,6 +23,10 @@ const Wordle: React.FC = () => {
   useEffect(() => {
     setTarget(WordleLogic.getDailyWord());
   }, []);
+
+  useEffect(() => {
+    setLiveScore(guesses.length);
+  }, [guesses]);
 
   const onKeyPress = useCallback((key: string) => {
     if (gameOver) return;
@@ -88,17 +92,7 @@ const Wordle: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0c] p-4 gap-6">
-      {/* Header */}
-      <div className="flex w-full max-w-md justify-between items-center z-10">
-        <button onClick={exitToDashboard} className="p-3 bg-white/5 rounded-xl border border-white/10 text-white/40 hover:text-white"><Home size={20} /></button>
-        <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter">Word <span className="text-accent-cyan">Crypt</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">Daily Logic Challenge</div>
-        </div>
-        <button onClick={restart} className="p-3 bg-white/5 rounded-xl border border-white/10 text-white/40 hover:text-white"><RotateCcw size={20} /></button>
-      </div>
-
+    <div className="flex flex-col items-center justify-center w-full max-w-md gap-8">
       {/* Grid */}
       <div className="grid grid-rows-6 gap-2">
         {Array(6).fill(0).map((_, rowIndex) => {
@@ -165,52 +159,36 @@ const Wordle: React.FC = () => {
           {gameOver && (
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                className="absolute inset-0 z-[110] bg-[#050816]/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
               >
                   <motion.div
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                    className="max-w-sm w-full space-y-8"
+                    className="max-w-xs w-full space-y-6"
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <div className={`${won ? 'text-accent-cyan' : 'text-accent-rose'} font-black uppercase tracking-widest text-[10px]`}>
-                            {won ? 'Sequence Deciphered' : 'Data Integrity Failure'}
+                            {won ? 'Deciphered' : 'Failure'}
                         </div>
-                        <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Word Crypt</h3>
+                        <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">Game Over</h3>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Target</div>
-                            <div className="text-xs font-bold text-white uppercase tracking-widest">{target}</div>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Status</div>
-                            <div className={`text-xs font-bold uppercase tracking-widest ${won ? 'text-accent-cyan' : 'text-accent-rose'}`}>
-                                {won ? 'Verified' : 'Offline'}
-                            </div>
-                        </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
-                                <div className="text-xl font-black text-white">{highScores['wordle'] || 0} Crypts</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Efficiency</div>
-                                <div className="text-xl font-black text-accent-gold">{won ? `${6 - guesses.length} Spare` : '0'}</div>
-                            </div>
+                    <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                        <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Target Data</div>
+                        <div className="text-2xl font-black text-white uppercase tracking-[0.2em]">{target}</div>
                     </div>
 
-                    <div className={`p-6 ${won ? 'bg-accent-cyan/5 border-accent-cyan/20' : 'bg-accent-rose/5 border-accent-rose/20'} border rounded-3xl`}>
-                        <div className={`text-[8px] font-black uppercase tracking-widest mb-2 ${won ? 'text-accent-cyan' : 'text-accent-rose'}`}>Operational Insight</div>
-                        <p className="text-xs text-white/60 font-medium leading-relaxed">
-                            {won ? 'Optimal linguistic decoding. Vocabulary parameters expanded for future cycles.' :
-                             'Pattern mismatch detected. Eliminate gray-coded variables early to narrow solution possibilities.'}
-                        </p>
-                    </div>
-
-                    <div className="flex gap-4">
-                        <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
-                        <button onClick={restart} className={`flex-[2] py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${won ? 'bg-accent-cyan text-black' : 'bg-white text-black'}`}>New Sequence</button>
-                    </div>
+                    <button
+                        onClick={restart}
+                        className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${won ? 'bg-accent-cyan text-black' : 'bg-white text-black'}`}
+                    >
+                        New Sequence
+                    </button>
+                    <button
+                        onClick={() => finishGame(won ? 500 : 0)}
+                        className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:text-white transition-all"
+                    >
+                        Finalize Logic
+                    </button>
                   </motion.div>
               </motion.div>
           )}

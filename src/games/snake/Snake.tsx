@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RotateCcw, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AudioController } from '../../shared/systems/AudioController';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
@@ -16,7 +16,7 @@ const Snake: React.FC = () => {
   const playerRef = useRef<SnakePlayer | null>(null);
   const foodRef = useRef<FoodManager | null>(null);
 
-  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
+  const { updateXP, finishGame, updateStats, setLiveScore } = usePlayStore();
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
   const [gameTime, setGameTime] = useState(0);
@@ -63,6 +63,7 @@ const Snake: React.FC = () => {
             if ((window as any).snakeGameOver) return;
 
             const delta = ticker.deltaTime;
+            setLiveScore(score);
             setGameTime(t => t + delta/60);
 
             // V19 Pacing Logic
@@ -145,20 +146,7 @@ const Snake: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#02040a] p-4 md:p-12 overflow-hidden transition-all duration-1000">
-
-      {/* Header (V19) */}
-      <div className="flex w-full max-w-5xl justify-between items-center z-30 mb-6 px-4">
-        <button onClick={exitToDashboard} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-emerald-500/20 transition-all text-white/40 hover:text-white"><Home size={20} /></button>
-        <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Snake <span className="text-emerald-400 text-glow">Zen</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">V19 Engine Rebuild</div>
-        </div>
-        <button onClick={restart} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-emerald-500/20 transition-all text-white/40 hover:text-white"><RotateCcw size={20} /></button>
-      </div>
-
-      {/* Game Frame (V19 Rebuild) */}
-      <div className="relative w-full h-full max-w-5xl aspect-video md:aspect-[16/9] bg-[#050816] rounded-[3rem] border border-white/5 shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden">
+    <div className="relative w-full h-full max-w-5xl aspect-video md:aspect-[16/9] bg-[#050816] rounded-[3rem] border border-white/5 shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden">
         <div ref={canvasRef} className="absolute inset-0" />
 
         {/* Mobile Controls Overlay */}
@@ -167,23 +155,10 @@ const Snake: React.FC = () => {
             <div className="flex-1 pointer-events-auto" onTouchStart={() => (window as any).snakeRight = true} onTouchEnd={() => (window as any).snakeRight = false} />
         </div>
 
-        {/* HUD Overlays */}
-        <div className="absolute top-12 left-12 space-y-1 pointer-events-none z-30">
-            <motion.div
-                key={score}
-                initial={{ scale: 1.5, x: -20 }} animate={{ scale: 1, x: 0 }}
-                className="text-8xl font-black italic text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-            >
-                {score}
-            </motion.div>
-            <div className="flex items-center gap-2">
-                <div className="px-2 py-0.5 bg-emerald-400 text-black text-[10px] font-black uppercase tracking-widest rounded">
-                    x{(1 + (gameTime/60) * 0.1).toFixed(1)} Pacing
-                </div>
-            </div>
-
+        {/* V18.1 Minimal In-Game Overlays Only */}
+        <div className="absolute top-8 left-8 pointer-events-none z-30">
             {tunnelTime > 0 && (
-                <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden mt-4">
+                <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
                     <motion.div
                         initial={{ width: "100%" }}
                         animate={{ width: `${(tunnelTime / 10) * 100}%` }}
@@ -193,73 +168,59 @@ const Snake: React.FC = () => {
                 </div>
             )}
         </div>
-      </div>
 
-      <div className="text-[10px] text-white/10 uppercase font-black tracking-[0.4em] italic flex items-center gap-2 mt-8 z-10">
-          <ShieldAlert size={12} /> Boundary proximity yields double mastery rewards
-      </div>
+        <div className="absolute bottom-8 right-8 text-[10px] text-white/10 uppercase font-black tracking-[0.4em] italic flex items-center gap-2 pointer-events-none">
+          <ShieldAlert size={12} /> Boundary Risk x2.0
+        </div>
 
-      <AnimatePresence>
+        <AnimatePresence>
           {gameOver && (
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                className="absolute inset-0 z-[110] bg-[#050816]/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
               >
                   <motion.div
                     initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                    className="max-w-sm w-full space-y-8"
+                    className="max-w-sm w-full space-y-6"
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <div className="text-rose-500 font-black uppercase tracking-widest text-[10px]">Neural Link Severed</div>
-                        <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Snake Zen</h3>
+                        <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">Game Over</h3>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Failure</div>
-                            <div className="text-xs font-bold text-white truncate">{failureReason}</div>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Pacing Peak</div>
-                            <div className="text-xl font-black text-emerald-400">{(1 + (gameTime/60) * 0.1).toFixed(1)}x</div>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
-                            <div className="text-xl font-black text-white">{highScores['snake'] || 0}</div>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Next Goal</div>
-                            <div className="text-xl font-black text-emerald-400">{(highScores['snake'] || 0) + 100}</div>
-                        </div>
+                    <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                        <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Failure Cause</div>
+                        <div className="text-lg font-black text-white">{failureReason}</div>
                     </div>
 
                     <div className="p-6 bg-emerald-400/5 border border-emerald-400/20 rounded-3xl">
-                        <div className="text-[8px] font-black uppercase tracking-widest text-emerald-400 mb-2">Operational Insight</div>
                         <p className="text-xs text-white/60 font-medium leading-relaxed">
                             {failureReason === 'Boundary Impact'
-                                ? 'Boundary proximity yields 2x score, but requires micro-precision. Use the "Tunneling" effect from Legendary food to phase through walls.'
-                                : 'Internal Rupture occurs when you intersect your own tail. As your length increases, wide turns are safer than sharp reversals.'
-                            }
-                            {score > 1000 && ' High-speed flow detected. Pacing multipliers are currently maximized.'}
+                                ? 'Boundary proximity yields 2x score. Use "Tunneling" to phase through walls.'
+                                : 'Avoid tail intersections. Wider turns are safer at high velocity.'}
                         </p>
                     </div>
 
-                    <div className="flex gap-4">
-                        <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
-                        <button
-                            onClick={() => {
-                                (window as any).snakeGameOver = false;
-                                restart();
-                            }}
-                            className="flex-[2] py-4 bg-emerald-400 text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(52,211,153,0.3)] hover:scale-[1.02] transition-all"
-                        >
-                            Re-Engage
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => {
+                            (window as any).snakeGameOver = false;
+                            restart();
+                        }}
+                        className="w-full py-4 bg-emerald-400 text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(52,211,153,0.3)] hover:scale-[1.02] transition-all"
+                    >
+                        Re-Engage Reality
+                    </button>
+
+                    <button
+                        onClick={() => finishGame(score)}
+                        className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:text-white transition-all"
+                    >
+                        Finalize Session
+                    </button>
                   </motion.div>
               </motion.div>
           )}
-      </AnimatePresence>
+        </AnimatePresence>
     </div>
   );
 };

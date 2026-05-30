@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { Home, RotateCcw, Trophy, Lightbulb, Pencil, Eraser, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Lightbulb, Pencil, Eraser, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
 import { SudokuLogic, type SudokuDifficulty } from './logic';
@@ -12,7 +12,7 @@ type CellState = {
 };
 
 const SudokuGame: React.FC = () => {
-  const { exitToDashboard, updateXP, finishGame, highScores } = usePlayStore();
+  const { updateXP, finishGame, setLiveScore } = usePlayStore();
   const [grid, setGrid] = useState<CellState[][]>([]);
   const [solution, setSolution] = useState<number[][]>([]);
   const [selected, setSelected] = useState<[number, number] | null>(null);
@@ -80,10 +80,15 @@ const SudokuGame: React.FC = () => {
   const checkWin = (currentGrid: CellState[][]) => {
       const isComplete = currentGrid.every((row) => row.every((cell) => cell.value !== null));
       if (isComplete) {
-          finishGame(2000);
           setGameOver(true);
       }
   };
+
+  useEffect(() => {
+    let filled = 0;
+    grid.forEach(row => row.forEach(cell => { if(cell.value) filled++; }));
+    setLiveScore(filled);
+  }, [grid]);
 
   const erase = () => {
       if (!selected || gameOver) return;
@@ -121,16 +126,7 @@ const SudokuGame: React.FC = () => {
   }, [selected, isNoteMode, grid, solution, gameOver]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#050816] p-4 gap-6 overflow-hidden">
-      <div className="flex w-full max-w-sm justify-between items-center z-10">
-        <button onClick={exitToDashboard} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><Home size={20} /></button>
-        <div className="text-center">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter">Logic <span className="text-accent-violet text-glow">Grid</span></h2>
-            <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">Sudoku Mastery</div>
-        </div>
-        <button onClick={init} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-white"><RotateCcw size={20} /></button>
-      </div>
-
+    <div className="flex flex-col items-center justify-center w-full max-w-lg gap-8">
       <div className="flex gap-4 w-full max-w-sm">
           <div className="flex-1 p-6 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-between">
               <div>
@@ -192,50 +188,38 @@ const SudokuGame: React.FC = () => {
               {gameOver && (
                   <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="fixed inset-0 z-[110] bg-[#050816]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center"
+                    className="absolute inset-0 z-[110] bg-[#050816]/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
                   >
                       <motion.div
                         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                        className="max-w-sm w-full space-y-8"
+                        className="max-w-xs w-full space-y-6"
                       >
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                             <div className={`${mistakes < 3 ? 'text-accent-violet' : 'text-accent-rose'} font-black uppercase tracking-widest text-[10px]`}>
                                 {mistakes < 3 ? 'Grid Sanitized' : 'Logical Disruption'}
                             </div>
-                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Logic Grid</h3>
+                            <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">Game Over</h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Mistakes</div>
-                                <div className={`text-xl font-black ${mistakes >= maxMistakes ? 'text-accent-rose' : 'text-white'}`}>{mistakes}/{maxMistakes}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Status</div>
-                                <div className="text-xl font-black text-accent-violet">{mistakes < maxMistakes ? 'SECURE' : 'OFFLINE'}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Personal Best</div>
-                                <div className="text-xl font-black text-white">{highScores['sudoku'] || 0} Grids</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Logic Accuracy</div>
-                                <div className="text-xl font-black text-accent-gold">{mistakes === 0 ? 'FLAWLESS' : mistakes === 1 ? 'ELITE' : 'STABLE'}</div>
+                        <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Final Status</div>
+                            <div className={`text-xl font-black ${mistakes >= maxMistakes ? 'text-accent-rose' : 'text-accent-violet'}`}>
+                                {mistakes < maxMistakes ? 'SECURE' : 'OFFLINE'}
                             </div>
                         </div>
 
-                        <div className={`p-6 ${mistakes < 3 ? 'bg-accent-violet/5 border-accent-violet/20' : 'bg-accent-rose/5 border-accent-rose/20'} border rounded-3xl`}>
-                            <div className={`text-[8px] font-black uppercase tracking-widest mb-2 ${mistakes < 3 ? 'text-accent-violet' : 'text-accent-rose'}`}>Operational Insight</div>
-                            <p className="text-xs text-white/60 font-medium leading-relaxed">
-                                {mistakes < 3 ? 'Superior numeric deduction. High-complexity grids now accessible in the Logic Hub.' :
-                                 'Analysis incomplete. Utilize "Note Mode" (Pencil icon) to track potential variable outcomes before committing.'}
-                            </p>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <button onClick={exitToDashboard} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl font-black uppercase tracking-widest text-[10px] text-white/40 hover:text-white transition-all">Hub</button>
-                            <button onClick={init} className="flex-[2] py-4 bg-accent-violet text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all">Restart Loop</button>
-                        </div>
+                        <button
+                            onClick={init}
+                            className="w-full py-4 bg-accent-violet text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all"
+                        >
+                            Restart Sequence
+                        </button>
+                        <button
+                            onClick={() => finishGame(mistakes < 3 ? 2000 : 0)}
+                            className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:text-white transition-all"
+                        >
+                            Finalize Logic
+                        </button>
                       </motion.div>
                   </motion.div>
               )}
