@@ -1,7 +1,8 @@
 export type GameId =
   | 'chess' | 'checkers' | 'tictactoe' | 'connect4' | 'snake'
   | '2048' | 'minesweeper' | 'sudoku' | 'memory' | 'flappy'
-  | 'wordle' | 'reaction' | 'tower' | 'dots' | 'color' | 'hex' | 'bubble' | 'water' | 'ball' | 'slice';
+  | 'wordle' | 'reaction' | 'tower' | 'dots' | 'color' | 'hex' | 'bubble' | 'water' | 'ball' | 'slice'
+  | 'ludo' | 'snakes-ladders' | 'last-light' | 'color-rush' | 'orbit-dodge' | 'tap-dash';
 
 export type Category = 'Logic' | 'Board' | 'Arcade' | 'Skill';
 
