@@ -48,7 +48,7 @@ function App() {
                 y: (Math.random() - 0.5) * intensity
             });
         } else {
-            setShake({ x: 0, y: 0 });
+            setShake(s => (s.x === 0 && s.y === 0) ? s : { x: 0, y: 0 });
         }
         frame = requestAnimationFrame(loop);
     };
