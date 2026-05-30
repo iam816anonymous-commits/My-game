@@ -43,6 +43,15 @@ const INSTRUCTIONS: Record<string, { title: string, steps: string[] }> = {
       'Reach the 2048 tile to win.',
       'Plan your moves to avoid a locked grid.'
     ]
+  },
+  'snakes-ladders': {
+    title: 'Prism Ladders',
+    steps: [
+      'Roll the dice to move through the prism grid.',
+      'Ladders (Cyan) grant massive upward momentum.',
+      'Snakes (Rose) cause structural collapse and descent.',
+      'Be the first to reach Tile 100 to conquer the reality.'
+    ]
   }
 };
 

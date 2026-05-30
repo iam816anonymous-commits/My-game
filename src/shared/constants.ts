@@ -21,4 +21,7 @@ export const GAMES: GameMetadata[] = [
   { id: 'water', name: 'Sort', category: 'Logic', description: 'Sort the colored water.', icon: 'Droplet', color: '#67e8f9' },
   { id: 'ball', name: 'Bouncer', category: 'Arcade', description: 'Keep the ball up.', icon: 'Dribbble', color: '#f9a8d4' },
   { id: 'slice', name: 'Zen Slice', category: 'Skill', description: 'Slice the falling items.', icon: 'Knife', color: '#8b5cf6' },
+  { id: 'snakes-ladders', name: 'Prism Ladders', category: 'Board', description: 'Neon race to the top.', icon: 'TrendingUp', color: '#F472B6' },
+  { id: 'last-light', name: 'Last Light', category: 'Arcade', description: 'Keep the flame alive.', icon: 'Sparkles', color: '#67e8f9' },
+  { id: 'ludo', name: 'Neon Ludo', category: 'Board', description: 'Strategic board race.', icon: 'LayoutGrid', color: '#FACC15' },
 ];
