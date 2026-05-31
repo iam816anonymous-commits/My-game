@@ -52,7 +52,6 @@ const SnakesAndLadders: React.FC = () => {
   const initGame = () => {
     const activeSlots = isCustomMode ? slots.filter(s => s !== 'empty') : ['human', 'ai'];
     if (activeSlots.length < 2) {
-        JuiceManager.shake(5);
         return;
     }
 
@@ -76,7 +75,6 @@ const SnakesAndLadders: React.FC = () => {
 
   const executeMove = useCallback(async (playerId: number) => {
     setIsRolling(true);
-    JuiceManager.shake(2);
 
     // Simulate dice roll animation duration
     await new Promise(r => setTimeout(r, 600));
@@ -98,7 +96,6 @@ const SnakesAndLadders: React.FC = () => {
 
     if (targetPos > 100) {
         addLog(`${player.name} overshot reality`);
-        JuiceManager.shake(5);
         await new Promise(r => setTimeout(r, 600));
         nextTurn();
         return;
@@ -106,14 +103,11 @@ const SnakesAndLadders: React.FC = () => {
 
     // Movement Preview
     setPreviewPos(targetPos);
-    JuiceManager.shake(3);
     await new Promise(r => setTimeout(r, 800));
 
     // Step-by-step movement (V2)
     for (let i = currentPos + 1; i <= targetPos; i++) {
         setPlayers(prev => prev.map(p => p.id === playerId ? { ...p, position: i } : p));
-        JuiceManager.shake(1); // Micro-shake for steps
-        if (i === targetPos) JuiceManager.shake(5); // Impact on landing
         await new Promise(r => setTimeout(r, 150));
     }
     setPreviewPos(null);
@@ -132,7 +126,6 @@ const SnakesAndLadders: React.FC = () => {
             JuiceManager.success();
         } else {
             JuiceManager.danger();
-            JuiceManager.shake(10);
         }
 
         // Slide/Climb animation
@@ -147,6 +140,7 @@ const SnakesAndLadders: React.FC = () => {
                 biggestFall: !isLadder ? Math.max(p.stats.biggestFall, targetPos - destination) : p.stats.biggestFall
             }
         } : p));
+    await new Promise(r => setTimeout(r, 600)); // Allow animation to finish
     }
 
     // Win Check
@@ -219,13 +213,13 @@ const SnakesAndLadders: React.FC = () => {
             <defs>
                 <linearGradient id="ladderRail" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#22D3EE" />
-                    <stop offset="50%" stopColor="#0891B2" />
+                    <stop offset="50%" stopColor="#0E7490" />
                     <stop offset="100%" stopColor="#22D3EE" />
                 </linearGradient>
                 <linearGradient id="snakeBody" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor="#F472B6" />
-                    <stop offset="50%" stopColor="#DB2777" />
-                    <stop offset="100%" stopColor="#9D174D" />
+                    <stop offset="50%" stopColor="#BE185D" />
+                    <stop offset="100%" stopColor="#831843" />
                 </linearGradient>
                 <filter id="glow">
                     <feGaussianBlur stdDeviation="0.4" result="blur" />
@@ -238,30 +232,32 @@ const SnakesAndLadders: React.FC = () => {
                     const dy = c.y2 - c.y1;
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     const angle = Math.atan2(dy, dx);
-                    const offset = 1.6;
+                    const offset = 1.8; // Wider rails for better presence
 
                     const ox = Math.cos(angle + Math.PI/2) * offset;
                     const oy = Math.sin(angle + Math.PI/2) * offset;
 
                     return (
-                        <g key={`l-${c.from}`} className="opacity-80">
-                            {/* Rails with Depth */}
-                            <line x1={c.x1-ox} y1={c.y1-oy} x2={c.x2-ox} y2={c.y2-oy} stroke="url(#ladderRail)" strokeWidth="0.8" strokeLinecap="round" filter="url(#glow)" />
-                            <line x1={c.x1+ox} y1={c.y1+oy} x2={c.x2+ox} y2={c.y2+oy} stroke="url(#ladderRail)" strokeWidth="0.8" strokeLinecap="round" filter="url(#glow)" />
+                        <g key={`l-${c.from}`} className="opacity-90">
+                            {/* Rails with shadow for depth */}
+                            <line x1={c.x1-ox+0.3} y1={c.y1-oy+0.3} x2={c.x2-ox+0.3} y2={c.y2-oy+0.3} stroke="black" strokeWidth="0.8" strokeLinecap="round" opacity="0.4" />
+                            <line x1={c.x1+ox+0.3} y1={c.y1+oy+0.3} x2={c.x2+ox+0.3} y2={c.y2+oy+0.3} stroke="black" strokeWidth="0.8" strokeLinecap="round" opacity="0.4" />
 
-                            {/* Steps / Rungs */}
-                            {Array.from({ length: Math.floor(dist/4) }).map((_, i, arr) => {
+                            <line x1={c.x1-ox} y1={c.y1-oy} x2={c.x2-ox} y2={c.y2-oy} stroke="url(#ladderRail)" strokeWidth="0.9" strokeLinecap="round" filter="url(#glow)" />
+                            <line x1={c.x1+ox} y1={c.y1+oy} x2={c.x2+ox} y2={c.y2+oy} stroke="url(#ladderRail)" strokeWidth="0.9" strokeLinecap="round" filter="url(#glow)" />
+
+                            {/* Steps / Rungs with subtle perspective */}
+                            {Array.from({ length: Math.floor(dist/3.5) }).map((_, i, arr) => {
                                 const t = (i + 1) / (arr.length + 1);
                                 const rx1 = (c.x1-ox)*(1-t) + (c.x2-ox)*t;
                                 const ry1 = (c.y1-oy)*(1-t) + (c.y2-oy)*t;
                                 const rx2 = (c.x1+ox)*(1-t) + (c.x2+ox)*t;
                                 const ry2 = (c.y1+oy)*(1-t) + (c.y2+oy)*t;
                                 return (
-                                    <line
-                                        key={i}
-                                        x1={rx1} y1={ry1} x2={rx2} y2={ry2}
-                                        stroke="#22D3EE" strokeWidth="0.4" opacity="0.6"
-                                    />
+                                    <g key={i}>
+                                        <line x1={rx1+0.1} y1={ry1+0.1} x2={rx2+0.1} y2={ry2+0.1} stroke="black" strokeWidth="0.5" opacity="0.3" />
+                                        <line x1={rx1} y1={ry1} x2={rx2} y2={ry2} stroke="#22D3EE" strokeWidth="0.5" strokeLinecap="round" />
+                                    </g>
                                 );
                             })}
                         </g>
@@ -270,26 +266,30 @@ const SnakesAndLadders: React.FC = () => {
                     const d = `M ${c.x1} ${c.y1} C ${c.cp1x} ${c.cp1y}, ${c.cp2x} ${c.cp2y}, ${c.x2} ${c.y2}`;
                     const angle = Math.atan2(c.y1 - c.cp1y, c.x1 - c.cp1x);
                     return (
-                        <g key={`s-${c.from}`} className="opacity-90">
-                            {/* Snake Body */}
+                        <g key={`s-${c.from}`} className="opacity-95">
+                            {/* Shadow for body */}
+                            <path d={d} transform="translate(0.4, 0.4)" stroke="black" strokeWidth="2.2" fill="none" strokeLinecap="round" opacity="0.3" />
+                            {/* Snake Body - Tapered look via strokeWidth gradient is hard in SVG paths, so we use refined glow */}
                             <path
                                 d={d}
                                 stroke="url(#snakeBody)"
-                                strokeWidth="2"
+                                strokeWidth="2.2"
                                 fill="none"
                                 strokeLinecap="round"
                                 filter="url(#glow)"
                                 className="animate-pulse"
-                                style={{ animationDuration: '3s' }}
+                                style={{ animationDuration: '4s' }}
                             />
-                            {/* Head Details */}
+                            {/* Head Details - Premium look */}
                             <g transform={`translate(${c.x1}, ${c.y1}) rotate(${(angle * 180 / Math.PI) - 90})`}>
-                                <circle r="1.5" fill="#F472B6" />
-                                <circle cx="-0.5" cy="0.5" r="0.3" fill="white" />
-                                <circle cx="0.5" cy="0.5" r="0.3" fill="white" />
+                                <path d="M -1.2 0 Q 0 2.5 1.2 0 L 0 -1 Z" fill="#F472B6" />
+                                <circle cx="-0.4" cy="0.6" r="0.25" fill="black" />
+                                <circle cx="0.4" cy="0.6" r="0.25" fill="black" />
+                                <circle cx="-0.4" cy="0.7" r="0.1" fill="white" />
+                                <circle cx="0.4" cy="0.7" r="0.1" fill="white" />
                             </g>
-                            {/* Tail */}
-                            <circle cx={c.x2} cy={c.y2} r="0.8" fill="#9D174D" />
+                            {/* Tapered Tail */}
+                            <circle cx={c.x2} cy={c.y2} r="0.6" fill="#831843" />
                         </g>
                     );
                 }
@@ -491,6 +491,12 @@ const SnakesAndLadders: React.FC = () => {
                                 top: `${y * 10 + 5}%`,
                                 scale: isCurrent ? 1.2 : 1,
                                 zIndex: isCurrent ? 50 : 10
+                            }}
+                            transition={{
+                                type: 'spring',
+                                damping: 15,
+                                stiffness: 100,
+                                mass: 0.8
                             }}
                             className="absolute w-6 h-6 -ml-3 -mt-3 rounded-full flex items-center justify-center shadow-lg border-2 border-white/20"
                             style={{ backgroundColor: p.color }}
