@@ -42,12 +42,13 @@ const SnakesAndLadders: React.FC = () => {
   const [previewPos, setPreviewPos] = useState<number | null>(null);
   const [history, setHistory] = useState<string[]>(['Initialization...']);
 
-  const MAP: Record<number, number> = {
-      // Ladders (Destinations must be higher)
-      3: 22, 5: 8, 11: 26, 20: 29, 27: 44, 35: 54, 45: 70, 60: 82, 77: 95,
-      // Snakes (Destinations must be lower)
-      17: 4, 19: 7, 21: 9, 34: 12, 51: 30, 62: 18, 87: 24, 93: 68, 99: 10
-  };
+  // V5 Rebuild: Cleaner Map with Zero Path Crossing (Limited Max Snakes/Ladders)
+  const MAP: Record<number, number> = useMemo(() => ({
+      // Strategic Ladders (Clean Bezier Paths)
+      4: 25, 13: 46, 33: 49, 42: 63, 50: 69, 62: 81, 74: 92,
+      // Strategic Snakes (No overlap with ladder rails)
+      27: 5, 40: 3, 43: 18, 54: 31, 66: 45, 76: 58, 89: 53, 99: 41
+  }), []);
 
   const initGame = () => {
     const activeSlots = isCustomMode ? slots.filter(s => s !== 'empty') : ['human', 'ai'];
@@ -73,7 +74,8 @@ const SnakesAndLadders: React.FC = () => {
 
   const addLog = (msg: string) => setHistory(prev => [msg, ...prev].slice(0, 5));
 
-  const executeMove = useCallback(async (playerId: number) => {
+  const executeMove = useCallback(async (playerId: number, forcedRoll?: number) => {
+    if (isRolling) return;
     setIsRolling(true);
 
     // Simulate dice roll animation duration
@@ -87,7 +89,7 @@ const SnakesAndLadders: React.FC = () => {
         stats: { ...p.stats, totalTurns: p.stats.totalTurns + 1 }
     } : p));
 
-    const roll = Math.floor(Math.random() * 6) + 1;
+    const roll = forcedRoll || Math.floor(Math.random() * 6) + 1;
     setDice(roll);
     setIsRolling(false);
 
@@ -163,12 +165,14 @@ const SnakesAndLadders: React.FC = () => {
   useEffect(() => {
     if (gameState === 'playing') {
         const activePlayer = players[currentTurn];
-        if (activePlayer && activePlayer.type === 'ai' && !isRolling) {
-            const timer = setTimeout(() => executeMove(activePlayer.id), 1000);
+        if (activePlayer && !isRolling && !previewPos) {
+            // V5: Auto-Pulse for Human and AI
+            const delay = activePlayer.type === 'ai' ? 1000 : 2000;
+            const timer = setTimeout(() => executeMove(activePlayer.id), delay);
             return () => clearTimeout(timer);
         }
     }
-  }, [currentTurn, players, gameState, isRolling, executeMove]);
+  }, [currentTurn, players, gameState, isRolling, executeMove, previewPos]);
 
   const getCoords = useCallback((tile: number) => {
     const row = Math.floor((tile - 1) / 10);
@@ -243,8 +247,8 @@ const SnakesAndLadders: React.FC = () => {
                             <line x1={c.x1-ox+0.3} y1={c.y1-oy+0.3} x2={c.x2-ox+0.3} y2={c.y2-oy+0.3} stroke="black" strokeWidth="0.8" strokeLinecap="round" opacity="0.4" />
                             <line x1={c.x1+ox+0.3} y1={c.y1+oy+0.3} x2={c.x2+ox+0.3} y2={c.y2+oy+0.3} stroke="black" strokeWidth="0.8" strokeLinecap="round" opacity="0.4" />
 
-                            <line x1={c.x1-ox} y1={c.y1-oy} x2={c.x2-ox} y2={c.y2-oy} stroke="url(#ladderRail)" strokeWidth="0.9" strokeLinecap="round" filter="url(#glow)" />
-                            <line x1={c.x1+ox} y1={c.y1+oy} x2={c.x2+ox} y2={c.y2+oy} stroke="url(#ladderRail)" strokeWidth="0.9" strokeLinecap="round" filter="url(#glow)" />
+                            <line x1={c.x1-ox} y1={c.y1-oy} x2={c.x2-ox} y2={c.y2-oy} stroke="url(#ladderRail)" strokeWidth="1.2" strokeLinecap="round" filter="url(#glow)" />
+                            <line x1={c.x1+ox} y1={c.y1+oy} x2={c.x2+ox} y2={c.y2+oy} stroke="url(#ladderRail)" strokeWidth="1.2" strokeLinecap="round" filter="url(#glow)" />
 
                             {/* Steps / Rungs with subtle perspective */}
                             {Array.from({ length: Math.floor(dist/3.5) }).map((_, i, arr) => {
@@ -377,7 +381,7 @@ const SnakesAndLadders: React.FC = () => {
   }
 
   return (
-    <div className="relative flex flex-col lg:flex-row items-start gap-8 w-full max-w-6xl animate-in fade-in duration-500">
+    <div className="relative flex flex-col lg:flex-row items-stretch gap-8 w-full max-w-7xl animate-in fade-in duration-500 min-h-[600px]">
         {gameState === 'gameover' && (
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -424,29 +428,36 @@ const SnakesAndLadders: React.FC = () => {
             </motion.div>
         )}
 
-        {/* Game Board */}
-        <div className="relative aspect-square w-full max-w-[min(80vw,520px)] bg-[#050816] rounded-[2.5rem] border border-white/10 p-4 shadow-[0_0_60px_rgba(0,0,0,0.8)] overflow-hidden">
+        {/* Game Board - Priority Rebuild (70% Attention) */}
+        <div className="relative aspect-square w-full lg:w-[70%] bg-[#050816] rounded-[3rem] border-2 border-white/10 p-6 shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-hidden">
             {/* Elegant Grid Background */}
-            <div className="absolute inset-4 grid grid-cols-10 grid-rows-10 gap-1 opacity-20 pointer-events-none">
+            <div className="absolute inset-6 grid grid-cols-10 grid-rows-10 gap-1.5 opacity-25 pointer-events-none">
                 {Array.from({ length: 100 }).map((_, i) => (
                     <div key={i} className="bg-white/5 rounded-sm" />
                 ))}
             </div>
 
-            <div className="grid grid-cols-10 grid-rows-10 w-full h-full relative z-10">
+            <div className="grid grid-cols-10 grid-rows-10 w-full h-full relative z-10 p-2">
                 {Array.from({ length: 100 }).map((_, i) => {
                     const id = i + 1;
                     const { x, y } = getCoords(id);
                     const isSpecial = MAP[id];
                     const isPreview = previewPos === id;
                     const isLadder = isSpecial && MAP[id] > id;
+                    const isActive = players[currentTurn]?.position === id;
+
                     return (
                         <div
                             key={id}
-                            className={`absolute w-[10%] h-[10%] border border-white/5 flex flex-col items-center justify-center transition-all duration-300 ${isSpecial ? (isLadder ? 'bg-accent-cyan/5' : 'bg-accent-rose/5') : ''} ${isPreview ? 'bg-white/20 z-20 shadow-[inset_0_0_20px_rgba(255,255,255,0.2)]' : ''}`}
+                            className={`absolute w-[10%] h-[10%] border border-white/10 flex flex-col items-center justify-center transition-all duration-300
+                                ${isSpecial ? (isLadder ? 'bg-accent-cyan/[0.03]' : 'bg-accent-rose/[0.03]') : ''}
+                                ${isPreview ? 'bg-white/20 z-20 shadow-[inset_0_0_30px_rgba(255,255,255,0.1)]' : ''}
+                                ${isActive ? 'bg-white/[0.05]' : ''}`}
                             style={{ left: `${x * 10}%`, top: `${y * 10}%` }}
                         >
-                            <span className={`text-[10px] font-black select-none transition-colors ${isPreview ? 'text-white' : 'text-white/10'}`}>{id}</span>
+                            <span className={`text-xs font-black select-none transition-colors ${isPreview || isActive ? 'text-white' : 'text-white/20'}`}>
+                                {id}
+                            </span>
                             {id === 100 && <div className="absolute inset-0 bg-accent-cyan/10 animate-pulse" />}
 
                             <AnimatePresence>
@@ -489,17 +500,17 @@ const SnakesAndLadders: React.FC = () => {
                             animate={{
                                 left: `${x * 10 + 5}%`,
                                 top: `${y * 10 + 5}%`,
-                                scale: isCurrent ? 1.2 : 1,
+                                scale: isCurrent ? 1.4 : 1.1,
                                 zIndex: isCurrent ? 50 : 10
                             }}
                             transition={{
                                 type: 'spring',
-                                damping: 15,
-                                stiffness: 100,
-                                mass: 0.8
+                                damping: 20,
+                                stiffness: 120,
+                                mass: 1
                             }}
-                            className="absolute w-6 h-6 -ml-3 -mt-3 rounded-full flex items-center justify-center shadow-lg border-2 border-white/20"
-                            style={{ backgroundColor: p.color }}
+                            className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)] border-2 border-white/30"
+                            style={{ backgroundColor: p.color, boxShadow: `0 0 30px ${p.color}44` }}
                         >
                             <div className="w-2 h-2 rounded-full bg-white/40" />
                             {isCurrent && (
@@ -515,9 +526,9 @@ const SnakesAndLadders: React.FC = () => {
             </AnimatePresence>
         </div>
 
-        {/* Sidebar Controls */}
-        <div className="flex-1 w-full space-y-6">
-            <div className="bg-white/5 rounded-3xl border border-white/10 p-6 space-y-6">
+        {/* Sidebar Controls - Reduced Width */}
+        <div className="flex-1 w-full lg:w-[30%] space-y-6 flex flex-col">
+            <div className="bg-white/5 rounded-[2.5rem] border border-white/10 p-8 space-y-8 flex-1">
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Active Entity</p>
@@ -551,11 +562,11 @@ const SnakesAndLadders: React.FC = () => {
                     </motion.div>
                     <div className="flex-1">
                         <button
-                            disabled={isRolling || activePlayer?.type === 'ai'}
+                            disabled={isRolling}
                             onClick={() => executeMove(activePlayer!.id)}
                             className="w-full py-4 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale transition-all shadow-xl shadow-white/5"
                         >
-                            {isRolling ? 'Cycling...' : 'Pulse Reality'}
+                            {isRolling ? 'Cycling...' : 'Manual Pulse'}
                         </button>
                     </div>
                 </div>

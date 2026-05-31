@@ -88,24 +88,44 @@ const Ludo: React.FC = () => {
   const rollDice = useCallback(() => {
       if (isRolling || canMove || winner !== null) return;
 
-      console.log(`[LUDO] Player ${turn} (${PLAYER_NAMES[turn]}) is rolling dice...`);
       setIsRolling(true);
 
       setTimeout(() => {
           const val = Math.floor(Math.random() * 6) + 1;
-          console.log(`[LUDO] Player ${turn} rolled: ${val}`);
           setDice(val);
           setIsRolling(false);
 
           const playable = pieces.filter(p => p.colorIndex === turn && isValidMove(p, val));
-          console.log(`[LUDO] Valid moves for Player ${turn}: ${playable.length}`);
 
           if (playable.length > 0) {
+              // V5: Auto-Move System (Apply to Human & AI)
+              if (playable.length === 1) {
+                  addLog(`${PLAYER_NAMES[turn]} Auto-Executing`);
+                  setTimeout(() => executeMove(playable[0].id, val), 600);
+                  return;
+              }
+
               setCanMove(true);
-              // AI logic
-              if (turn !== 0) {
-                  const bestPiece = playable.sort((a, b) => b.progress - a.progress)[0];
-                  console.log(`[LUDO] AI Player ${turn} chose piece ${bestPiece.id} at progress ${bestPiece.progress}`);
+              // AI logic for multiple pieces
+              if (turn !== 0 || isSimulation) {
+                  // Strategy: Prioritize capture, then goal entry, then most advanced
+                  const bestPiece = playable.sort((a, b) => {
+                      // Check capture potential
+                      const aGlobal = (START_OFFSETS[a.colorIndex] + a.progress + val) % 52;
+                      const bGlobal = (START_OFFSETS[b.colorIndex] + b.progress + val) % 52;
+                      const aCanCapture = pieces.some(pi => pi.colorIndex !== a.colorIndex && pi.progress >= 0 && pi.progress <= 50 && (START_OFFSETS[pi.colorIndex] + pi.progress) % 52 === aGlobal);
+                      const bCanCapture = pieces.some(pi => pi.colorIndex !== b.colorIndex && pi.progress >= 0 && pi.progress <= 50 && (START_OFFSETS[pi.colorIndex] + pi.progress) % 52 === bGlobal);
+
+                      if (aCanCapture && !bCanCapture) return -1;
+                      if (bCanCapture && !aCanCapture) return 1;
+
+                      // Prioritize finishing
+                      if (a.progress + val === 56) return -1;
+                      if (b.progress + val === 56) return 1;
+
+                      return b.progress - a.progress;
+                  })[0];
+
                   setTimeout(() => {
                       executeMove(bestPiece.id, val);
                   }, 600);
@@ -206,54 +226,76 @@ const Ludo: React.FC = () => {
   }, [pieces]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full max-w-md gap-6">
-      <div className="flex gap-4 w-full max-w-sm">
-          <div
-            onClick={() => setIsSimulation(!isSimulation)}
-            className={`flex-1 p-4 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${turn === 0 ? 'bg-red-500/10 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-white/5 border-white/5 opacity-50'} ${isSimulation ? 'ring-2 ring-accent-cyan animate-pulse' : ''}`}>
-              <div>
-                  <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Active Core</div>
-                  <div className="text-[10px] font-black italic text-white">{PLAYER_NAMES[turn]}</div>
-              </div>
-              {turn === 0 ? <User size={16} className="text-red-500" /> : <Bot size={16} className="text-white/20" />}
-          </div>
-          <div className="w-24 p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col justify-center items-center">
-              <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Dice</div>
-              <div className="text-2xl font-black italic text-white tabular-nums">{dice || '?'}</div>
-          </div>
-      </div>
-
-      {/* Board */}
-      <div className="relative w-full max-w-md aspect-square bg-[#0a0a0f] rounded-[2rem] border border-white/10 p-1 shadow-2xl overflow-hidden">
-          <div className="grid grid-cols-15 grid-rows-15 w-full h-full gap-0.5 pointer-events-none">
+    <div className="flex flex-col lg:flex-row items-stretch gap-8 w-full max-w-7xl animate-in fade-in duration-500 min-h-[600px]">
+      {/* Game Board - Priority Rebuild (70% Attention) */}
+      <div className="relative aspect-square w-full lg:w-[70%] bg-[#0a0a0f] rounded-[3rem] border-2 border-white/10 p-4 shadow-[0_0_100px_rgba(0,0,0,0.9)] overflow-hidden">
+          <div className="grid grid-cols-15 grid-rows-15 w-full h-full gap-1 pointer-events-none p-2">
               {Array.from({ length: 225 }).map((_, i) => {
                   const r = Math.floor(i / 15);
                   const c = i % 15;
-                  let bg = 'bg-white/[0.02]';
-                  // Detailed board coloring could go here
-                  if (r < 6 && c < 6) bg = 'bg-red-500/5';
-                  if (r < 6 && c > 8) bg = 'bg-blue-500/5';
-                  if (r > 8 && c > 8) bg = 'bg-yellow-500/5';
-                  if (r > 8 && c < 6) bg = 'bg-green-500/5';
-                  return <div key={i} className={`${bg} rounded-sm`} />;
+                  let bg = 'bg-white/[0.03]';
+
+                  // Base areas
+                  if (r < 6 && c < 6) bg = 'bg-red-500/10 border border-red-500/20';
+                  if (r < 6 && c > 8) bg = 'bg-blue-500/10 border border-blue-500/20';
+                  if (r > 8 && c > 8) bg = 'bg-yellow-500/10 border border-yellow-500/20';
+                  if (r > 8 && c < 6) bg = 'bg-green-500/10 border border-green-500/20';
+
+                  // Home paths
+                  if (r === 7 && c > 0 && c < 7) bg = 'bg-red-500/40 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]';
+                  if (c === 7 && r > 0 && r < 7) bg = 'bg-blue-500/40 border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]';
+                  if (r === 7 && c > 7 && c < 14) bg = 'bg-yellow-500/40 border border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]';
+                  if (c === 7 && r > 7 && r < 14) bg = 'bg-green-500/40 border border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.2)]';
+
+                  // Special spots
+                  const globalIdx = PATH_COORDS.findIndex(([pr, pc]) => pr === r && pc === c);
+                  if (SAFE_ZONES.includes(globalIdx)) bg = 'bg-white/10 ring-1 ring-white/20';
+
+                  return <div key={i} className={`${bg} rounded-md transition-all duration-500`} />;
               })}
           </div>
 
+          {/* Premium Center Hub */}
+          <div className="absolute top-[40%] left-[40%] w-[20%] h-[20%] z-20 flex items-center justify-center">
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-xl border-2 border-white/20 rounded-2xl transform rotate-45 shadow-[0_0_40px_rgba(255,255,255,0.1)]" />
+              <div className="relative z-30 flex flex-col items-center justify-center scale-75 lg:scale-100">
+                  <div className="grid grid-cols-2 gap-1">
+                      {COLORS.map((c, i) => (
+                          <div key={i} className="w-4 h-4 rounded-full animate-pulse shadow-[0_0_10px_currentColor]" style={{ backgroundColor: c, color: c }} />
+                      ))}
+                  </div>
+              </div>
+          </div>
+
           {/* Pieces */}
-          <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 pointer-events-none z-30 p-2">
               {pieces.map(p => {
                   if (p.progress === 56) return null;
                   const [r, c] = getCoords(p);
                   const isSelectable = turn === 0 && canMove && p.colorIndex === turn && isValidMove(p, dice);
+
+                  // Smart Assist (V5)
+                  const isRecommended = isSelectable && (() => {
+                    const globalIdx = (START_OFFSETS[p.colorIndex] + p.progress + dice) % 52;
+                    const canCapture = pieces.some(pi => pi.colorIndex !== p.colorIndex && pi.progress >= 0 && pi.progress <= 50 && (START_OFFSETS[pi.colorIndex] + pi.progress) % 52 === globalIdx);
+                    const isGoal = p.progress + dice === 56;
+                    return canCapture || isGoal;
+                  })();
+
                   return (
                       <motion.div
                         key={p.id}
                         layout
-                        transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-                        animate={{ left: `${(c / 15) * 100}%`, top: `${(r / 15) * 100}%`, scale: isSelectable ? 1.25 : 1 }}
+                        transition={{ type: 'spring', damping: 20, stiffness: 120 }}
+                        animate={{
+                            left: `${(c / 15) * 100}%`,
+                            top: `${(r / 15) * 100}%`,
+                            scale: isSelectable ? 1.4 : 1.1,
+                            boxShadow: isRecommended ? [`0 0 10px ${COLORS[p.colorIndex]}`, `0 0 30px ${COLORS[p.colorIndex]}`] : `0 0 20px rgba(0,0,0,0.4)`
+                        }}
                         onClick={() => isSelectable && executeMove(p.id, dice)}
-                        className={`absolute w-[5.5%] h-[5.5%] rounded-full border border-black/50 shadow-lg pointer-events-auto cursor-pointer flex items-center justify-center
-                            ${isSelectable ? 'ring-4 ring-white shadow-white/50 z-50' : 'z-10 opacity-80'}`}
+                        className={`absolute w-[6%] h-[6%] rounded-full border-2 border-white/30 shadow-2xl pointer-events-auto cursor-pointer flex items-center justify-center
+                            ${isSelectable ? 'z-50' : 'z-10 opacity-90'}`}
                         style={{ backgroundColor: COLORS[p.colorIndex] }}
                       >
                           <div className="w-1 h-1 bg-white/20 rounded-full" />
@@ -302,23 +344,58 @@ const Ludo: React.FC = () => {
           </AnimatePresence>
       </div>
 
-      <div className="flex gap-4 items-center">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            disabled={canMove || isRolling || turn !== 0 || winner !== null}
-            onClick={rollDice}
-            className={`w-24 h-24 rounded-3xl border flex items-center justify-center text-4xl font-black italic shadow-xl transition-all
-                ${canMove || isRolling || turn !== 0 ? 'bg-white/5 border-white/10 text-white/20' : 'bg-accent-gold border-accent-gold text-black shadow-accent-gold/40 hover:scale-105'}`}
-          >
-              <AnimatePresence mode="wait">
-                  <motion.div key={dice} initial={{ rotate: -45, scale: 0.8 }} animate={{ rotate: 0, scale: 1 }} className={isRolling ? 'animate-bounce' : ''}>
-                      {dice || '?'}
-                  </motion.div>
-              </AnimatePresence>
-          </motion.button>
+      {/* Sidebar Controls - Reduced Width (30%) */}
+      <div className="flex-1 w-full lg:w-[30%] space-y-6 flex flex-col">
+          <div className="bg-white/5 rounded-[2.5rem] border border-white/10 p-8 space-y-8 flex-1">
+              <div className="flex gap-4 items-center">
+                  <div
+                    onClick={() => setIsSimulation(!isSimulation)}
+                    className={`flex-1 p-6 rounded-[2rem] border transition-all flex items-center justify-between cursor-pointer ${turn === 0 ? 'bg-accent-cyan/10 border-accent-cyan/40 shadow-[0_0_30px_rgba(34,211,238,0.2)]' : 'bg-white/5 border-white/5 opacity-50'} ${isSimulation ? 'ring-2 ring-accent-rose animate-pulse' : ''}`}>
+                      <div>
+                          <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Active Entity</div>
+                          <div className="text-sm font-black italic text-white">{PLAYER_NAMES[turn]}</div>
+                      </div>
+                      {turn === 0 ? <User size={20} className="text-accent-cyan" /> : <Bot size={20} className="text-white/40" />}
+                  </div>
+              </div>
 
-          <div className="flex-1 max-w-[200px] h-24 bg-white/5 rounded-2xl border border-white/5 p-4 overflow-hidden space-y-1">
-              {log.map((m, i) => <div key={i} className={`text-[10px] font-black truncate uppercase ${i === 0 ? 'text-accent-gold' : 'text-white/20'}`}>{m}</div>)}
+              <div className="flex items-center gap-6 py-8 border-y border-white/5">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    disabled={canMove || isRolling || turn !== 0 || winner !== null}
+                    onClick={rollDice}
+                    className={`w-24 h-24 rounded-[2rem] border-2 flex items-center justify-center text-4xl font-black italic shadow-2xl transition-all
+                        ${canMove || isRolling || turn !== 0 ? 'bg-white/5 border-white/10 text-white/10' : 'bg-white border-white text-black shadow-white/20 hover:scale-105 active:scale-95'}`}
+                  >
+                      <AnimatePresence mode="wait">
+                          <motion.div
+                            key={dice}
+                            initial={{ rotate: -90, scale: 0.5, opacity: 0 }}
+                            animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                            className={isRolling ? 'animate-spin' : ''}
+                          >
+                              {dice || '?'}
+                          </motion.div>
+                      </AnimatePresence>
+                  </motion.button>
+                  <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Operational Protocol</p>
+                      <p className="text-xs font-bold text-white/60 leading-relaxed uppercase">
+                          {isRolling ? 'Rolling Core...' : canMove ? 'Awaiting Piece Selection' : 'Pulse to initiate sequence'}
+                      </p>
+                  </div>
+              </div>
+
+              <div className="space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/20">System Event Log</p>
+                  <div className="space-y-2">
+                      {log.map((m, i) => (
+                        <div key={i} className={`text-xs font-bold px-4 py-3 rounded-xl transition-all ${i === 0 ? 'bg-white/10 text-white shadow-xl' : 'text-white/20 opacity-50'}`}>
+                            {m}
+                        </div>
+                      ))}
+                  </div>
+              </div>
           </div>
       </div>
     </div>
