@@ -1,12 +1,17 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { usePlayStore } from '../../shared/store/usePlayStore';
-import { User, Bot, Play, Users, Brain, Info, RefreshCw, Trophy, Target, Zap, Clock, Shield } from 'lucide-react';
+import { User, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JuiceManager } from '../../shared/systems/JuiceManager';
-import { evaluateAIMove, type AIDifficulty, type LudoPiece } from './ai';
+
+type Piece = {
+    id: number;
+    progress: number; // -1: base, 0-50: path, 51-55: home path, 56: finished
+    colorIndex: number;
+};
 
 const COLORS = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
-const PLAYER_NAMES = ['RED', 'BLUE', 'YELLOW', 'GREEN'];
+const PLAYER_NAMES = ['HUMAN', 'AI CORE ALPHA', 'AI CORE BETA', 'AI CORE GAMMA'];
 
 // Board mapping (15x15 grid)
 const BASE_POSITIONS = [
@@ -39,72 +44,83 @@ const HOME_PATHS: [number, number][][] = [
 
 const Ludo: React.FC = () => {
   const { updateXP, finishGame, setLiveScore } = usePlayStore();
+  const [pieces, setPieces] = useState<Piece[]>(() => {
+      const p: Piece[] = [];
+      for(let i=0; i<4; i++) {
+          for(let j=0; j<4; j++) {
+              p.push({ id: i*4+j, progress: -1, colorIndex: i });
+          }
+      }
+      return p;
+  });
 
-  // V3 State
-  const [lobbyState, setLobbyState] = useState<'setup' | 'playing' | 'gameover'>('setup');
-  const [config, setConfig] = useState<('human' | 'ai' | 'empty')[]>(['human', 'ai', 'empty', 'empty']);
-  const [difficulty, setDifficulty] = useState<AIDifficulty>('MEDIUM');
-
-  const [pieces, setPieces] = useState<LudoPiece[]>([]);
   const [turn, setTurn] = useState(0);
+  const [isSimulation, setIsSimulation] = useState(false);
   const [dice, setDice] = useState(0);
   const [isRolling, setIsRolling] = useState(false);
   const [canMove, setCanMove] = useState(false);
+  const [log, setLog] = useState<string[]>(['System Online']);
   const [winner, setWinner] = useState<number | null>(null);
-  const [log, setLog] = useState<string[]>([]);
-  const [stats, setStats] = useState({
-      turns: 0,
-      captures: 0,
-      safeVisits: 0,
-      rolls: [] as number[],
-      bestMoveDesc: 'None'
-  });
 
-  const initGame = () => {
-      const p: LudoPiece[] = [];
-      config.forEach((type, colorIdx) => {
-          if (type !== 'empty') {
-              for (let j = 0; j < 4; j++) {
-                  p.push({ id: colorIdx * 4 + j, progress: -1, colorIndex: colorIdx });
-              }
-          }
-      });
-      setPieces(p);
-      setTurn(config.findIndex(c => c !== 'empty'));
-      setLobbyState('playing');
-      setLog(['Prism Network Established']);
+  const reset = useCallback(() => {
+    setPieces(() => {
+        const p: Piece[] = [];
+        for(let i=0; i<4; i++) {
+            for(let j=0; j<4; j++) {
+                p.push({ id: i*4+j, progress: -1, colorIndex: i });
+            }
+        }
+        return p;
+    });
+    setTurn(0);
+    setDice(0);
+    setIsRolling(false);
+    setCanMove(false);
+    setLog(['System Reset']);
+    setWinner(null);
+  }, []);
+
+  const addLog = (msg: string) => {
+    console.log(`[LUDO LOG]: ${msg}`);
+    setLog(prev => [msg, ...prev].slice(0, 5));
   };
-
-  const addLog = (msg: string) => setLog(prev => [msg, ...prev].slice(0, 5));
 
   const rollDice = useCallback(() => {
       if (isRolling || canMove || winner !== null) return;
+
+      console.log(`[LUDO] Player ${turn} (${PLAYER_NAMES[turn]}) is rolling dice...`);
       setIsRolling(true);
-      JuiceManager.shake(2);
 
       setTimeout(() => {
           const val = Math.floor(Math.random() * 6) + 1;
+          console.log(`[LUDO] Player ${turn} rolled: ${val}`);
           setDice(val);
           setIsRolling(false);
-          setStats(s => ({ ...s, rolls: [...s.rolls, val] }));
 
           const playable = pieces.filter(p => p.colorIndex === turn && isValidMove(p, val));
+          console.log(`[LUDO] Valid moves for Player ${turn}: ${playable.length}`);
+
           if (playable.length > 0) {
               setCanMove(true);
-              if (config[turn] === 'ai') {
+              // AI logic
+              if (turn !== 0) {
+                  const bestPiece = playable.sort((a, b) => b.progress - a.progress)[0];
+                  console.log(`[LUDO] AI Player ${turn} chose piece ${bestPiece.id} at progress ${bestPiece.progress}`);
                   setTimeout(() => {
-                      const bestId = evaluateAIMove({ pieces, turn, dice: val, safeZones: SAFE_ZONES, startOffsets: START_OFFSETS }, difficulty);
-                      if (bestId !== -1) executeMove(bestId, val);
+                      executeMove(bestPiece.id, val);
                   }, 600);
               }
           } else {
               addLog(`${PLAYER_NAMES[turn]} Sequence Blocked (${val})`);
-              setTimeout(nextTurn, 800);
+              setTimeout(() => {
+                  console.log(`[LUDO] No moves possible. Ending turn for Player ${turn}.`);
+                  setTurn((turn + 1) % 4);
+              }, 1000);
           }
-      }, 600);
-  }, [isRolling, canMove, turn, pieces, winner, config, difficulty]);
+      }, 800);
+  }, [isRolling, canMove, turn, pieces, winner]);
 
-  const isValidMove = (p: LudoPiece, d: number) => {
+  const isValidMove = (p: Piece, d: number) => {
       if (p.progress === 56) return false;
       if (p.progress === -1) return d === 6;
       if (p.progress + d > 56) return false;
@@ -112,7 +128,9 @@ const Ludo: React.FC = () => {
   };
 
   const executeMove = (pieceId: number, rollVal: number) => {
+      console.log(`[LUDO] Executing move: Piece ${pieceId} by Player ${turn} (Roll: ${rollVal})`);
       let captureOccurred = false;
+      setDice(0); // V12: Reset dice visually during movement
       setPieces(prev => {
           const next = [...prev];
           const idx = next.findIndex(pi => pi.id === pieceId);
@@ -131,153 +149,73 @@ const Ludo: React.FC = () => {
 
                   if (victimIdx !== -1) {
                       captureOccurred = true;
-                      addLog(`${PLAYER_NAMES[p.colorIndex]} Dissolved ${PLAYER_NAMES[next[victimIdx].colorIndex]}`);
+                      addLog(`${PLAYER_NAMES[p.colorIndex]} captured ${PLAYER_NAMES[next[victimIdx].colorIndex]}`);
                       next[victimIdx] = { ...next[victimIdx], progress: -1 };
-                      if (config[p.colorIndex] === 'human') {
+                      if (p.colorIndex === 0) {
                           updateXP(200);
                           JuiceManager.shake(15);
                           JuiceManager.success();
-                          setStats(s => ({ ...s, captures: s.captures + 1, bestMoveDesc: `Captured ${PLAYER_NAMES[next[victimIdx].colorIndex]}` }));
                       }
                   }
-              } else {
-                  if (config[p.colorIndex] === 'human') setStats(s => ({ ...s, safeVisits: s.safeVisits + 1 }));
               }
           }
 
           next[idx] = { ...p, progress: newProgress };
 
-          // Win check
+          // Win check for player
           const finishedCount = next.filter(pi => pi.colorIndex === turn && pi.progress === 56).length;
-          if (finishedCount === 4) {
-              setWinner(turn);
-              setLobbyState('gameover');
-          }
+          if (finishedCount === 4) setWinner(turn);
 
           return next;
       });
 
       setCanMove(false);
       if (rollVal === 6 || captureOccurred) {
+          console.log(`[LUDO] Player ${turn} awarded bonus roll (Roll: ${rollVal}, Capture: ${captureOccurred}).`);
           addLog(`${PLAYER_NAMES[turn]} Bonus Cycle`);
-          JuiceManager.success();
       } else {
-          nextTurn();
+          console.log(`[LUDO] Move complete. Next turn.`);
+          setTurn((turn + 1) % 4);
       }
   };
 
-  const nextTurn = () => {
-      setStats(s => ({ ...s, turns: s.turns + 1 }));
-      let next = (turn + 1) % 4;
-      while (config[next] === 'empty' && next !== turn) {
-          next = (next + 1) % 4;
-      }
-      setTurn(next);
-  };
-
-  const getCoords = (p: LudoPiece): [number, number] => {
+  const getCoords = (p: Piece): [number, number] => {
       if (p.progress === -1) return BASE_POSITIONS[p.colorIndex][p.id % 4] as [number, number];
       if (p.progress >= 51) {
-          if (p.progress === 56) return [7, 7];
+          if (p.progress === 56) return [7, 7]; // Center
           return HOME_PATHS[p.colorIndex][p.progress - 51] as [number, number];
       }
       const globalIdx = (START_OFFSETS[p.colorIndex] + p.progress) % 52;
       return PATH_COORDS[globalIdx];
   };
 
+  // AI Automation Effect
   useEffect(() => {
-    const humanPieces = pieces.filter(p => config[p.colorIndex] === 'human');
+    const isAITurn = turn !== 0 || isSimulation;
+    if (isAITurn && !isRolling && !canMove && winner === null) {
+        console.log(`[LUDO] AI/Simulation Turn Detection: Player ${turn} active. Triggering auto-roll.`);
+        const timer = setTimeout(rollDice, isSimulation ? 200 : 1000);
+        return () => clearTimeout(timer);
+    }
+  }, [turn, isRolling, canMove, winner, rollDice, dice, isSimulation]);
+
+  useEffect(() => {
+    const humanPieces = pieces.filter(p => p.colorIndex === 0);
     const progressSum = humanPieces.reduce((acc, p) => acc + (p.progress === -1 ? 0 : p.progress), 0);
     setLiveScore(progressSum);
-  }, [pieces, config, setLiveScore]);
-
-  if (lobbyState === 'setup') {
-    return (
-        <div className="flex flex-col items-center justify-center w-full max-w-md gap-8 p-10 bg-[#0a0a0f] rounded-[3rem] border border-white/10 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-blue-500 to-yellow-500" />
-
-            <div className="text-center space-y-2">
-                <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white">Neon <span className="text-red-500">Ludo</span></h1>
-                <p className="text-white/20 font-black uppercase tracking-[0.4em] text-[10px]">Neural Circuit Navigation</p>
-            </div>
-
-            <div className="w-full space-y-6">
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Participant Nodes</span>
-                        <span className="text-[9px] font-black uppercase text-red-500 flex items-center gap-1"><Users size={12} /> 1-4 SLOTS</span>
-                    </div>
-                    <div className="space-y-2">
-                        {config.map((type, i) => (
-                            <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${type !== 'empty' ? 'bg-white/5 border-white/10' : 'bg-black/20 border-white/5 opacity-40'}`}>
-                                <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shadow-lg" style={{ backgroundColor: COLORS[i], color: '#000' }}>
-                                    {String.fromCharCode(65 + i)}
-                                </div>
-                                <div className="flex-1 grid grid-cols-3 gap-1">
-                                    {(['human', 'ai', 'empty'] as const).map(opt => (
-                                        <button
-                                            key={opt}
-                                            disabled={i === 0 && opt !== 'human'}
-                                            onClick={() => {
-                                                const next = [...config];
-                                                next[i] = opt;
-                                                setConfig(next);
-                                            }}
-                                            className={`py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${type === opt ? 'bg-white text-black' : 'bg-white/5 text-white/20 hover:bg-white/10'} disabled:opacity-0`}
-                                        >
-                                            {opt}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/40">
-                        <Brain size={14} /> AI Complexity
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                        {(['EASY', 'MEDIUM', 'HARD'] as const).map(d => (
-                            <button
-                                key={d}
-                                onClick={() => setDifficulty(d)}
-                                className={`py-3 rounded-xl text-[9px] font-black uppercase transition-all ${difficulty === d ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-white/5 text-white/40'}`}
-                            >
-                                {d}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            <button
-                onClick={initGame}
-                className="w-full py-6 bg-white text-black font-black uppercase tracking-widest rounded-2xl flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-white/10"
-            >
-                <Play size={20} fill="currentColor" /> Initialize Core
-            </button>
-        </div>
-    );
-  }
+  }, [pieces]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-md gap-6">
       <div className="flex gap-4 w-full max-w-sm">
-          <div className={`flex-1 p-4 rounded-2xl border transition-all flex items-center justify-between shadow-2xl ${turn === 0 ? 'bg-red-500/10 border-red-500/50 shadow-red-500/10' : 'bg-white/5 border-white/5 opacity-50'}`}>
-              <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs" style={{ backgroundColor: COLORS[turn], color: '#000' }}>
-                      {String.fromCharCode(65 + turn)}
-                  </div>
-                  <div>
-                      <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-0.5">Active Core</div>
-                      <div className="text-[10px] font-black italic text-white flex items-center gap-1">
-                          {config[turn] === 'human' ? <User size={10} /> : <Bot size={10} />}
-                          {PLAYER_NAMES[turn]}
-                      </div>
-                  </div>
+          <div
+            onClick={() => setIsSimulation(!isSimulation)}
+            className={`flex-1 p-4 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${turn === 0 ? 'bg-red-500/10 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-white/5 border-white/5 opacity-50'} ${isSimulation ? 'ring-2 ring-accent-cyan animate-pulse' : ''}`}>
+              <div>
+                  <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Active Core</div>
+                  <div className="text-[10px] font-black italic text-white">{PLAYER_NAMES[turn]}</div>
               </div>
+              {turn === 0 ? <User size={16} className="text-red-500" /> : <Bot size={16} className="text-white/20" />}
           </div>
           <div className="w-24 p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col justify-center items-center">
               <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-1">Dice</div>
@@ -292,32 +230,12 @@ const Ludo: React.FC = () => {
                   const r = Math.floor(i / 15);
                   const c = i % 15;
                   let bg = 'bg-white/[0.02]';
-
-                  // Highlight Path
-                  const isPath = PATH_COORDS.some(pc => pc[0] === r && pc[1] === c);
-                  if (isPath) bg = 'bg-white/[0.05]';
-
-                  // Safe Zones
-                  const globalIdx = PATH_COORDS.findIndex(pc => pc[0] === r && pc[1] === c);
-                  if (globalIdx !== -1 && SAFE_ZONES.includes(globalIdx)) bg = 'bg-white/10 shadow-[inset_0_0_10px_rgba(255,255,255,0.1)]';
-
-                  // Base areas
-                  if (r < 6 && c < 6) bg = 'bg-red-500/10';
-                  if (r < 6 && c > 8) bg = 'bg-blue-500/10';
-                  if (r > 8 && c > 8) bg = 'bg-yellow-500/10';
-                  if (r > 8 && c < 6) bg = 'bg-green-500/10';
-
-                  // Home lanes
-                  HOME_PATHS.forEach((path, ci) => {
-                      if (path.some(pc => pc[0] === r && pc[1] === c)) {
-                          const laneColors = ['bg-red-500/30', 'bg-blue-500/30', 'bg-yellow-500/30', 'bg-green-500/30'];
-                          bg = laneColors[ci];
-                      }
-                  });
-
-                  if (r === 7 && c === 7) bg = 'bg-white/20 animate-pulse';
-
-                  return <div key={i} className={`${bg} rounded-sm border border-white/[0.02]`} />;
+                  // Detailed board coloring could go here
+                  if (r < 6 && c < 6) bg = 'bg-red-500/5';
+                  if (r < 6 && c > 8) bg = 'bg-blue-500/5';
+                  if (r > 8 && c > 8) bg = 'bg-yellow-500/5';
+                  if (r > 8 && c < 6) bg = 'bg-green-500/5';
+                  return <div key={i} className={`${bg} rounded-sm`} />;
               })}
           </div>
 
@@ -326,7 +244,7 @@ const Ludo: React.FC = () => {
               {pieces.map(p => {
                   if (p.progress === 56) return null;
                   const [r, c] = getCoords(p);
-                  const isSelectable = config[turn] === 'human' && canMove && p.colorIndex === turn && isValidMove(p, dice);
+                  const isSelectable = turn === 0 && canMove && p.colorIndex === turn && isValidMove(p, dice);
                   return (
                       <motion.div
                         key={p.id}
@@ -334,94 +252,63 @@ const Ludo: React.FC = () => {
                         transition={{ type: 'spring', damping: 15, stiffness: 200 }}
                         animate={{ left: `${(c / 15) * 100}%`, top: `${(r / 15) * 100}%`, scale: isSelectable ? 1.25 : 1 }}
                         onClick={() => isSelectable && executeMove(p.id, dice)}
-                        className={`absolute w-[5.5%] h-[5.5%] rounded-full border border-black/50 shadow-lg pointer-events-auto cursor-pointer flex items-center justify-center transition-all
-                            ${isSelectable ? 'ring-4 ring-white shadow-[0_0_15px_white] z-50' : 'z-10 opacity-90'}`}
+                        className={`absolute w-[5.5%] h-[5.5%] rounded-full border border-black/50 shadow-lg pointer-events-auto cursor-pointer flex items-center justify-center
+                            ${isSelectable ? 'ring-4 ring-white shadow-white/50 z-50' : 'z-10 opacity-80'}`}
                         style={{ backgroundColor: COLORS[p.colorIndex] }}
                       >
-                          <div className="w-1.5 h-1.5 bg-white/40 rounded-full" />
-                          {isSelectable && <motion.div animate={{ scale: [1, 1.5], opacity: [0.5, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="absolute inset-0 rounded-full border-2 border-white" />}
+                          <div className="w-1 h-1 bg-white/20 rounded-full" />
                       </motion.div>
                   );
               })}
           </div>
 
           <AnimatePresence>
-              {lobbyState === 'gameover' && (
+              {winner !== null && (
                   <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="absolute inset-0 z-[110] bg-[#050816]/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center"
+                    className="absolute inset-0 z-[110] bg-[#050816]/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center"
                   >
                       <motion.div
                         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                        className="max-w-md w-full space-y-8"
+                        className="max-w-xs w-full space-y-6"
                       >
-                        <div className="space-y-2">
-                            <div className="text-accent-gold font-black uppercase tracking-[0.3em] text-[10px]">Session Terminated</div>
-                            <h3 className="text-5xl font-black italic uppercase tracking-tighter text-white">Dominion Established</h3>
+                        <div className="space-y-1">
+                            <div className={`${winner === 0 ? 'text-accent-gold' : 'text-accent-rose'} font-black uppercase tracking-widest text-[10px]`}>
+                                {winner === 0 ? 'Mastery' : 'Interrupted'}
+                            </div>
+                            <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">Game Over</h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                <div className="text-[8px] font-black uppercase text-white/20 mb-1">Cycle Victor</div>
-                                <div className="text-lg font-black text-white">{PLAYER_NAMES[winner!]}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                <div className="text-[8px] font-black uppercase text-white/20 mb-1">Turns Elapsed</div>
-                                <div className="text-lg font-black text-white">{stats.turns}</div>
-                            </div>
+                        <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                            <div className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-2">Cycle Victor</div>
+                            <div className="text-lg font-black text-white uppercase tabular-nums">{PLAYER_NAMES[winner]}</div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                <div className="text-[8px] font-black uppercase text-white/20 mb-1">AI Complexity</div>
-                                <div className="text-lg font-black text-white">{difficulty}</div>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                <div className="text-[8px] font-black uppercase text-white/20 mb-1">Valued Action</div>
-                                <div className="text-[10px] font-black text-accent-gold uppercase leading-tight">{stats.bestMoveDesc}</div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-2">
-                            {[
-                                { icon: <Target size={12} />, label: 'Dissolved', val: stats.captures },
-                                { icon: <Shield size={12} />, label: 'Shielded', val: stats.safeVisits },
-                                { icon: <Zap size={12} />, label: 'Luck', val: stats.rolls.length > 0 ? `${Math.round(stats.rolls.reduce((a,b)=>a+b,0)/stats.rolls.length*20)}%` : '0%' }
-                            ].map((s, i) => (
-                                <div key={i} className="p-3 bg-white/5 rounded-xl border border-white/5">
-                                    <div className="flex items-center justify-center gap-1 text-[8px] font-black uppercase text-white/20 mb-1">{s.icon} {s.label}</div>
-                                    <div className="text-sm font-black text-white">{s.val}</div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="space-y-3 pt-4">
-                            <button
-                                onClick={() => setLobbyState('setup')}
-                                className="w-full py-5 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl hover:scale-105 active:scale-95 transition-all"
-                            >
-                                Initiate New Cycle
-                            </button>
-                            <button
-                                onClick={() => finishGame(winner === config.findIndex(c => c === 'human') ? 1000 : 0)}
-                                className="w-full py-4 text-white/40 font-black uppercase tracking-widest text-[9px] hover:text-white transition-colors"
-                            >
-                                Finalize Session
-                            </button>
-                        </div>
+                        <button
+                            onClick={reset}
+                            className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${winner === 0 ? 'bg-accent-gold text-black' : 'bg-white text-black'}`}
+                        >
+                            New Cycle
+                        </button>
+                        <button
+                            onClick={() => finishGame(winner === 0 ? 1000 : 0)}
+                            className="w-full py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:text-white transition-all"
+                        >
+                            Finalize Session
+                        </button>
                       </motion.div>
                   </motion.div>
               )}
           </AnimatePresence>
       </div>
 
-      <div className="flex gap-4 items-center w-full max-w-sm">
+      <div className="flex gap-4 items-center">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            disabled={canMove || isRolling || config[turn] !== 'human' || winner !== null}
+            disabled={canMove || isRolling || turn !== 0 || winner !== null}
             onClick={rollDice}
-            className={`w-24 h-24 rounded-3xl border flex items-center justify-center text-4xl font-black italic shadow-xl transition-all shrink-0
-                ${canMove || isRolling || config[turn] !== 'human' ? 'bg-white/5 border-white/10 text-white/20' : 'bg-white border-white text-black shadow-white/20 hover:scale-105'}`}
+            className={`w-24 h-24 rounded-3xl border flex items-center justify-center text-4xl font-black italic shadow-xl transition-all
+                ${canMove || isRolling || turn !== 0 ? 'bg-white/5 border-white/10 text-white/20' : 'bg-accent-gold border-accent-gold text-black shadow-accent-gold/40 hover:scale-105'}`}
           >
               <AnimatePresence mode="wait">
                   <motion.div key={dice} initial={{ rotate: -45, scale: 0.8 }} animate={{ rotate: 0, scale: 1 }} className={isRolling ? 'animate-bounce' : ''}>
@@ -430,13 +317,8 @@ const Ludo: React.FC = () => {
               </AnimatePresence>
           </motion.button>
 
-          <div className="flex-1 h-24 bg-white/5 rounded-3xl border border-white/5 p-4 overflow-hidden space-y-1.5 shadow-inner">
-              <div className="text-[8px] font-black uppercase tracking-widest text-white/10 mb-1 flex items-center gap-1"><Clock size={8} /> Event Stream</div>
-              {log.map((m, i) => (
-                  <motion.div initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} key={i} className={`text-[9px] font-black truncate uppercase ${i === 0 ? 'text-red-500' : 'text-white/20'}`}>
-                      {m}
-                  </motion.div>
-              ))}
+          <div className="flex-1 max-w-[200px] h-24 bg-white/5 rounded-2xl border border-white/5 p-4 overflow-hidden space-y-1">
+              {log.map((m, i) => <div key={i} className={`text-[10px] font-black truncate uppercase ${i === 0 ? 'text-accent-gold' : 'text-white/20'}`}>{m}</div>)}
           </div>
       </div>
     </div>
